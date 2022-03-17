@@ -1,5 +1,6 @@
 package cloud.fogbow.fhs.core;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,35 @@ import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
 
 public class LocalFederationHost {
+
+    private List<FederationUser> federationAdminList;
+    private List<Federation> federationList;
+    
+    public LocalFederationHost() {
+        this.federationAdminList = new ArrayList<FederationUser>();
+        this.federationList = new ArrayList<Federation>();
+    }
+    
+    public String addFederationAdmin(String adminName, String adminEmail, 
+            String adminDescription, boolean enabled) {
+        // TODO validation
+        FederationUser newAdmin = new FederationUser(adminName, adminEmail, adminDescription, enabled);
+        federationAdminList.add(newAdmin);
+        return newAdmin.getMemberId();
+    }
+    
+    public Federation createFederation(String requester, String federationName, String description, boolean enabled) {
+        checkIfRequesterIsFedAdmin(requester);
+        
+        Federation federation = new Federation(requester, federationName, enabled);
+        federationList.add(federation);
+        return federation;
+    }
+    
+    private void checkIfRequesterIsFedAdmin(String requester) {
+        // TODO Auto-generated method stub
+        
+    }
 
     public Federation getFederation(String federationId) {
         return null;
@@ -48,12 +78,8 @@ public class LocalFederationHost {
         return null;
     }
     
-    public List<Federation> getFederationsOwnedByUser(String memberId) {
-        return null;
-    }
-    
-    public Federation createFederation(String federationName, String federationOwner) {
-        return null;
+    public List<Federation> getFederationsOwnedByUser(String requester, String owner) {
+        return this.federationList;
     }
     
     public void requestToJoinFederation(String federationId, String fhsUrl, String memberId) {
@@ -80,16 +106,36 @@ public class LocalFederationHost {
         
     }
     
-    public List<FederationUser> getFederationMembers(String federationId) {
-        return null;
+    public List<FederationUser> getFederationMembers(String requester, String federationId) {
+        checkIfRequesterIsFedAdmin(requester);
+        
+        Federation federation = lookUpFederationById(federationId);
+        return federation.getMemberList();
     }
    
-    public void grantMembership(String federationId, String memberId) {
+    public FederationUser grantMembership(String requester, String federationId, String userId) {
+        checkIfRequesterIsFedAdmin(requester);
+        // TODO check if requester is owner
         
+        Federation federationToAdd = lookUpFederationById(federationId);
+        return federationToAdd.addUser(userId);
     }
     
-    public FederationUser getFederationMemberInfo(String federationId, String memberId) {
+    private Federation lookUpFederationById(String federationId) {
+        for (Federation federation : this.federationList) {
+            if (federation.getId().equals(federationId)) {
+                return federation;
+            }
+        }
+        // FIXME should throw exception
         return null;
+    }
+
+    public FederationUser getFederationMemberInfo(String requester, String federationId, String memberId) {
+        checkIfRequesterIsFedAdmin(requester);
+        
+        Federation federation = lookUpFederationById(federationId);
+        return federation.getUser(memberId);
     }
     
     public void revokeMembership(String federationId, String memberId) {

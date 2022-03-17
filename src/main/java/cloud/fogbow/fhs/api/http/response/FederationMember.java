@@ -1,16 +1,14 @@
-package cloud.fogbow.fhs.core.models;
+package cloud.fogbow.fhs.api.http.response;
 
-import java.util.UUID;
-
-public class FederationUser {
-    private String id;
+public class FederationMember {
+    private String memberId;
     private String name;
     private String email;
     private String description;
     private boolean enabled;
     
-    public FederationUser(String name, String email, String description, boolean enabled) {
-        this.id = UUID.randomUUID().toString();
+    public FederationMember(String memberId, String name, String email, String description, boolean enabled) {
+        this.memberId = memberId;
         this.name = name;
         this.email = email;
         this.description = description;
@@ -18,7 +16,7 @@ public class FederationUser {
     }
 
     public String getMemberId() {
-        return id;
+        return memberId;
     }
 
     public String getName() {
