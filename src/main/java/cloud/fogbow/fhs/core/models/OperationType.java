@@ -5,7 +5,12 @@ public enum OperationType {
     CREATE_FEDERATION("createFederation"), 
     LIST_FEDERATIONS("listFederations"), 
     GRANT_MEMBERSHIP("grantMembership"), 
-    LIST_MEMBERS("listFederationMembers");
+    LIST_MEMBERS("listFederationMembers"), 
+    REGISTER_SERVICE("registerService"), 
+    GET_SERVICES("getServices"), 
+    GET_SERVICE("getService"), 
+    DISCOVER_SERVICES("discoverServices"), 
+    INVOKE("invoke");
 
     private String value;
     

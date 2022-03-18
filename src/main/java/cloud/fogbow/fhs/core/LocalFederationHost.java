@@ -5,11 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 import cloud.fogbow.common.constants.HttpMethod;
+import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
+import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.models.ServiceInvoker;
+import cloud.fogbow.fhs.core.models.ServiceResponse;
+import cloud.fogbow.fhs.core.models.discovery.AllowAllServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.models.invocation.DefaultServiceInvoker;
 
 public class LocalFederationHost {
 
@@ -74,8 +80,18 @@ public class LocalFederationHost {
         
     }
     
-    public List<FederationService> getAuthorizedServices(String federationId, String memberId) {
-        return null;
+    public List<FederationService> getAuthorizedServices(String requester, String federationId, String memberId) {
+        Federation federation = lookUpFederationById(federationId);
+        List<FederationService> authorizedServices = new ArrayList<FederationService>();
+        
+        // TODO move this code to federation
+        for (FederationService service : federation.getServices()) {
+            if (service.getDiscoveryPolicy().isDiscoverableBy(federation.getUser(memberId))) {
+                authorizedServices.add(service);
+            }
+        }
+        
+        return authorizedServices;
     }
     
     public List<Federation> getFederationsOwnedByUser(String requester, String owner) {
@@ -102,8 +118,11 @@ public class LocalFederationHost {
         
     }
     
-    public void invokeService(String federationId, String serviceId, HttpMethod method, Map<String, String> requestData) {
-        
+    public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
+            List<String> path, Map<String, String> headers, Map<String, String> body) throws FogbowException {
+        Federation federation = lookUpFederationById(federationId);
+        FederationService service = federation.getService(serviceId);
+        return service.invoke(federation.getUser(requester), method, path, headers, body);
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) {
@@ -142,15 +161,57 @@ public class LocalFederationHost {
         
     }
     
-    public String registerService(FederationService service) {
-        return null;
+    public String registerService(String requester, String federationId, String owner, String endpoint, Map<String, String> metadata, 
+            String discoveryPolicyName, String accessPolicy) {
+        // TODO validation
+        ServiceDiscoveryPolicy discoveryPolicy = getDiscoveryPolicy(discoveryPolicyName);
+        ServiceInvoker invoker = getInvoker(accessPolicy);
+        FederationService service = new FederationService(owner, endpoint, discoveryPolicy, invoker, metadata);
+        
+        Federation federation = lookUpFederationById(federationId);
+        federation.registerService(service);
+        
+        return service.getServiceId();
     }
     
-    public List<String> getOwnedServices(String federationId, String owner) {
+    private ServiceInvoker getInvoker(String accessPolicy) {
+        if (accessPolicy.equals("")) {
+            return new DefaultServiceInvoker();
+        }
         return null;
     }
+
+    private ServiceDiscoveryPolicy getDiscoveryPolicy(String discoveryPolicyName) {
+        if (discoveryPolicyName.equals("allowall")) {
+            return new AllowAllServiceDiscoveryPolicy();
+        }
+        return null;
+    }
+
+    public List<String> getOwnedServices(String requester, String federationId, String ownerId) {
+        Federation federation = lookUpFederationById(federationId);
+        List<String> ownedServicesIds = new ArrayList<String>();
+        
+        for (FederationService service : federation.getServices()) {
+            if (service.getOwnerId().equals(ownerId)) {
+                ownedServicesIds.add(service.getServiceId());
+            }
+        }
+            
+        return ownedServicesIds;
+    }
     
-    public List<String> getOwnedService(String federationId, String owner, String serviceId) {
+    public FederationService getOwnedService(String federationId, String ownerId, String serviceId) {
+        Federation federation = lookUpFederationById(federationId);
+        
+        for (FederationService service : federation.getServices()) {
+            if (service.getOwnerId().equals(ownerId) &&
+                    service.getServiceId().equals(serviceId)) {
+                return service;
+            }
+        }
+
+        // FIXME should throw exception
         return null;
     }
     

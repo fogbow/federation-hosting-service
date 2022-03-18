@@ -10,6 +10,7 @@ public class Federation {
     private String name;
     private boolean enabled;
     private List<FederationUser> members;
+    private List<FederationService> services;
     
     public Federation(String owner, String name, boolean enabled) {
         this.id = UUID.randomUUID().toString();
@@ -17,6 +18,7 @@ public class Federation {
         this.name = name;
         this.enabled = enabled;
         this.members = new ArrayList<FederationUser>();
+        this.services = new ArrayList<FederationService>();
     }
 
     public FederationUser addUser(String userId) {
@@ -55,5 +57,23 @@ public class Federation {
 
     public List<FederationUser> getMemberList() {
         return members;
+    }
+
+    public void registerService(FederationService service) {
+        this.services.add(service);
+    }
+
+    public List<FederationService> getServices() {
+        return this.services;
+    }
+
+    public FederationService getService(String serviceId) {
+        for (FederationService service : this.services) {
+            if (service.getServiceId().equals(serviceId)) {
+                return service;
+            }
+        }
+        // FIXME should throw exception
+        return null;
     }
 }
