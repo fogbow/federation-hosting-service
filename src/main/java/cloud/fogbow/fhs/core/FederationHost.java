@@ -17,12 +17,12 @@ import cloud.fogbow.fhs.core.models.ServiceResponse;
 import cloud.fogbow.fhs.core.models.discovery.AllowAllServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.models.invocation.DefaultServiceInvoker;
 
-public class LocalFederationHost {
+public class FederationHost {
 
     private List<FederationUser> federationAdminList;
     private List<Federation> federationList;
     
-    public LocalFederationHost() {
+    public FederationHost() {
         this.federationAdminList = new ArrayList<FederationUser>();
         this.federationList = new ArrayList<Federation>();
     }
@@ -221,6 +221,22 @@ public class LocalFederationHost {
     }
     
     public void deleteService(String federationId, String owner, String serviceId) {
+        
+    }
+    
+    public List<Federation> getRemoteFederations() {
+        return null;
+    }
+    
+    public void joinRemoteFederation(String federationId) {
+        
+    }
+    
+    public void leaveRemoteFederation(String federationId) {
+        
+    }
+    
+    public void updateRemoteFederation(Federation federation) {
         
     }
 }

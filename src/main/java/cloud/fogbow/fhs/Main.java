@@ -10,7 +10,7 @@ import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 import cloud.fogbow.fhs.core.AuthorizationPluginInstantiator;
-import cloud.fogbow.fhs.core.LocalFederationHost;
+import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 
@@ -26,11 +26,11 @@ public class Main implements ApplicationRunner {
         
         String className = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.AUTHORIZATION_PLUGIN_CLASS_KEY);
         AuthorizationPlugin<FhsOperation> authorizationPlugin = AuthorizationPluginInstantiator.getAuthorizationPlugin(className);
-        LocalFederationHost localFederationHost = new LocalFederationHost();
+        FederationHost federationHost = new FederationHost();
         
         ApplicationFacade applicationFacade = ApplicationFacade.getInstance();
         
         applicationFacade.setAuthorizationPlugin(authorizationPlugin);
-        applicationFacade.setLocalFederationHost(localFederationHost);
+        applicationFacade.setLocalFederationHost(federationHost);
     }
 }
