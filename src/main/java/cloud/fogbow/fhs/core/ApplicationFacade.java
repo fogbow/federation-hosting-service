@@ -125,7 +125,7 @@ public class ApplicationFacade {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_SERVICE));
         
-        FederationService service = this.federationHost.getOwnedService(federationId, ownerId, serviceId);
+        FederationService service = this.federationHost.getOwnedService(requestUser.getId(), federationId, ownerId, serviceId);
         return new ServiceInfo(service.getServiceId(), service.getEndpoint(), service.getMetadata(), 
                 service.getDiscoveryPolicy().getName(), service.getInvoker().getName());
     }

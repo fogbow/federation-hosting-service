@@ -8,17 +8,29 @@ public class Federation {
     private String id;
     private String owner;
     private String name;
+    private String description;
     private boolean enabled;
     private List<FederationUser> members;
     private List<FederationService> services;
     
-    public Federation(String owner, String name, boolean enabled) {
-        this.id = UUID.randomUUID().toString();
+    public Federation(String owner, String name, String description, boolean enabled) {
+        this(UUID.randomUUID().toString(), owner, name, description, enabled);
+    }
+    
+    public Federation(String id, String owner, String name, String description, boolean enabled) {
+        this(id, owner, name, description, enabled, new ArrayList<FederationUser>(), 
+                new ArrayList<FederationService>());
+    }
+    
+    public Federation(String id, String owner, String name, String description, boolean enabled, 
+            List<FederationUser> members, List<FederationService> services) {
+        this.id = id;
         this.owner = owner;
         this.name = name;
+        this.description = description;
         this.enabled = enabled;
-        this.members = new ArrayList<FederationUser>();
-        this.services = new ArrayList<FederationService>();
+        this.members = members;
+        this.services = services;
     }
 
     public FederationUser addUser(String userId) {
@@ -38,6 +50,10 @@ public class Federation {
         return null;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+    
     public String getName() {
         return name;
     }
@@ -51,8 +67,7 @@ public class Federation {
     }
 
     public String getDescription() {
-        // TODO Auto-generated method stub
-        return null;
+        return description;
     }
 
     public List<FederationUser> getMemberList() {
@@ -75,5 +90,17 @@ public class Federation {
         }
         // FIXME should throw exception
         return null;
+    }
+    
+    public List<FederationService> getAuthorizedServices(String memberId) {
+        List<FederationService> authorizedServices = new ArrayList<FederationService>();
+        
+        for (FederationService service : this.services) {
+            if (service.getDiscoveryPolicy().isDiscoverableBy(getUser(memberId))) {
+                authorizedServices.add(service);
+            }
+        }
+        
+        return authorizedServices;
     }
 }
