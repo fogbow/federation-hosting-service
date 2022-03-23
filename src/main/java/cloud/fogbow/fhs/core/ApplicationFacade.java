@@ -153,15 +153,19 @@ public class ApplicationFacade {
         return new RequestResponse(response.getCode(), response.getResponse());
     }
     
-    protected SystemUser authenticate(String userToken) throws FogbowException {
+    private SystemUser authenticate(String userToken) throws FogbowException {
         RSAPublicKey keyRSA = getAsPublicKey();
         return AuthenticationUtil.authenticate(keyRSA, userToken);
     }
     
-    protected RSAPublicKey getAsPublicKey() throws FogbowException {
+    private RSAPublicKey getAsPublicKey() throws FogbowException {
         if (this.asPublicKey == null) {
             this.asPublicKey = FhsPublicKeysHolder.getInstance().getAsPublicKey();
         }
         return this.asPublicKey;
+    }
+    
+    public void setAsPublicKey(RSAPublicKey asPublicKey) {
+        this.asPublicKey = asPublicKey;
     }
 }
