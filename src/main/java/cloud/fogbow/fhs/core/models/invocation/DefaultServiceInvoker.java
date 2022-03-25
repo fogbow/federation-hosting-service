@@ -4,30 +4,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cloud.fogbow.common.constants.HttpMethod;
-import cloud.fogbow.common.exceptions.FogbowException;
-import cloud.fogbow.common.util.connectivity.HttpRequestClient;
 import cloud.fogbow.common.util.connectivity.HttpResponse;
-import cloud.fogbow.fhs.core.models.FederationUser;
-import cloud.fogbow.fhs.core.models.ServiceInvoker;
 import cloud.fogbow.fhs.core.models.ServiceResponse;
 import cloud.fogbow.fhs.core.models.response.DefaultServiceResponse;
 
-public class DefaultServiceInvoker implements ServiceInvoker {
+public class DefaultServiceInvoker extends HttpServiceInvoker {
+    private static final String INVOKER_NAME = "DefaultServiceInvoker";
+    private static final String RESPONSE_CONTENT_KEY = "content";
 
     @Override
     public String getName() {
-        // FIXME constant
-        return "DefaultServiceInvoker";
+        return INVOKER_NAME;
     }
 
     @Override
-    public ServiceResponse invoke(FederationUser user, String endpoint, HttpMethod method, List<String> path,
-            Map<String, String> headers, Map<String, String> body) throws FogbowException {
-        HttpResponse response = HttpRequestClient.doGenericRequest(method, endpoint, headers, body);
+    List<String> preparePath(List<String> path) {
+        return path;
+    }
+
+    @Override
+    Map<String, String> prepareHeaders(Map<String, String> headers) {
+        return headers;
+    }
+
+    @Override
+    Map<String, String> prepareBody(Map<String, String> body) {
+        return body;
+    }
+
+    @Override
+    ServiceResponse prepareResponse(HttpResponse response) {
         Map<String, String> contentMap = new HashMap<String, String>();
-        // FIXME constant
-        contentMap.put("content", response.getContent());
+        contentMap.put(RESPONSE_CONTENT_KEY, response.getContent());
         return new DefaultServiceResponse(response.getHttpCode(), contentMap);
     }
 }

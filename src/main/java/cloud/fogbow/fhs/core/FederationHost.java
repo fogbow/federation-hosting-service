@@ -267,7 +267,7 @@ public class FederationHost {
         }
         
         ServiceDiscoveryPolicy discoveryPolicy = getDiscoveryPolicy(discoveryPolicyClassName);
-        ServiceInvoker invoker = getInvoker(invokerClassName);
+        ServiceInvoker invoker = getInvoker(invokerClassName, metadata, federationId);
         FederationService service = new FederationService(owner, endpoint, discoveryPolicy, invoker, metadata);
         
         federation.registerService(service);
@@ -275,11 +275,11 @@ public class FederationHost {
         return service.getServiceId();
     }
 
-    private ServiceInvoker getInvoker(String invokerClassName) {
+    private ServiceInvoker getInvoker(String invokerClassName, Map<String, String> metadata, String federationId) {
         if (invokerClassName == null || invokerClassName.isEmpty()) {
             return new DefaultServiceInvoker();
         } else {
-            return this.serviceInvokerInstantiator.getInvoker(invokerClassName);
+            return this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
         }
     }
 

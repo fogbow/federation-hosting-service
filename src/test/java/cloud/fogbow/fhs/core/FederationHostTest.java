@@ -99,7 +99,7 @@ public class FederationHostTest {
         Mockito.when(this.discoveryPolicyInstantiator.getDiscoveryPolicy(SERVICE_DISCOVERY_POLICY_CLASS_NAME_1)).thenReturn(discoveryPolicy1);
         
         this.serviceInvokerInstantiator = Mockito.mock(ServiceInvokerInstantiator.class);
-        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1)).thenReturn(invoker);
+        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1, FEDERATION_ID_1)).thenReturn(invoker);
         
         this.service1 = Mockito.mock(FederationService.class);
         Mockito.when(this.service1.getServiceId()).thenReturn(SERVICE_ID_1);

@@ -1,5 +1,6 @@
 package cloud.fogbow.fhs.core;
 
+import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +9,11 @@ import java.util.Map;
 import cloud.fogbow.as.core.util.AuthenticationUtil;
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
+import cloud.fogbow.common.util.CryptoUtil;
+import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
@@ -167,5 +171,9 @@ public class ApplicationFacade {
     
     public void setAsPublicKey(RSAPublicKey asPublicKey) {
         this.asPublicKey = asPublicKey;
+    }
+
+    public String getPublicKey() throws InternalServerErrorException, GeneralSecurityException {
+        return CryptoUtil.toBase64(ServiceAsymmetricKeysHolder.getInstance().getPublicKey());
     }
 }
