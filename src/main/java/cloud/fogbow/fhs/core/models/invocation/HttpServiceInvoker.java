@@ -14,19 +14,19 @@ import cloud.fogbow.fhs.core.models.ServiceResponse;
 public abstract class HttpServiceInvoker implements ServiceInvoker {
     abstract List<String> preparePath(List<String> path);
     abstract Map<String, String> prepareHeaders(Map<String, String> headers) throws FogbowException;
-    abstract Map<String, String> prepareBody(Map<String, String> body)  throws FogbowException;
+    abstract Map<String, Object> prepareBody(Map<String, Object> body)  throws FogbowException;
     abstract ServiceResponse prepareResponse(HttpResponse response)  throws FogbowException;
     
     @Override
     public ServiceResponse invoke(FederationUser user, String endpoint, HttpMethod method, List<String> path,
-            Map<String, String> headers, Map<String, String> body) throws FogbowException {
+            Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         List<String> preparedPath = preparePath(path);
         Map<String, String> preparedHeaders = prepareHeaders(headers);
-        Map<String, String> preparedBody = prepareBody(body);
+        Map<String, Object> preparedBody = prepareBody(body);
         
         String completeEndpoint = endpoint + "/" + String.join("/", preparedPath);
         
-        HttpResponse response = HttpRequestClient.doGenericRequest(method, completeEndpoint, 
+        HttpResponse response = HttpRequestClient.doGenericRequestGenericBody(method, completeEndpoint, 
                 preparedHeaders, preparedBody);
         return prepareResponse(response);
     }

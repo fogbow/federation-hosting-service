@@ -6,13 +6,13 @@ import java.util.Map;
 public class RequestData {
     private List<String> path;
     private Map<String, String> headers;
-    private Map<String, String> body;
+    private Map<String, Object> body;
     
     public RequestData() {
         
     }
     
-    public RequestData(List<String> path, Map<String, String> headers, Map<String, String> body) {
+    public RequestData(List<String> path, Map<String, String> headers, Map<String, Object> body) {
         this.path = path;
         this.headers = headers;
         this.body = body;
@@ -26,7 +26,7 @@ public class RequestData {
         return headers;
     }
 
-    public Map<String, String> getBody() {
+    public Map<String, Object> getBody() {
         return body;
     }    
 }

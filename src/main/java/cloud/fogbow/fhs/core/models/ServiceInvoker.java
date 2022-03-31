@@ -9,5 +9,5 @@ import cloud.fogbow.common.exceptions.FogbowException;
 public interface ServiceInvoker {
     String getName();
     ServiceResponse invoke(FederationUser user, String endpoint, HttpMethod method, List<String> path,
-            Map<String, String> headers, Map<String, String> body) throws FogbowException;
+            Map<String, String> headers, Map<String, Object> body) throws FogbowException;
 }

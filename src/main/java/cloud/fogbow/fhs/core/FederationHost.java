@@ -208,7 +208,7 @@ public class FederationHost {
     }
     
     public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
-            List<String> path, Map<String, String> headers, Map<String, String> body) throws FogbowException {
+            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         // TODO should check if user is authorized
         Federation federation = lookUpFederationById(federationId);
         FederationService service = federation.getService(serviceId);

@@ -149,7 +149,7 @@ public class ApplicationFacade {
     }
     
     public RequestResponse invocation(String userToken, String federationId, String serviceId, HttpMethod method,
-            List<String> path, Map<String, String> headers, Map<String, String> body) throws FogbowException {
+            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.INVOKE));
         

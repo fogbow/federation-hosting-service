@@ -468,9 +468,9 @@ public class FederationHostTest {
         setUpFederationData();
 
         this.federationHost.invokeService(REGULAR_USER_ID_1, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET, 
-                new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, String>());
+                new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, Object>());
         
         Mockito.verify(service1).invoke(user1, HttpMethod.GET, new ArrayList<String>(), 
-                new HashMap<String, String>(), new HashMap<String, String>());
+                new HashMap<String, String>(), new HashMap<String, Object>());
     }
 }

@@ -56,7 +56,7 @@ public class FederationService {
     }
     
     public ServiceResponse invoke(FederationUser user, HttpMethod method, 
-            List<String> path, Map<String, String> headers, Map<String, String> body) throws FogbowException {
+            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         return this.invoker.invoke(user, endpoint, method, path, headers, body);
     }
 

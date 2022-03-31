@@ -81,7 +81,7 @@ public class ApplicationFacadeTest {
     private static final Integer RESPONSE_CODE = 200;
     private static final List<String> PATH = new ArrayList<String>();
     private static final Map<String, String> HEADERS = new HashMap<String, String>();
-    private static final Map<String, String> BODY = new HashMap<String, String>();
+    private static final Map<String, Object> BODY = new HashMap<String, Object>();
     private static final Map<String, String> RESPONSE_DATA = new HashMap<String, String>();
     
     private ApplicationFacade applicationFacade;

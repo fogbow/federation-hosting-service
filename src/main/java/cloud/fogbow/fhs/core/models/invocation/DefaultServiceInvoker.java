@@ -28,8 +28,8 @@ public class DefaultServiceInvoker extends HttpServiceInvoker {
     }
 
     @Override
-    Map<String, String> prepareBody(Map<String, String> body) {
-        return body;
+    Map<String, Object> prepareBody(Map<String, Object> body) {
+        return new HashMap<String, Object>(body);
     }
 
     @Override
