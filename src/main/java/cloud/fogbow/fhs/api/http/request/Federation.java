@@ -38,7 +38,7 @@ public class Federation {
         // TODO constant
         LOGGER.info("Receiving create federation request");
         FederationId federationId = ApplicationFacade.getInstance().createFederation(systemUserToken, federationSpec.getName(), 
-                federationSpec.getDescription(), federationSpec.getEnabled());
+                federationSpec.getMetadata(), federationSpec.getDescription(), federationSpec.getEnabled());
         return new ResponseEntity<>(federationId, HttpStatus.OK);
     }
     

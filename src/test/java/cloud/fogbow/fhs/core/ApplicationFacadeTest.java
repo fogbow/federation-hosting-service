@@ -56,6 +56,7 @@ public class ApplicationFacadeTest {
     private static final String FEDERATION_ID_2 = "federationId2";
     private static final String FEDERATION_NAME_1 = "federationName1";
     private static final String FEDERATION_NAME_2 = "federationName2";
+    private static final Map<String, String> FEDERATION_METADATA_1 = new HashMap<String, String>();
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription1";
     private static final String FEDERATION_DESCRIPTION_2 = "federationDescription2";
     private static final boolean FEDERATION_ENABLED_1 = true;
@@ -170,7 +171,7 @@ public class ApplicationFacadeTest {
         Mockito.when(this.federationHost.addFederationAdmin(ADMIN_NAME, ADMIN_EMAIL, 
                 ADMIN_DESCRIPTION, ADMIN_ENABLED)).thenReturn(ADMIN_ID);
         Mockito.when(this.federationHost.createFederation(ADMIN_NAME, FEDERATION_NAME_1, 
-                FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1)).thenReturn(federation1);
+                FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1)).thenReturn(federation1);
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME, ADMIN_NAME)).
                 thenReturn(Arrays.asList(federation1, federation2));
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2, ADMIN_NAME_2)).thenReturn(Arrays.asList());
@@ -210,14 +211,14 @@ public class ApplicationFacadeTest {
     @Test
     public void testCreateFederation() throws FogbowException {
         FederationId federationId = this.applicationFacade.createFederation(TOKEN_1, FEDERATION_NAME_1, 
-                FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+                FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
 
         assertEquals(FEDERATION_ID_1, federationId.getId());
         assertEquals(FEDERATION_NAME_1, federationId.getName());
         assertEquals(FEDERATION_ENABLED_1, federationId.isEnabled());
         
         Mockito.verify(this.federationHost).createFederation(ADMIN_NAME, FEDERATION_NAME_1, 
-                FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+                FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     

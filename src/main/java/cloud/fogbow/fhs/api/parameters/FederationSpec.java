@@ -1,8 +1,11 @@
 package cloud.fogbow.fhs.api.parameters;
 
+import java.util.Map;
+
 public class FederationSpec {
     
     private String name;
+    private Map<String, String> metadata;
     private String description;
     private boolean enabled;
     
@@ -20,5 +23,9 @@ public class FederationSpec {
 
     public boolean getEnabled() {
         return enabled;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 }

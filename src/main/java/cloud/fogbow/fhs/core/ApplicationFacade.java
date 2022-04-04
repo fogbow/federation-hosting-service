@@ -14,6 +14,7 @@ import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
 import cloud.fogbow.common.util.CryptoUtil;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
+import cloud.fogbow.fhs.api.http.response.CloudCredentials;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
@@ -60,10 +61,10 @@ public class ApplicationFacade {
         return this.federationHost.addFederationAdmin(adminName, adminEmail, adminDescription, enabled);
     }
     
-    public FederationId createFederation(String userToken, String name, String description, boolean enabled) throws FogbowException {
+    public FederationId createFederation(String userToken, String name, Map<String, String> metadata, String description, boolean enabled) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.CREATE_FEDERATION));
-        Federation createdFederation = this.federationHost.createFederation(requestUser.getId(), name, description, enabled);
+        Federation createdFederation = this.federationHost.createFederation(requestUser.getId(), name, metadata, description, enabled);
         return new FederationId(createdFederation.getName(), createdFederation.getId(), createdFederation.enabled());
     }
     
@@ -155,6 +156,13 @@ public class ApplicationFacade {
         
         ServiceResponse response = this.federationHost.invokeService(requestUser.getId(), federationId, serviceId, method, path, headers, body);
         return new RequestResponse(response.getCode(), response.getResponse());
+    }
+    
+    public CloudCredentials map(String userToken, String federationId, String cloudName) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.MAP));
+        Map<String, String> credentialsMap = this.federationHost.map(federationId, cloudName);
+        return new CloudCredentials(credentialsMap);
     }
     
     private SystemUser authenticate(String userToken) throws FogbowException {

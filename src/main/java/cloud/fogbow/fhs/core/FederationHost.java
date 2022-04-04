@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
@@ -90,7 +92,8 @@ public class FederationHost {
         return null;
     }
     
-    public Federation createFederation(String requester, String federationName, String description, boolean enabled) 
+    public Federation createFederation(String requester, String federationName, Map<String, String> metadata, 
+            String description, boolean enabled) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         
@@ -99,7 +102,7 @@ public class FederationHost {
             throw new InvalidParameterException();
         }
         
-        Federation federation = new Federation(requester, federationName, description, enabled);
+        Federation federation = new Federation(requester, federationName, metadata, description, enabled);
         federationList.add(federation);
         return federation;
     }
@@ -346,5 +349,13 @@ public class FederationHost {
     
     public void updateRemoteFederation(Federation federation) {
         // TODO implement
+    }
+
+    public Map<String, String> map(String federationId, String cloudName) {
+        Federation federation = lookUpFederationById(federationId);
+        Map<String, String> metadata = federation.getMetadata();
+        // TODO constant
+        Map<String, Map<String, String>> credentials = new Gson().fromJson(metadata.get("credentials"), Map.class);
+        return credentials.get(cloudName);
     }
 }

@@ -40,6 +40,7 @@ public class FederationHostTest {
     private static final String FEDERATION_ID_2 = "federationId2";
     private static final String FEDERATION_ID_3 = "federationId3";
     private static final String FEDERATION_NAME_1 = "federation1";
+    private static final Map<String, String> FEDERATION_METADATA_1 = new HashMap<String, String>();
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription1";
     private static final boolean FEDERATION_ENABLED_1 = true;
     private static final String USER_ID_TO_GRANT_MEMBERSHIP = "userIdToGrantMembership";
@@ -211,7 +212,8 @@ public class FederationHostTest {
     public void testCreateFederation() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        Federation federation = this.federationHost.createFederation(ADMIN_NAME_1, FEDERATION_NAME_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+        Federation federation = this.federationHost.createFederation(ADMIN_NAME_1, FEDERATION_NAME_1, 
+                FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
         
         assertEquals(ADMIN_NAME_1, federation.getOwner());
         assertEquals(FEDERATION_NAME_1, federation.getName());
@@ -225,21 +227,24 @@ public class FederationHostTest {
     public void testNonAdminUserCannotCreateFederation() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.createFederation(REGULAR_USER_NAME_1, FEDERATION_NAME_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+        this.federationHost.createFederation(REGULAR_USER_NAME_1, FEDERATION_NAME_1, FEDERATION_METADATA_1, 
+                FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationWithNullName() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.createFederation(ADMIN_NAME_1, null, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+        this.federationHost.createFederation(ADMIN_NAME_1, null, FEDERATION_METADATA_1, 
+                FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationWithEmptyName() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.createFederation(ADMIN_NAME_1, "", FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+        this.federationHost.createFederation(ADMIN_NAME_1, "", FEDERATION_METADATA_1, 
+                FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
     @Test(expected = InvalidParameterException.class)

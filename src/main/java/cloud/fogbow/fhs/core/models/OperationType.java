@@ -10,7 +10,8 @@ public enum OperationType {
     GET_SERVICES("getServices"), 
     GET_SERVICE("getService"), 
     DISCOVER_SERVICES("discoverServices"), 
-    INVOKE("invoke");
+    INVOKE("invoke"),
+    MAP("map");
 
     private String value;
     

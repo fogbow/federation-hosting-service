@@ -2,6 +2,7 @@ package cloud.fogbow.fhs.core.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Federation {
@@ -12,21 +13,26 @@ public class Federation {
     private boolean enabled;
     private List<FederationUser> members;
     private List<FederationService> services;
+    private Map<String, String> metadata;
     
-    public Federation(String owner, String name, String description, boolean enabled) {
-        this(UUID.randomUUID().toString(), owner, name, description, enabled);
+    public Federation(String owner, String name, Map<String, String> metadata, 
+            String description, boolean enabled) {
+        this(UUID.randomUUID().toString(), owner, name, metadata, description, enabled);
     }
     
-    public Federation(String id, String owner, String name, String description, boolean enabled) {
-        this(id, owner, name, description, enabled, new ArrayList<FederationUser>(), 
+    public Federation(String id, String owner, String name, Map<String, String> metadata, 
+            String description, boolean enabled) {
+        this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
                 new ArrayList<FederationService>());
     }
     
-    public Federation(String id, String owner, String name, String description, boolean enabled, 
+    public Federation(String id, String owner, String name, Map<String, String> metadata, 
+            String description, boolean enabled, 
             List<FederationUser> members, List<FederationService> services) {
         this.id = id;
         this.owner = owner;
         this.name = name;
+        this.metadata = metadata;
         this.description = description;
         this.enabled = enabled;
         this.members = members;
@@ -102,5 +108,9 @@ public class Federation {
         }
         
         return authorizedServices;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 }
