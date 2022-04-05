@@ -25,6 +25,7 @@ import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.models.ServiceInvoker;
 import cloud.fogbow.fhs.core.models.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.models.invocation.ServiceInvokerInstantiator;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
 public class FederationHostTest {
@@ -40,7 +41,6 @@ public class FederationHostTest {
     private static final String FEDERATION_ID_2 = "federationId2";
     private static final String FEDERATION_ID_3 = "federationId3";
     private static final String FEDERATION_NAME_1 = "federation1";
-    private static final Map<String, String> FEDERATION_METADATA_1 = new HashMap<String, String>();
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription1";
     private static final boolean FEDERATION_ENABLED_1 = true;
     private static final String USER_ID_TO_GRANT_MEMBERSHIP = "userIdToGrantMembership";
@@ -65,6 +65,12 @@ public class FederationHostTest {
     private static final Map<String, String> SERVICE_METADATA_1 = new HashMap<String, String>();
     private static final Map<String, String> SERVICE_METADATA_2 = new HashMap<String, String>();
     private static final Map<String, String> SERVICE_METADATA_3 = new HashMap<String, String>();
+    private static final String CLOUD_NAME = "cloudName";
+    private static final String CREDENTIALS_STRING = "credentialsString";
+    private static final String CREDENTIAL_KEY_1 = "credentialKey1";
+    private static final String CREDENTIAL_VALUE_1 = "credentialValue1";
+    private static final String CREDENTIAL_KEY_2 = "credentialKey2";
+    private static final String CREDENTIAL_VALUE_2 = "credentialValue2";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -76,6 +82,9 @@ public class FederationHostTest {
     private Federation federation3;
     private List<FederationUser> adminList;
     private List<Federation> federationList;
+    private Map<String, String> federationMetadata;
+    private Map<String, Map<String, String>> credentialsMap;
+    private Map<String, String> credentialsMapCloud1;
     private FederationService service1;
     private FederationService service2;
     private FederationService service3;
@@ -83,6 +92,7 @@ public class FederationHostTest {
     private ServiceDiscoveryPolicy discoveryPolicy1;
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
+    private JsonUtils jsonUtils;
     
     private void setUpFederationData() {
         this.invoker = Mockito.mock(ServiceInvoker.class);
@@ -101,6 +111,15 @@ public class FederationHostTest {
         
         this.serviceInvokerInstantiator = Mockito.mock(ServiceInvokerInstantiator.class);
         Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1, FEDERATION_ID_1)).thenReturn(invoker);
+        
+        this.federationMetadata = new HashMap<String, String>();
+        this.federationMetadata.put(FederationHost.CREDENTIALS_METADATA_KEY, 
+                CREDENTIALS_STRING);
+        this.credentialsMapCloud1 = new HashMap<String, String>();
+        this.credentialsMapCloud1.put(CREDENTIAL_KEY_1, CREDENTIAL_VALUE_1);
+        this.credentialsMapCloud1.put(CREDENTIAL_KEY_2, CREDENTIAL_VALUE_2);
+        this.credentialsMap = new HashMap<String, Map<String, String>>();
+        this.credentialsMap.put(CLOUD_NAME, this.credentialsMapCloud1);
         
         this.service1 = Mockito.mock(FederationService.class);
         Mockito.when(this.service1.getServiceId()).thenReturn(SERVICE_ID_1);
@@ -138,6 +157,7 @@ public class FederationHostTest {
         Mockito.when(federation1.getServices()).thenReturn(Arrays.asList(service1, service2, service3));
         Mockito.when(federation1.getAuthorizedServices(REGULAR_USER_ID_1)).thenReturn(authorizedServices);
         Mockito.when(federation1.getMemberList()).thenReturn(Arrays.asList(user1, user2));
+        Mockito.when(federation1.getMetadata()).thenReturn(federationMetadata);
         
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
@@ -150,7 +170,10 @@ public class FederationHostTest {
         this.adminList = TestUtils.getMockedList(admin1, admin2);
         this.federationList = TestUtils.getMockedList(federation1, federation2, federation3);
         
-        this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, discoveryPolicyInstantiator);
+        this.jsonUtils = Mockito.mock(JsonUtils.class);
+        Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);
+        
+        this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, discoveryPolicyInstantiator, jsonUtils);
     }
     
     @Before
@@ -213,7 +236,7 @@ public class FederationHostTest {
         setUpFederationData();
 
         Federation federation = this.federationHost.createFederation(ADMIN_NAME_1, FEDERATION_NAME_1, 
-                FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
+                federationMetadata, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
         
         assertEquals(ADMIN_NAME_1, federation.getOwner());
         assertEquals(FEDERATION_NAME_1, federation.getName());
@@ -227,7 +250,7 @@ public class FederationHostTest {
     public void testNonAdminUserCannotCreateFederation() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.createFederation(REGULAR_USER_NAME_1, FEDERATION_NAME_1, FEDERATION_METADATA_1, 
+        this.federationHost.createFederation(REGULAR_USER_NAME_1, FEDERATION_NAME_1, federationMetadata, 
                 FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
@@ -235,7 +258,7 @@ public class FederationHostTest {
     public void testCannotCreateFederationWithNullName() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.createFederation(ADMIN_NAME_1, null, FEDERATION_METADATA_1, 
+        this.federationHost.createFederation(ADMIN_NAME_1, null, federationMetadata, 
                 FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
@@ -243,7 +266,7 @@ public class FederationHostTest {
     public void testCannotCreateFederationWithEmptyName() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.createFederation(ADMIN_NAME_1, "", FEDERATION_METADATA_1, 
+        this.federationHost.createFederation(ADMIN_NAME_1, "", federationMetadata, 
                 FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
@@ -477,5 +500,14 @@ public class FederationHostTest {
         
         Mockito.verify(service1).invoke(user1, HttpMethod.GET, new ArrayList<String>(), 
                 new HashMap<String, String>(), new HashMap<String, Object>());
+    }
+    
+    @Test
+    public void testMap() {
+        setUpFederationData();
+        
+        Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME);
+        
+        assertEquals(credentialsMapCloud1, responseCredentials);
     }
 }

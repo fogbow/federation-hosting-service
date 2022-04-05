@@ -84,6 +84,8 @@ public class ApplicationFacadeTest {
     private static final Map<String, String> HEADERS = new HashMap<String, String>();
     private static final Map<String, Object> BODY = new HashMap<String, Object>();
     private static final Map<String, String> RESPONSE_DATA = new HashMap<String, String>();
+    private static final String CLOUD_NAME = "cloudName";
+    private static final Map<String, String> CREDENTIALS = new HashMap<String, String>();
     
     private ApplicationFacade applicationFacade;
     private FhsPublicKeysHolder publicKeysHolder;
@@ -188,6 +190,7 @@ public class ApplicationFacadeTest {
                 thenReturn(Arrays.asList(federationService, federationService2));
         Mockito.when(this.federationHost.invokeService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ID_1, 
                 HttpMethod.GET, PATH, HEADERS, BODY)).thenReturn(new DefaultServiceResponse(RESPONSE_CODE, RESPONSE_DATA));
+        Mockito.when(this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME)).thenReturn(CREDENTIALS);
         
         applicationFacade = ApplicationFacade.getInstance();
         
@@ -342,6 +345,16 @@ public class ApplicationFacadeTest {
         
         Mockito.verify(this.federationHost).invokeService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ID_1, 
                 HttpMethod.GET, PATH, HEADERS, BODY);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testMap() throws FogbowException {
+        Map<String, String> response = this.applicationFacade.map(TOKEN_1, FEDERATION_ID_1, CLOUD_NAME);
+        
+        assertEquals(response, CREDENTIALS);
+        
+        Mockito.verify(this.federationHost).map(FEDERATION_ID_1, CLOUD_NAME);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
 }

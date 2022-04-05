@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
-
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
@@ -22,20 +20,25 @@ import cloud.fogbow.fhs.core.models.discovery.AllowAllServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.models.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.models.invocation.DefaultServiceInvoker;
 import cloud.fogbow.fhs.core.models.invocation.ServiceInvokerInstantiator;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 public class FederationHost {
+    public static final String CREDENTIALS_METADATA_KEY = "credentials";
+    
     private List<FederationUser> federationAdminList;
     private List<Federation> federationList;
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
+    private JsonUtils jsonUtils;
     
     public FederationHost(List<FederationUser> federationAdminList, 
             List<Federation> federationList, ServiceInvokerInstantiator serviceInvokerInstantiator,
-            DiscoveryPolicyInstantiator discoveryPolicyInstantiator) {
+            DiscoveryPolicyInstantiator discoveryPolicyInstantiator, JsonUtils jsonUtils) {
         this.federationAdminList = federationAdminList;
         this.federationList = federationList;
         this.serviceInvokerInstantiator = serviceInvokerInstantiator;
         this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
+        this.jsonUtils = jsonUtils;
     }
     
     public FederationHost() {
@@ -43,6 +46,7 @@ public class FederationHost {
         this.federationList = new ArrayList<Federation>();
         this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
         this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
+        this.jsonUtils = new JsonUtils();
     }
     
     public String addFederationAdmin(String adminName, String adminEmail, 
@@ -354,8 +358,8 @@ public class FederationHost {
     public Map<String, String> map(String federationId, String cloudName) {
         Federation federation = lookUpFederationById(federationId);
         Map<String, String> metadata = federation.getMetadata();
-        // TODO constant
-        Map<String, Map<String, String>> credentials = new Gson().fromJson(metadata.get("credentials"), Map.class);
+        Map<String, Map<String, String>> credentials = 
+                this.jsonUtils.fromJson(metadata.get(CREDENTIALS_METADATA_KEY), Map.class);
         return credentials.get(cloudName);
     }
 }
