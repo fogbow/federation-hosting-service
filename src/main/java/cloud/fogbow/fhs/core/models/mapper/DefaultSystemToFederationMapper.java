@@ -2,6 +2,7 @@ package cloud.fogbow.fhs.core.models.mapper;
 
 import cloud.fogbow.fhs.core.models.SystemToFederationMapper;
 
+// TODO test
 public class DefaultSystemToFederationMapper implements SystemToFederationMapper {
 
     private String federationId;

@@ -12,6 +12,7 @@ import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
 
+// TODO test
 public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOperation>{
 
     private List<String> fhsOperatorUserIds;

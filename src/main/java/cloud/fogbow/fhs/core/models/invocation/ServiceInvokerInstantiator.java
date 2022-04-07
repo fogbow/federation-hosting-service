@@ -6,6 +6,7 @@ import cloud.fogbow.fhs.core.FhsClassFactory;
 import cloud.fogbow.fhs.core.models.ServiceInvoker;
 import cloud.fogbow.fhs.core.utils.MapUtils;
 
+// TODO test
 public class ServiceInvokerInstantiator {
     private FhsClassFactory classFactory;
     

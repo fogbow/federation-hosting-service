@@ -118,6 +118,7 @@ public class FederationHost {
         }
     }
 
+    // TODO test
     public Federation getFederation(String requester, String federationId) throws InvalidParameterException, UnauthorizedRequestException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId); 
@@ -326,6 +327,7 @@ public class FederationHost {
         }
 
         // TODO add message
+        // TODO test
         throw new InvalidParameterException();
     }
     

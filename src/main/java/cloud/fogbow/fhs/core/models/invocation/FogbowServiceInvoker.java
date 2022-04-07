@@ -18,6 +18,7 @@ import cloud.fogbow.fhs.core.models.ServiceResponse;
 import cloud.fogbow.fhs.core.models.response.DefaultServiceResponse;
 import cloud.fogbow.fhs.core.utils.MapUtils;
 
+// TODO test
 public class FogbowServiceInvoker extends HttpServiceInvoker {
     private static final String RESPONSE_CONTENT_KEY = "content";
     private String serviceType;

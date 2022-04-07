@@ -3,6 +3,7 @@ package cloud.fogbow.fhs.core.models.discovery;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
 
+// TODO test
 public class AllowAllServiceDiscoveryPolicy implements ServiceDiscoveryPolicy {
 
     @Override

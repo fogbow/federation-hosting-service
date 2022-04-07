@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+// TODO test
 public class Federation {
     private String id;
     private String owner;
