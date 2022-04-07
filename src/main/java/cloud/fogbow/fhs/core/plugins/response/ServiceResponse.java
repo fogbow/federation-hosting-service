@@ -1,4 +1,4 @@
-package cloud.fogbow.fhs.core.models;
+package cloud.fogbow.fhs.core.plugins.response;
 
 import java.util.Map;
 

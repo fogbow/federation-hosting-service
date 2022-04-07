@@ -36,9 +36,9 @@ import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
-import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
-import cloud.fogbow.fhs.core.models.ServiceInvoker;
-import cloud.fogbow.fhs.core.models.response.DefaultServiceResponse;
+import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
+import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
 
 // TODO add checks to authorization
 @RunWith(PowerMockRunner.class)

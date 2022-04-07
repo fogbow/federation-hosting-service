@@ -13,13 +13,13 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
-import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
-import cloud.fogbow.fhs.core.models.ServiceInvoker;
-import cloud.fogbow.fhs.core.models.ServiceResponse;
-import cloud.fogbow.fhs.core.models.discovery.AllowAllServiceDiscoveryPolicy;
-import cloud.fogbow.fhs.core.models.discovery.DiscoveryPolicyInstantiator;
-import cloud.fogbow.fhs.core.models.invocation.DefaultServiceInvoker;
-import cloud.fogbow.fhs.core.models.invocation.ServiceInvokerInstantiator;
+import cloud.fogbow.fhs.core.plugins.discovery.AllowAllServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
+import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.plugins.invocation.DefaultServiceInvoker;
+import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
+import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 public class FederationHost {

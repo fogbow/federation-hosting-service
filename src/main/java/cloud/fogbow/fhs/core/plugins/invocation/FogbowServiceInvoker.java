@@ -1,4 +1,4 @@
-package cloud.fogbow.fhs.core.models.invocation;
+package cloud.fogbow.fhs.core.plugins.invocation;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -14,8 +14,8 @@ import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.common.util.connectivity.HttpResponse;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.core.FhsPublicKeysHolder;
-import cloud.fogbow.fhs.core.models.ServiceResponse;
-import cloud.fogbow.fhs.core.models.response.DefaultServiceResponse;
+import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 import cloud.fogbow.fhs.core.utils.MapUtils;
 
 // TODO test

@@ -1,6 +1,6 @@
-package cloud.fogbow.fhs.core;
+package cloud.fogbow.fhs.core.plugins.mapper;
 
-import cloud.fogbow.fhs.core.models.SystemToFederationMapper;
+import cloud.fogbow.fhs.core.FhsClassFactory;
 
 public class SystemToFederationMapperInstantiator {
 

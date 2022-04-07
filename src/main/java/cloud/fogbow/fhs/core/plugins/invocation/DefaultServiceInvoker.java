@@ -1,12 +1,12 @@
-package cloud.fogbow.fhs.core.models.invocation;
+package cloud.fogbow.fhs.core.plugins.invocation;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import cloud.fogbow.common.util.connectivity.HttpResponse;
-import cloud.fogbow.fhs.core.models.ServiceResponse;
-import cloud.fogbow.fhs.core.models.response.DefaultServiceResponse;
+import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public class DefaultServiceInvoker extends HttpServiceInvoker {
     private static final String INVOKER_NAME = "DefaultServiceInvoker";

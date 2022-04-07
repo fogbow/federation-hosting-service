@@ -1,8 +1,6 @@
-package cloud.fogbow.fhs.core.models.response;
+package cloud.fogbow.fhs.core.plugins.response;
 
 import java.util.Map;
-
-import cloud.fogbow.fhs.core.models.ServiceResponse;
 
 public class DefaultServiceResponse implements ServiceResponse {
     private int code;

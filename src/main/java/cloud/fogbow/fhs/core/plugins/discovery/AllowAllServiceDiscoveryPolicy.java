@@ -1,7 +1,6 @@
-package cloud.fogbow.fhs.core.models.discovery;
+package cloud.fogbow.fhs.core.plugins.discovery;
 
 import cloud.fogbow.fhs.core.models.FederationUser;
-import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
 
 // TODO test
 public class AllowAllServiceDiscoveryPolicy implements ServiceDiscoveryPolicy {

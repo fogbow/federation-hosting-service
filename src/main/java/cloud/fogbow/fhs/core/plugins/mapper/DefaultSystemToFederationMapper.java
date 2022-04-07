@@ -1,6 +1,4 @@
-package cloud.fogbow.fhs.core.models.mapper;
-
-import cloud.fogbow.fhs.core.models.SystemToFederationMapper;
+package cloud.fogbow.fhs.core.plugins.mapper;
 
 // TODO test
 public class DefaultSystemToFederationMapper implements SystemToFederationMapper {

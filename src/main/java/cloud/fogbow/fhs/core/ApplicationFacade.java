@@ -27,7 +27,7 @@ import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
-import cloud.fogbow.fhs.core.models.ServiceResponse;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public class ApplicationFacade {
 

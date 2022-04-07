@@ -21,10 +21,10 @@ import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
-import cloud.fogbow.fhs.core.models.ServiceDiscoveryPolicy;
-import cloud.fogbow.fhs.core.models.ServiceInvoker;
-import cloud.fogbow.fhs.core.models.discovery.DiscoveryPolicyInstantiator;
-import cloud.fogbow.fhs.core.models.invocation.ServiceInvokerInstantiator;
+import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
+import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
+import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 

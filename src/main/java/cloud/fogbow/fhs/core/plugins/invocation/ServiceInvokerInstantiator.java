@@ -1,9 +1,8 @@
-package cloud.fogbow.fhs.core.models.invocation;
+package cloud.fogbow.fhs.core.plugins.invocation;
 
 import java.util.Map;
 
 import cloud.fogbow.fhs.core.FhsClassFactory;
-import cloud.fogbow.fhs.core.models.ServiceInvoker;
 import cloud.fogbow.fhs.core.utils.MapUtils;
 
 // TODO test

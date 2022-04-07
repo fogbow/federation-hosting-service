@@ -7,6 +7,9 @@ import java.util.UUID;
 
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
+import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public class FederationService {
     private String serviceId;

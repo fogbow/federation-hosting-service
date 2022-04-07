@@ -1,4 +1,4 @@
-package cloud.fogbow.fhs.core.models.invocation;
+package cloud.fogbow.fhs.core.plugins.invocation;
 
 import java.util.List;
 import java.util.Map;
@@ -8,8 +8,7 @@ import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.util.connectivity.HttpRequestClient;
 import cloud.fogbow.common.util.connectivity.HttpResponse;
 import cloud.fogbow.fhs.core.models.FederationUser;
-import cloud.fogbow.fhs.core.models.ServiceInvoker;
-import cloud.fogbow.fhs.core.models.ServiceResponse;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public abstract class HttpServiceInvoker implements ServiceInvoker {
     abstract List<String> preparePath(List<String> path);
