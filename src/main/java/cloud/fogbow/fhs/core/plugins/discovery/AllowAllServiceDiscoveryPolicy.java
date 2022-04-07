@@ -2,8 +2,8 @@ package cloud.fogbow.fhs.core.plugins.discovery;
 
 import cloud.fogbow.fhs.core.models.FederationUser;
 
-// TODO test
 public class AllowAllServiceDiscoveryPolicy implements ServiceDiscoveryPolicy {
+    private static final String ALLOW_ALL_DISCOVERY_POLICY_NAME = "allowall";
 
     @Override
     public boolean isDiscoverableBy(FederationUser user) {
@@ -12,7 +12,6 @@ public class AllowAllServiceDiscoveryPolicy implements ServiceDiscoveryPolicy {
 
     @Override
     public String getName() {
-        // FIXME constant
-        return "allowall";
+        return ALLOW_ALL_DISCOVERY_POLICY_NAME;
     }
 }

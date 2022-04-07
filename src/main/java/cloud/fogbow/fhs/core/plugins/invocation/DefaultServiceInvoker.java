@@ -9,8 +9,8 @@ import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public class DefaultServiceInvoker extends HttpServiceInvoker {
+    public static final String RESPONSE_CONTENT_KEY = "content";
     private static final String INVOKER_NAME = "DefaultServiceInvoker";
-    private static final String RESPONSE_CONTENT_KEY = "content";
 
     @Override
     public String getName() {
@@ -29,7 +29,7 @@ public class DefaultServiceInvoker extends HttpServiceInvoker {
 
     @Override
     Map<String, Object> prepareBody(Map<String, Object> body) {
-        return new HashMap<String, Object>(body);
+        return body;
     }
 
     @Override
