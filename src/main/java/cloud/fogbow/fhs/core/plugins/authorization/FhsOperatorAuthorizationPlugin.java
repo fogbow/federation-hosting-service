@@ -3,44 +3,55 @@ package cloud.fogbow.fhs.core.plugins.authorization;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.google.common.annotations.VisibleForTesting;
+
 import cloud.fogbow.common.constants.FogbowConstants;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
+import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
+import cloud.fogbow.fhs.constants.Messages;
+import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
 
-// TODO test
 public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOperation>{
-
+    public static final List<OperationType> OPERATOR_ONLY_OPERATIONS = 
+            Arrays.asList(OperationType.ADD_FED_ADMIN);
+    public static final List<OperationType> OTHER_SERVICES_ADMIN_ONLY_OPERATIONS = 
+            Arrays.asList(OperationType.MAP);
     private List<String> fhsOperatorUserIds;
     private List<String> otherServicesAdminIds;
-    private static final List<OperationType> OPERATOR_ONLY_OPERATIONS = Arrays.asList(OperationType.ADD_FED_ADMIN);
-    private static final List<OperationType> OTHER_SERVICES_ADMIN_ONLY_OPERATIONS = Arrays.asList(OperationType.MAP);
+    
+    public FhsOperatorAuthorizationPlugin(List<String> fhsOperatorUserIds, 
+            List<String> otherServicesAdminIds) {
+        this.fhsOperatorUserIds = fhsOperatorUserIds;
+        this.otherServicesAdminIds = otherServicesAdminIds;
+    }
     
     public FhsOperatorAuthorizationPlugin() throws ConfigurationErrorException {
-        // TODO constant
-        String operatorIdsListString = PropertiesHolder.getInstance().getProperty("operator_ids");
+        String operatorIdsListString = PropertiesHolder.getInstance().getProperty(
+                ConfigurationPropertyKeys.OPERATOR_IDS_KEY);
         
         if (operatorIdsListString.isEmpty()) {
-            // TODO constant
-            throw new ConfigurationErrorException("no operator defined in the configuration file");
+            throw new ConfigurationErrorException(Messages.Exception.NO_OPERATOR_ID_SPECIFIED);
         } else {
-            // TODO constant
-            this.fhsOperatorUserIds = Arrays.asList(operatorIdsListString.split(","));
+            this.fhsOperatorUserIds = Arrays.asList(operatorIdsListString.split(
+                    SystemConstants.OPERATOR_IDS_SEPARATOR));
         }
         
-        // TODO constant
-        String otherServiceAdminString = PropertiesHolder.getInstance().getProperty("other_services_admin_ids");
+        String otherServiceAdminsString = PropertiesHolder.getInstance().getProperty(
+                ConfigurationPropertyKeys.OTHER_SERVICES_ADMIN_IDS_KEY);
         
-        if (otherServiceAdminString.isEmpty()) {
-            // TODO constant
-            throw new ConfigurationErrorException("no services admins defined in the configuration file");
+        if (otherServiceAdminsString.isEmpty()) {
+            throw new ConfigurationErrorException(Messages.Exception.NO_OTHER_SERVICE_ADMIN_ID_SPECIFIED);
         } else {
-            // TODO constant
-            this.otherServicesAdminIds = Arrays.asList(operatorIdsListString.split(","));
+            this.otherServicesAdminIds = Arrays.asList(otherServiceAdminsString.split(
+                    SystemConstants.OTHER_SERVICES_ADMIN_IDS_SEPARATOR));
         }
     }
     
@@ -69,9 +80,19 @@ public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOp
     }
     
     private String removeFederationInfo(String userId) {
-        return userId.split(FogbowConstants.FEDERATION_ID_SEPARATOR)[0];
+        return StringUtils.splitByWholeSeparator(userId, FogbowConstants.FEDERATION_ID_SEPARATOR)[0];
     }
 
+    @VisibleForTesting
+    List<String> getFhsOperatorUserIds() {
+        return this.fhsOperatorUserIds;
+    }
+    
+    @VisibleForTesting
+    List<String> getOtherServicesAdminIds() {
+        return this.otherServicesAdminIds;
+    }
+    
     @Override
     public void setPolicy(String policy) throws ConfigurationErrorException {
         // TODO implement

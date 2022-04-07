@@ -9,4 +9,7 @@ public class ConfigurationPropertyKeys {
     public static final String AS_PRIVATE_KEY_FILE_PATH = "as_private_key_file_path";
     public static final String RAS_URL_KEY = "ras_url";
     public static final String RAS_PORT_KEY = "ras_port";
+    
+    public static final String OPERATOR_IDS_KEY = "operator_ids";
+    public static final String OTHER_SERVICES_ADMIN_IDS_KEY = "other_services_admin_ids";
 }
