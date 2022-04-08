@@ -1,6 +1,7 @@
 package cloud.fogbow.fhs.core.plugins.invocation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +44,11 @@ public class DefaultServiceInvokerTest {
         pathToPrepare.add(PATH_1);
         pathToPrepare.add(PATH_2);
         
-        assertEquals(pathToPrepare, this.serviceInvoker.preparePath(pathToPrepare));
+        List<String> preparedPath = this.serviceInvoker.preparePath(pathToPrepare);
+        
+        assertEquals(2, preparedPath.size());
+        assertTrue(preparedPath.contains(PATH_1));
+        assertTrue(preparedPath.contains(PATH_2));
     }
     
     @Test
@@ -54,7 +59,11 @@ public class DefaultServiceInvokerTest {
         bodyToPrepare.put("bodyKey1", "bodyValue1");
         bodyToPrepare.put("bodyKey2", "bodyValue2");
         
-        assertEquals(bodyToPrepare, this.serviceInvoker.prepareBody(bodyToPrepare));
+        Map<String, Object> preparedBody = this.serviceInvoker.prepareBody(bodyToPrepare); 
+        
+        assertEquals(2, preparedBody.size());
+        assertEquals("bodyValue1", preparedBody.get("bodyKey1"));
+        assertEquals("bodyValue2", preparedBody.get("bodyKey2"));
     }
     
     @Test
@@ -65,7 +74,11 @@ public class DefaultServiceInvokerTest {
         headersToPrepare.put("headerKey1", "headerValue1");
         headersToPrepare.put("headerKey2", "headerValue2");
         
-        assertEquals(headersToPrepare, this.serviceInvoker.prepareHeaders(headersToPrepare));
+        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headersToPrepare); 
+        
+        assertEquals(2, preparedHeaders.size());
+        assertEquals("headerValue1", preparedHeaders.get("headerKey1"));
+        assertEquals("headerValue2", preparedHeaders.get("headerKey2"));
     }
     
     @Test
