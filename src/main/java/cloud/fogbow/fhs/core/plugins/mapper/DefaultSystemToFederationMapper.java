@@ -1,6 +1,5 @@
 package cloud.fogbow.fhs.core.plugins.mapper;
 
-// TODO test
 public class DefaultSystemToFederationMapper implements SystemToFederationMapper {
 
     private String federationId;

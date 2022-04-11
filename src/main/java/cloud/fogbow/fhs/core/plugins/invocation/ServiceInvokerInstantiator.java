@@ -2,21 +2,31 @@ package cloud.fogbow.fhs.core.plugins.invocation;
 
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import cloud.fogbow.fhs.core.FhsClassFactory;
 import cloud.fogbow.fhs.core.utils.MapUtils;
 
-// TODO test
 public class ServiceInvokerInstantiator {
+    @VisibleForTesting
+    static final String FEDERATION_ID_KEY = "federationId";
+
     private FhsClassFactory classFactory;
+    private MapUtils mapUtils;
     
+    public ServiceInvokerInstantiator(FhsClassFactory classFactory, MapUtils mapUtils) {
+        this.classFactory = classFactory;
+        this.mapUtils = mapUtils;
+    }
+
     public ServiceInvokerInstantiator() {
         this.classFactory = new FhsClassFactory();
+        this.mapUtils = new MapUtils();
     }
     
     public ServiceInvoker getInvoker(String className, Map<String, String> metadata, String federationId) {
-        // FIXME constant
-        metadata.put("federationId", federationId);
+        metadata.put(FEDERATION_ID_KEY, federationId);
         return (ServiceInvoker) this.classFactory.createPluginInstance(className, 
-                new MapUtils().serializeMap(metadata));
+                this.mapUtils.serializeMap(metadata));
     }
 }
