@@ -149,7 +149,8 @@ public class FederationHostTest {
         
         this.federation1 = Mockito.mock(Federation.class);
         Mockito.when(federation1.getId()).thenReturn(FEDERATION_ID_1);
-        Mockito.when(federation1.getUser(REGULAR_USER_ID_1)).thenReturn(user1);
+        Mockito.when(federation1.getUserById(REGULAR_USER_NAME_1)).thenReturn(user1);
+        Mockito.when(federation1.getUserByMemberId(REGULAR_USER_ID_1)).thenReturn(user1);
         Mockito.when(federation1.getOwner()).thenReturn(ADMIN_NAME_1);
         Mockito.when(federation1.getService(SERVICE_ID_1)).thenReturn(service1);
         Mockito.when(federation1.getService(SERVICE_ID_2)).thenReturn(service2);
@@ -495,7 +496,7 @@ public class FederationHostTest {
     public void testInvokeService() throws FogbowException {
         setUpFederationData();
 
-        this.federationHost.invokeService(REGULAR_USER_ID_1, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET, 
+        this.federationHost.invokeService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET, 
                 new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, Object>());
         
         Mockito.verify(service1).invoke(user1, HttpMethod.GET, new ArrayList<String>(), 

@@ -95,8 +95,8 @@ public class FederationTest {
     
     @Test
     public void testGetUser() throws InvalidParameterException {
-        FederationUser returnedFederationUser1 = this.federation.getUser(FEDERATION_USER_ID_1);
-        FederationUser returnedFederationUser2 = this.federation.getUser(FEDERATION_USER_ID_2);
+        FederationUser returnedFederationUser1 = this.federation.getUserByMemberId(FEDERATION_USER_ID_1);
+        FederationUser returnedFederationUser2 = this.federation.getUserByMemberId(FEDERATION_USER_ID_2);
         
         assertEquals(this.federationUser1, returnedFederationUser1);
         assertEquals(this.federationUser2, returnedFederationUser2);
@@ -104,7 +104,7 @@ public class FederationTest {
     
     @Test(expected = InvalidParameterException.class)
     public void testGetUserUserDoesNotBelongToFederation() throws InvalidParameterException {
-        this.federation.getUser(NOT_REGISTERED_USER_ID);
+        this.federation.getUserByMemberId(NOT_REGISTERED_USER_ID);
     }
     
     @Test

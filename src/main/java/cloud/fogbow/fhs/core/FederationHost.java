@@ -215,7 +215,7 @@ public class FederationHost {
         // TODO should check if user is authorized
         Federation federation = lookUpFederationById(federationId);
         FederationService service = federation.getService(serviceId);
-        return service.invoke(federation.getUser(requester), method, path, headers, body);
+        return service.invoke(federation.getUserById(requester), method, path, headers, body);
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
@@ -245,7 +245,7 @@ public class FederationHost {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsOwner(requester, federation);
-        return federation.getUser(memberId);
+        return federation.getUserByMemberId(memberId);
     }
     
     public void revokeMembership(String federationId, String memberId) {

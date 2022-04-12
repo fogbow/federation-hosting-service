@@ -49,7 +49,18 @@ public class Federation {
         return newMember;
     }
 
-    public FederationUser getUser(String memberId) throws InvalidParameterException {
+    public FederationUser getUserById(String userId) throws InvalidParameterException {
+        for (FederationUser member : members) {
+            if (member.getName().equals(userId)) {
+                return member;
+            }
+        }
+        
+        throw new InvalidParameterException(
+                String.format(Messages.Exception.MEMBER_NOT_FOUND_IN_FEDERATION, userId, this.id));
+    }
+    
+    public FederationUser getUserByMemberId(String memberId) throws InvalidParameterException {
         for (FederationUser member : members) {
             if (member.getMemberId().equals(memberId)) {
                 return member;
@@ -105,7 +116,7 @@ public class Federation {
     
     public List<FederationService> getAuthorizedServices(String memberId) throws InvalidParameterException {
         List<FederationService> authorizedServices = new ArrayList<FederationService>();
-        FederationUser user = getUser(memberId);
+        FederationUser user = getUserByMemberId(memberId);
         
         for (FederationService service : this.services) {
             if (service.isDiscoverableBy(user)) {
