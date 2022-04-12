@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 
@@ -33,9 +34,13 @@ public class Discovery {
             @PathVariable String federationId,
             @PathVariable String memberId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving discover services request");
-        List<ServiceDiscovered> serviceId = ApplicationFacade.getInstance().discoverServices(systemUserToken, federationId, memberId);
-        return new ResponseEntity<>(serviceId, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.DISCOVER_SERVICES_RECEIVED);
+            List<ServiceDiscovered> serviceId = ApplicationFacade.getInstance().discoverServices(systemUserToken, federationId, memberId);
+            return new ResponseEntity<>(serviceId, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }

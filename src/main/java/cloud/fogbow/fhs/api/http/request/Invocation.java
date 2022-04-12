@@ -16,6 +16,7 @@ import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.RequestResponse;
 import cloud.fogbow.fhs.api.parameters.RequestData;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 
@@ -35,11 +36,15 @@ public class Invocation {
             @PathVariable String serviceId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
             @RequestBody RequestData requestData) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving invoke get request");
-        RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.GET, 
-                requestData.getPath(), requestData.getHeaders(), requestData.getBody());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.INVOKE_GET_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.GET, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
     
     @RequestMapping(value = "/{federationId}/{serviceId}", method = RequestMethod.POST)
@@ -48,11 +53,15 @@ public class Invocation {
             @PathVariable String serviceId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
             @RequestBody RequestData requestData) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving invoke post request");
-        RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.POST, 
-                requestData.getPath(), requestData.getHeaders(), requestData.getBody());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.INVOKE_POST_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.POST, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
     
     @RequestMapping(value = "/{federationId}/{serviceId}", method = RequestMethod.PUT)
@@ -61,11 +70,15 @@ public class Invocation {
             @PathVariable String serviceId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
             @RequestBody RequestData requestData) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving invoke put request");
-        RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.PUT, 
-                requestData.getPath(), requestData.getHeaders(), requestData.getBody());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.INVOKE_PUT_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.PUT, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
     
     @RequestMapping(value = "/{federationId}/{serviceId}", method = RequestMethod.DELETE)
@@ -74,10 +87,14 @@ public class Invocation {
             @PathVariable String serviceId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
             @RequestBody RequestData requestData) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving invoke delete request");
-        RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.DELETE, 
-                requestData.getPath(), requestData.getHeaders(), requestData.getBody());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.INVOKE_DELETE_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.DELETE, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }

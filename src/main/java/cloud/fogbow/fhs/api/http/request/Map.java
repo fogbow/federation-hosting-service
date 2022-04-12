@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 
@@ -30,9 +31,13 @@ public class Map {
             @PathVariable String federationId,
             @PathVariable String cloudName,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving map request");
-        java.util.Map<String, String> credentials = ApplicationFacade.getInstance().map(systemUserToken, federationId, cloudName);
-        return new ResponseEntity<>(credentials, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.MAP_RECEIVED);
+            java.util.Map<String, String> credentials = ApplicationFacade.getInstance().map(systemUserToken, federationId, cloudName);
+            return new ResponseEntity<>(credentials, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }

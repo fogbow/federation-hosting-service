@@ -99,8 +99,8 @@ public class Federation {
             }
         }
         
-        // TODO add message
-        throw new InvalidParameterException();
+        throw new InvalidParameterException(
+                String.format(Messages.Log.CANNOT_FIND_SERVICE, serviceId));
     }
     
     public List<FederationService> getAuthorizedServices(String memberId) throws InvalidParameterException {

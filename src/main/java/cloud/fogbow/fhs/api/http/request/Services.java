@@ -18,6 +18,7 @@ import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
 import cloud.fogbow.fhs.api.parameters.Service;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 
@@ -36,12 +37,16 @@ public class Services {
             @PathVariable String federationId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken,
             @RequestBody Service service) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving register service request");
-        ServiceId serviceId = ApplicationFacade.getInstance().registerService(systemUserToken, federationId, 
-                service.getOwnerId(), service.getEndpoint(), service.getMetadata(), service.getDiscoveryPolicy(), 
-                service.getAccessPolicy());
-        return new ResponseEntity<>(serviceId, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.REGISTER_SERVICE_RECEIVED);
+            ServiceId serviceId = ApplicationFacade.getInstance().registerService(systemUserToken, federationId, 
+                    service.getOwnerId(), service.getEndpoint(), service.getMetadata(), service.getDiscoveryPolicy(), 
+                    service.getAccessPolicy());
+            return new ResponseEntity<>(serviceId, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
     
     @RequestMapping(value = "/{federationId}/{ownerId}", method = RequestMethod.GET)
@@ -49,10 +54,14 @@ public class Services {
             @PathVariable String federationId,
             @PathVariable String ownerId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving get services request");
-        List<ServiceId> serviceId = ApplicationFacade.getInstance().getServices(systemUserToken, federationId, ownerId);
-        return new ResponseEntity<>(serviceId, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.GET_SERVICES_RECEIVED);
+            List<ServiceId> serviceId = ApplicationFacade.getInstance().getServices(systemUserToken, federationId, ownerId);
+            return new ResponseEntity<>(serviceId, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 
     @RequestMapping(value = "/{federationId}/{ownerId}/{serviceId}", method = RequestMethod.GET)
@@ -61,10 +70,14 @@ public class Services {
             @PathVariable String ownerId,
             @PathVariable String serviceId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving get service request");
-        ServiceInfo serviceInfo = ApplicationFacade.getInstance().getService(systemUserToken, federationId, 
-                ownerId, serviceId);
-        return new ResponseEntity<>(serviceInfo, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.GET_SERVICE_RECEIVED);
+            ServiceInfo serviceInfo = ApplicationFacade.getInstance().getService(systemUserToken, federationId, 
+                    ownerId, serviceId);
+            return new ResponseEntity<>(serviceInfo, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }

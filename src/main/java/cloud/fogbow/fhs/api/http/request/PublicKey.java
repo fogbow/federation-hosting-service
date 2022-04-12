@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import cloud.fogbow.common.constants.ApiDocumentation;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 import io.swagger.annotations.Api;
@@ -28,13 +29,12 @@ public class PublicKey {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<cloud.fogbow.ras.api.http.response.PublicKey> getPublicKey() throws Exception {
         try {
-            // FIXME constant
-            LOGGER.info("Received get public key request");
+            LOGGER.info(Messages.Log.GET_PUBLIC_KEY);
             String publicKeyValue = ApplicationFacade.getInstance().getPublicKey();
             cloud.fogbow.ras.api.http.response.PublicKey publicKey = new cloud.fogbow.ras.api.http.response.PublicKey(publicKeyValue);
             return new ResponseEntity<>(publicKey, HttpStatus.OK);
         } catch (Exception e) {
-            // TODO log
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
             throw e;
         }
     }

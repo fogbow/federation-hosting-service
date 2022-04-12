@@ -18,6 +18,7 @@ import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
 import cloud.fogbow.fhs.api.http.response.MemberId;
 import cloud.fogbow.fhs.api.parameters.FederationUser;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 
@@ -36,19 +37,27 @@ public class Membership {
             @PathVariable String federationId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken,
             @RequestBody FederationUser federationUser) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving grant membership request");
-        MemberId memberId = ApplicationFacade.getInstance().grantMembership(systemUserToken, federationId, federationUser.getName());
-        return new ResponseEntity<>(memberId, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.GRANT_MEMBERSHIP_RECEIVED);
+            MemberId memberId = ApplicationFacade.getInstance().grantMembership(systemUserToken, federationId, federationUser.getName());
+            return new ResponseEntity<>(memberId, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
     
     @RequestMapping(value = "/{federationId}", method = RequestMethod.GET)
     public ResponseEntity<List<FederationMember>> listMembers(
             @PathVariable String federationId,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving list members request");
-        List<FederationMember> members = ApplicationFacade.getInstance().listMembers(systemUserToken, federationId);
-        return new ResponseEntity<>(members, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.LIST_MEMBERS_RECEIVED);
+            List<FederationMember> members = ApplicationFacade.getInstance().listMembers(systemUserToken, federationId);
+            return new ResponseEntity<>(members, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }

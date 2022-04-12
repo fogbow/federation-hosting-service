@@ -8,6 +8,7 @@ import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
@@ -50,13 +51,11 @@ public class FederationHost {
     public String addFederationAdmin(String adminName, String adminEmail, 
             String adminDescription, boolean enabled) throws InvalidParameterException {
         if (adminName == null || adminName.isEmpty()) {
-            // TODO add message
-            throw new InvalidParameterException();
+            throw new InvalidParameterException(Messages.Exception.ADMIN_NAME_CANNOT_BE_NULL_OR_EMPTY);
         }
         
         if (lookUpAdminByName(adminName) != null) {
-            // TODO add message
-            throw new InvalidParameterException();
+            throw new InvalidParameterException(Messages.Exception.ADMIN_ALREADY_EXISTS);
         }
         
         FederationUser newAdmin = new FederationUser(adminName, adminEmail, adminDescription, enabled);
@@ -100,8 +99,7 @@ public class FederationHost {
         checkIfRequesterIsFedAdmin(requester);
         
         if (federationName == null || federationName.isEmpty()) {
-            // TODO add message
-            throw new InvalidParameterException();
+            throw new InvalidParameterException(Messages.Exception.FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY);
         }
         
         Federation federation = new Federation(requester, federationName, metadata, description, enabled);
@@ -111,8 +109,7 @@ public class FederationHost {
 
     private void checkIfRequesterIsFedAdmin(String requester) throws UnauthorizedRequestException {
         if (lookUpAdminByName(requester) == null) {
-            // TODO add message
-            throw new UnauthorizedRequestException();
+            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_ADMIN);
         }
     }
 
@@ -127,8 +124,8 @@ public class FederationHost {
         Federation federation = lookUpFederationById(federationId);
         
         if (federation == null) {
-            // TODO add message
-            throw new InvalidParameterException();
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.CANNOT_FIND_FEDERATION, federationId));
         }
         
         return federation;
@@ -263,13 +260,13 @@ public class FederationHost {
         checkIfRequesterIsOwner(requester, federation);
         
         if (owner == null || owner.isEmpty()) {
-            // TODO add message
-            throw new InvalidParameterException();
+            throw new InvalidParameterException(
+                    Messages.Exception.SERVICE_OWNER_CANNOT_BE_NULL_OR_EMPTY);
         }
         
         if (endpoint == null || endpoint.isEmpty()) {
-            // TODO add message
-            throw new InvalidParameterException();
+            throw new InvalidParameterException(
+                    Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
         }
         
         ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);

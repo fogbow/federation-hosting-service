@@ -14,9 +14,9 @@ import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.MemberId;
 import cloud.fogbow.fhs.api.parameters.FederationUser;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
-
 
 // TODO documentation
 @CrossOrigin
@@ -32,10 +32,14 @@ public class FhsOperator {
     public ResponseEntity<MemberId> addFedAdmin(
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken,
             @RequestBody FederationUser fedAdmin) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving add federation admin request");
-        String memberId = ApplicationFacade.getInstance().addFederationAdmin(systemUserToken, fedAdmin.getName(), 
-                fedAdmin.getEmail(), fedAdmin.getDescription(), fedAdmin.getEnabled());
-        return new ResponseEntity<>(new MemberId(memberId), HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.ADD_FEDERATION_ADMIN_RECEIVED);
+            String memberId = ApplicationFacade.getInstance().addFederationAdmin(systemUserToken, fedAdmin.getName(), 
+                    fedAdmin.getEmail(), fedAdmin.getDescription(), fedAdmin.getEnabled());
+            return new ResponseEntity<>(new MemberId(memberId), HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }

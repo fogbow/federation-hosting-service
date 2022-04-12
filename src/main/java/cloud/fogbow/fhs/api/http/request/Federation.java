@@ -18,6 +18,7 @@ import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
 import cloud.fogbow.fhs.api.parameters.FederationOwner;
 import cloud.fogbow.fhs.api.parameters.FederationSpec;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
 
@@ -35,20 +36,28 @@ public class Federation {
     public ResponseEntity<FederationId> createFederation(
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken,
             @RequestBody FederationSpec federationSpec) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving create federation request");
-        FederationId federationId = ApplicationFacade.getInstance().createFederation(systemUserToken, federationSpec.getName(), 
-                federationSpec.getMetadata(), federationSpec.getDescription(), federationSpec.getEnabled());
-        return new ResponseEntity<>(federationId, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.CREATE_FEDERATION_RECEIVED);
+            FederationId federationId = ApplicationFacade.getInstance().createFederation(systemUserToken, federationSpec.getName(), 
+                    federationSpec.getMetadata(), federationSpec.getDescription(), federationSpec.getEnabled());
+            return new ResponseEntity<>(federationId, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
     
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<FederationDescription>> getFederations(
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken,
             @RequestBody FederationOwner federationOwner) throws FogbowException {
-        // TODO constant
-        LOGGER.info("Receiving get federations request");
-        List<FederationDescription> federationDescription = ApplicationFacade.getInstance().listFederations(systemUserToken, federationOwner.getOwner());
-        return new ResponseEntity<>(federationDescription, HttpStatus.OK);
+        try {
+            LOGGER.info(Messages.Log.GET_FEDERATIONS_RECEIVED);
+            List<FederationDescription> federationDescription = ApplicationFacade.getInstance().listFederations(systemUserToken, federationOwner.getOwner());
+            return new ResponseEntity<>(federationDescription, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
     }
 }
