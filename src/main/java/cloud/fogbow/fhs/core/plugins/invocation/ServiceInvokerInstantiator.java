@@ -25,8 +25,12 @@ public class ServiceInvokerInstantiator {
     }
     
     public ServiceInvoker getInvoker(String className, Map<String, String> metadata, String federationId) {
-        metadata.put(FEDERATION_ID_KEY, federationId);
-        return (ServiceInvoker) this.classFactory.createPluginInstance(className, 
-                this.mapUtils.serializeMap(metadata));
+        if (className == null || className.isEmpty()) {
+            return new DefaultServiceInvoker();
+        } else {
+            metadata.put(FEDERATION_ID_KEY, federationId);
+            return (ServiceInvoker) this.classFactory.createPluginInstance(className, 
+                    this.mapUtils.serializeMap(metadata));
+        }
     }
 }

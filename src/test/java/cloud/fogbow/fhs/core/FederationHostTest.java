@@ -94,7 +94,7 @@ public class FederationHostTest {
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
     private JsonUtils jsonUtils;
     
-    private void setUpFederationData() {
+    private void setUpFederationData() throws InvalidParameterException {
         this.invoker = Mockito.mock(ServiceInvoker.class);
         
         this.admin1 = new FederationUser(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
@@ -469,7 +469,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testGetOwnedFederations() throws UnauthorizedRequestException {
+    public void testGetOwnedFederations() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
         List<Federation> federationsAdmin1 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1, ADMIN_NAME_1);
@@ -485,7 +485,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGetOwnedFederations() throws UnauthorizedRequestException {
+    public void testNonAdminUserCannotGetOwnedFederations() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
         this.federationHost.getFederationsOwnedByUser(REGULAR_USER_ID_1, ADMIN_NAME_1);
@@ -503,7 +503,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testMap() {
+    public void testMap() throws InvalidParameterException {
         setUpFederationData();
         
         Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME);

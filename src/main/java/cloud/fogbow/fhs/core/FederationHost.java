@@ -13,10 +13,8 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
-import cloud.fogbow.fhs.core.plugins.discovery.AllowAllServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
-import cloud.fogbow.fhs.core.plugins.invocation.DefaultServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
@@ -176,7 +174,7 @@ public class FederationHost {
         // TODO implement
     }
     
-    public List<FederationService> getAuthorizedServices(String requester, String federationId, String memberId) {
+    public List<FederationService> getAuthorizedServices(String requester, String federationId, String memberId) throws InvalidParameterException {
         Federation federation = lookUpFederationById(federationId);
         return federation.getAuthorizedServices(memberId);
     }
@@ -274,29 +272,13 @@ public class FederationHost {
             throw new InvalidParameterException();
         }
         
-        ServiceDiscoveryPolicy discoveryPolicy = getDiscoveryPolicy(discoveryPolicyClassName);
-        ServiceInvoker invoker = getInvoker(invokerClassName, metadata, federationId);
+        ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
+        ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
         FederationService service = new FederationService(owner, endpoint, discoveryPolicy, invoker, metadata);
         
         federation.registerService(service);
         
         return service.getServiceId();
-    }
-
-    private ServiceInvoker getInvoker(String invokerClassName, Map<String, String> metadata, String federationId) {
-        if (invokerClassName == null || invokerClassName.isEmpty()) {
-            return new DefaultServiceInvoker();
-        } else {
-            return this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
-        }
-    }
-
-    private ServiceDiscoveryPolicy getDiscoveryPolicy(String discoveryPolicyClassName) {
-        if (discoveryPolicyClassName == null || discoveryPolicyClassName.isEmpty()) {
-            return new AllowAllServiceDiscoveryPolicy();
-        } else {
-            return this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
-        }
     }
 
     public List<String> getOwnedServices(String requester, String federationId, String ownerId) throws UnauthorizedRequestException, InvalidParameterException {

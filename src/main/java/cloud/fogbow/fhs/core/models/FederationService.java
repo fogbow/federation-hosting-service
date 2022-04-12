@@ -62,6 +62,10 @@ public class FederationService {
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         return this.invoker.invoke(user, endpoint, method, path, headers, body);
     }
+    
+    public boolean isDiscoverableBy(FederationUser user) {
+        return this.discoveryPolicy.isDiscoverableBy(user);
+    }
 
     @Override
     public int hashCode() {

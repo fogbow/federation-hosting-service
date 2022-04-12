@@ -9,7 +9,15 @@ public class DiscoveryPolicyInstantiator {
         this.classFactory = new FhsClassFactory();
     }
     
+    public DiscoveryPolicyInstantiator(FhsClassFactory classFactory) {
+        this.classFactory = classFactory;
+    }
+    
     public ServiceDiscoveryPolicy getDiscoveryPolicy(String discoveryPolicyClassName, String ... args) {
-        return (ServiceDiscoveryPolicy) this.classFactory.createPluginInstance(discoveryPolicyClassName, args);
+        if (discoveryPolicyClassName == null || discoveryPolicyClassName.isEmpty()) {
+            return new AllowAllServiceDiscoveryPolicy();
+        } else {
+            return (ServiceDiscoveryPolicy) this.classFactory.createPluginInstance(discoveryPolicyClassName, args);
+        }
     }
 }

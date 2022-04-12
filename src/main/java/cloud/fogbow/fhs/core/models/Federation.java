@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-// TODO test
+import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.fhs.constants.Messages;
+
 public class Federation {
     private String id;
     private String owner;
@@ -40,21 +42,22 @@ public class Federation {
         this.services = services;
     }
 
+    // FIXME should receive email and description
     public FederationUser addUser(String userId) {
         FederationUser newMember = new FederationUser(userId, "", "", true);
         this.members.add(newMember);
         return newMember;
     }
 
-    public FederationUser getUser(String memberId) {
+    public FederationUser getUser(String memberId) throws InvalidParameterException {
         for (FederationUser member : members) {
             if (member.getMemberId().equals(memberId)) {
                 return member;
             }
         }
         
-        // FIXME should throw exception
-        return null;
+        throw new InvalidParameterException(
+                String.format(Messages.Exception.MEMBER_NOT_FOUND_IN_FEDERATION, memberId, this.id));
     }
 
     public String getOwner() {
@@ -89,21 +92,23 @@ public class Federation {
         return this.services;
     }
 
-    public FederationService getService(String serviceId) {
+    public FederationService getService(String serviceId) throws InvalidParameterException {
         for (FederationService service : this.services) {
             if (service.getServiceId().equals(serviceId)) {
                 return service;
             }
         }
-        // FIXME should throw exception
-        return null;
+        
+        // TODO add message
+        throw new InvalidParameterException();
     }
     
-    public List<FederationService> getAuthorizedServices(String memberId) {
+    public List<FederationService> getAuthorizedServices(String memberId) throws InvalidParameterException {
         List<FederationService> authorizedServices = new ArrayList<FederationService>();
+        FederationUser user = getUser(memberId);
         
         for (FederationService service : this.services) {
-            if (service.getDiscoveryPolicy().isDiscoverableBy(getUser(memberId))) {
+            if (service.isDiscoverableBy(user)) {
                 authorizedServices.add(service);
             }
         }
