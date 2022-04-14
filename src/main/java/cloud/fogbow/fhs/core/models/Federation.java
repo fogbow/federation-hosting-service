@@ -9,6 +9,8 @@ import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.constants.Messages;
 
 public class Federation {
+    private static final String SERVICE_OWNER_ATTRIBUTE_NAME = "serviceOwner";
+    
     private String id;
     private String owner;
     private String name;
@@ -16,7 +18,9 @@ public class Federation {
     private boolean enabled;
     private List<FederationUser> members;
     private List<FederationService> services;
+    private List<FederationAttribute> attributes;
     private Map<String, String> metadata;
+    private FederationAttribute serviceOwnerAttribute;
     
     public Federation(String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled) {
@@ -26,12 +30,16 @@ public class Federation {
     public Federation(String id, String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled) {
         this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
-                new ArrayList<FederationService>());
+                new ArrayList<FederationService>(), new ArrayList<FederationAttribute>());
+        
+        this.serviceOwnerAttribute = new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME);
+        this.attributes.add(serviceOwnerAttribute);
     }
     
     public Federation(String id, String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled, 
-            List<FederationUser> members, List<FederationService> services) {
+            List<FederationUser> members, List<FederationService> services, 
+            List<FederationAttribute> attributes) {
         this.id = id;
         this.owner = owner;
         this.name = name;
@@ -40,6 +48,7 @@ public class Federation {
         this.enabled = enabled;
         this.members = members;
         this.services = services;
+        this.attributes = attributes;
     }
 
     // FIXME should receive email and description
@@ -126,7 +135,36 @@ public class Federation {
         
         return authorizedServices;
     }
+    
+    public String createAttribute(String attributeName) {
+        FederationAttribute newAttribute = new FederationAttribute(attributeName);
+        this.attributes.add(newAttribute);
+        return newAttribute.getId();
+    }
 
+    public List<FederationAttribute> getAttributes() {
+        return this.attributes;
+    }
+
+    // TODO test
+    public void grantAttribute(String memberId, String attributeId) throws InvalidParameterException {
+        // FIXME check if attribute exists
+        FederationUser user = getUserByMemberId(memberId);
+        user.addAttribute(attributeId);
+    }
+    
+    // TODO test
+    public void revokeAttribute(String memberId, String attributeId) throws InvalidParameterException {
+        FederationUser user = getUserByMemberId(memberId);
+        user.removeAttribute(attributeId);
+    }
+
+    // TODO test
+    public boolean isServiceOwner(String requester) throws InvalidParameterException {
+        FederationUser user = getUserById(requester);
+        return user.getAttributes().contains(this.serviceOwnerAttribute.getId());
+    }
+    
     public Map<String, String> getMetadata() {
         return metadata;
     }

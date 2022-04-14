@@ -14,6 +14,7 @@ import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
 import cloud.fogbow.common.util.CryptoUtil;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
+import cloud.fogbow.fhs.api.http.response.AttributeDescription;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
@@ -23,6 +24,7 @@ import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
 import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
@@ -98,10 +100,43 @@ public class ApplicationFacade {
         
         for (FederationUser member : members) {
             memberIds.add(new FederationMember(member.getMemberId(), member.getName(), 
-                    member.getEmail(), member.getDescription(), member.isEnabled()));
+                    member.getEmail(), member.getDescription(), member.isEnabled(), member.getAttributes()));
         }
         
         return memberIds;
+    }
+    
+    public AttributeDescription createAttribute(String userToken, String federationId, String attributeName) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.CREATE_ATTRIBUTE));
+        String attributeId = this.federationHost.createAttribute(requestUser.getId(), federationId, attributeName);
+        return new AttributeDescription(attributeId, attributeName);
+    }
+
+    public List<AttributeDescription> getFederationAttributes(String userToken, String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_ATTRIBUTES));
+        List<FederationAttribute> attributes = this.federationHost.getFederationAttributes(requestUser.getId(), federationId);
+        List<AttributeDescription> attributesDescriptions = new ArrayList<AttributeDescription>();
+        
+        for (FederationAttribute attribute : attributes) {
+            attributesDescriptions.add(new AttributeDescription(attribute.getId(), attribute.getName()));
+        }
+        
+        return attributesDescriptions;
+    }
+
+    public void grantAttribute(String userToken, String federationId, String memberId,
+            String attributeId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GRANT_ATTRIBUTE));
+        this.federationHost.grantAttribute(requestUser.getId(), federationId, memberId, attributeId);
+    }
+    
+    public void revokeAttribute(String userToken, String federationId, String memberId, String attributeId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.REVOKE_ATTRIBUTE));
+        this.federationHost.revokeAttribute(requestUser.getId(), federationId, memberId, attributeId);
     }
 
     public ServiceId registerService(String userToken, String federationId, String ownerId, String endpoint,

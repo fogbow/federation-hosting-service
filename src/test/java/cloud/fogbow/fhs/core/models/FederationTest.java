@@ -36,6 +36,7 @@ public class FederationTest {
     private static final String FEDERATION_SERVICE_ID_2 = "federationServiceId2";
     private List<FederationUser> federationMembers;
     private List<FederationService> federationServices;
+    private List<FederationAttribute> federationAttributes;
     private Federation federation;
     private FederationUser federationUser1;
     private FederationUser federationUser2;
@@ -66,9 +67,12 @@ public class FederationTest {
         this.federationServices.add(federationService1);
         this.federationServices.add(federationService2);
         
+        this.federationAttributes = new ArrayList<FederationAttribute>();
+        
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices);
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
     }
     
     @Test
@@ -78,7 +82,8 @@ public class FederationTest {
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices);
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
         
         List<FederationUser> federationUserListBefore = this.federation.getMemberList();
         
@@ -113,7 +118,8 @@ public class FederationTest {
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices);
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
         
         FederationService service = Mockito.mock(FederationService.class); 
 
@@ -140,7 +146,8 @@ public class FederationTest {
     public void testGetNotRegisteredService() throws InvalidParameterException {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices);
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
         
         this.federation.getService("unregisteredServiceId");
     }

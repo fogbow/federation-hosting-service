@@ -11,7 +11,11 @@ public enum OperationType {
     GET_SERVICE("getService"), 
     DISCOVER_SERVICES("discoverServices"), 
     INVOKE("invoke"),
-    MAP("map");
+    MAP("map"),
+    CREATE_ATTRIBUTE("createAttribute"),
+    GET_ATTRIBUTES("getAttributes"),
+    GRANT_ATTRIBUTE("grantAttribute"),
+    REVOKE_ATTRIBUTE("revokeAttribute");
 
     private String value;
     

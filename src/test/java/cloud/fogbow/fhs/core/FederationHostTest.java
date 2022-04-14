@@ -71,6 +71,8 @@ public class FederationHostTest {
     private static final String CREDENTIAL_VALUE_1 = "credentialValue1";
     private static final String CREDENTIAL_KEY_2 = "credentialKey2";
     private static final String CREDENTIAL_VALUE_2 = "credentialValue2";
+    private static final String SERVICE_OWNER_NAME_1 = "serviceOwner1";
+    private static final String SERVICE_OWNER_NAME_2 = "serviceOwner2";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -123,7 +125,7 @@ public class FederationHostTest {
         
         this.service1 = Mockito.mock(FederationService.class);
         Mockito.when(this.service1.getServiceId()).thenReturn(SERVICE_ID_1);
-        Mockito.when(this.service1.getOwnerId()).thenReturn(ADMIN_NAME_1);
+        Mockito.when(this.service1.getOwnerId()).thenReturn(SERVICE_OWNER_NAME_1);
         Mockito.when(this.service1.getEndpoint()).thenReturn(SERVICE_ENDPOINT_1);
         Mockito.when(this.service1.getDiscoveryPolicy()).thenReturn(discoveryPolicy1);
         Mockito.when(this.service1.getInvoker()).thenReturn(invoker);
@@ -131,7 +133,7 @@ public class FederationHostTest {
         
         this.service2 = Mockito.mock(FederationService.class);
         Mockito.when(this.service2.getServiceId()).thenReturn(SERVICE_ID_2);
-        Mockito.when(this.service2.getOwnerId()).thenReturn(ADMIN_NAME_2);
+        Mockito.when(this.service2.getOwnerId()).thenReturn(SERVICE_OWNER_NAME_2);
         Mockito.when(this.service2.getEndpoint()).thenReturn(SERVICE_ENDPOINT_2);
         Mockito.when(this.service2.getDiscoveryPolicy()).thenReturn(discoveryPolicy1);
         Mockito.when(this.service2.getInvoker()).thenReturn(invoker);
@@ -139,7 +141,7 @@ public class FederationHostTest {
         
         this.service3 = Mockito.mock(FederationService.class);
         Mockito.when(this.service3.getServiceId()).thenReturn(SERVICE_ID_3);
-        Mockito.when(this.service3.getOwnerId()).thenReturn(ADMIN_NAME_1);
+        Mockito.when(this.service3.getOwnerId()).thenReturn(SERVICE_OWNER_NAME_1);
         Mockito.when(this.service3.getEndpoint()).thenReturn(SERVICE_ENDPOINT_3);
         Mockito.when(this.service3.getDiscoveryPolicy()).thenReturn(discoveryPolicy1);
         Mockito.when(this.service3.getInvoker()).thenReturn(invoker);
@@ -159,6 +161,8 @@ public class FederationHostTest {
         Mockito.when(federation1.getAuthorizedServices(REGULAR_USER_ID_1)).thenReturn(authorizedServices);
         Mockito.when(federation1.getMemberList()).thenReturn(Arrays.asList(user1, user2));
         Mockito.when(federation1.getMetadata()).thenReturn(federationMetadata);
+        Mockito.when(federation1.isServiceOwner(SERVICE_OWNER_NAME_1)).thenReturn(true);
+        Mockito.when(federation1.isServiceOwner(SERVICE_OWNER_NAME_2)).thenReturn(true);
         
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
@@ -361,7 +365,7 @@ public class FederationHostTest {
     public void testRegisterService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
         
         Mockito.verify(this.federation1).registerService(Mockito.any(FederationService.class));
@@ -384,26 +388,10 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotRegisterServiceWithNullOwner() throws UnauthorizedRequestException, InvalidParameterException {
-        setUpFederationData();
-
-        this.federationHost.registerService(ADMIN_NAME_1, FEDERATION_ID_1, null, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
-                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
-    }
-    
-    @Test(expected = InvalidParameterException.class)
-    public void testCannotRegisterServiceWithEmptyOwner() throws UnauthorizedRequestException, InvalidParameterException {
-        setUpFederationData();
-
-        this.federationHost.registerService(ADMIN_NAME_1, FEDERATION_ID_1, "", SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
-                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
-    }
-    
-    @Test(expected = InvalidParameterException.class)
     public void testCannotRegisterServiceWithNullEndpoint() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1, null, SERVICE_METADATA_1, 
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, null, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
@@ -411,7 +399,7 @@ public class FederationHostTest {
     public void testCannotRegisterServiceWithEmptyEndpoint() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1, "", SERVICE_METADATA_1, 
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, "", SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
@@ -419,14 +407,14 @@ public class FederationHostTest {
     public void testGetOwnedServices() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        List<String> servicesOwnedByAdmin1 = this.federationHost.getOwnedServices(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1);
+        List<String> servicesOwnedByAdmin1 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1);
         assertEquals(2, servicesOwnedByAdmin1.size());
         assertTrue(servicesOwnedByAdmin1.contains(SERVICE_ID_1));
         assertTrue(servicesOwnedByAdmin1.contains(SERVICE_ID_3));
         
         setUpFederationData();
 
-        List<String> servicesOwnedByAdmin2 = this.federationHost.getOwnedServices(ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_NAME_2);
+        List<String> servicesOwnedByAdmin2 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_2, FEDERATION_ID_1, SERVICE_OWNER_NAME_2);
         assertEquals(1, servicesOwnedByAdmin2.size());
         assertTrue(servicesOwnedByAdmin2.contains(SERVICE_ID_2));
     }
@@ -442,9 +430,9 @@ public class FederationHostTest {
     public void testGetOwnedService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        FederationService federationService = this.federationHost.getOwnedService(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ID_1);
+        FederationService federationService = this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ID_1);
         assertEquals(SERVICE_ID_1, federationService.getServiceId());
-        assertEquals(ADMIN_NAME_1, federationService.getOwnerId());
+        assertEquals(SERVICE_OWNER_NAME_1, federationService.getOwnerId());
         assertEquals(SERVICE_ENDPOINT_1, federationService.getEndpoint());
         assertEquals(this.discoveryPolicy1, federationService.getDiscoveryPolicy());
         assertEquals(this.invoker, federationService.getInvoker());

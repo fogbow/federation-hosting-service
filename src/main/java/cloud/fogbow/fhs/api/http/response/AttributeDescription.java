@@ -1,20 +1,18 @@
-package cloud.fogbow.fhs.core.models;
+package cloud.fogbow.fhs.api.http.response;
 
-import java.util.UUID;
-
-public class FederationAttribute {
+public class AttributeDescription {
     private String id;
     private String name;
     
-    public FederationAttribute(String name) {
-        this.id = UUID.randomUUID().toString();
+    public AttributeDescription(String id, String name) {
+        this.id = id;
         this.name = name;
     }
-
+    
     public String getId() {
         return id;
     }
-
+    
     public String getName() {
         return name;
     }
