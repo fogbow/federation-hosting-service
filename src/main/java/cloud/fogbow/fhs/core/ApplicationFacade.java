@@ -72,7 +72,7 @@ public class ApplicationFacade {
     public List<FederationDescription> listFederations(String userToken, String owner) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.LIST_FEDERATIONS));
-        List<Federation> federationList = this.federationHost.getFederationsOwnedByUser(requestUser.getId(), owner);
+        List<Federation> federationList = this.federationHost.getFederationsOwnedByUser(requestUser.getId());
         List<FederationDescription> federationDescriptions = new ArrayList<FederationDescription>();
         for (Federation federation : federationList) {
             String id = federation.getId();
@@ -143,14 +143,14 @@ public class ApplicationFacade {
             Map<String, String> metadata, String discoveryPolicy, String accessPolicy) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.REGISTER_SERVICE));
-        String serviceId = this.federationHost.registerService(requestUser.getId(), federationId, ownerId, endpoint, metadata, discoveryPolicy, accessPolicy);
+        String serviceId = this.federationHost.registerService(requestUser.getId(), federationId, endpoint, metadata, discoveryPolicy, accessPolicy);
         return new ServiceId(serviceId);
     }
 
     public List<ServiceId> getServices(String userToken, String federationId, String ownerId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_SERVICES));
-        List<String> servicesIds = this.federationHost.getOwnedServices(requestUser.getId(), federationId, ownerId);
+        List<String> servicesIds = this.federationHost.getOwnedServices(requestUser.getId(), federationId);
         List<ServiceId> services = new ArrayList<ServiceId>();
         
         for (String serviceId : servicesIds) {
@@ -164,7 +164,7 @@ public class ApplicationFacade {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_SERVICE));
         
-        FederationService service = this.federationHost.getOwnedService(requestUser.getId(), federationId, ownerId, serviceId);
+        FederationService service = this.federationHost.getOwnedService(requestUser.getId(), federationId, serviceId);
         return new ServiceInfo(service.getServiceId(), service.getEndpoint(), service.getMetadata(), 
                 service.getDiscoveryPolicy().getName(), service.getInvoker().getName());
     }
@@ -173,7 +173,7 @@ public class ApplicationFacade {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DISCOVER_SERVICES));
         
-        List<FederationService> services = this.federationHost.getAuthorizedServices(requestUser.getId(), federationId, memberId);
+        List<FederationService> services = this.federationHost.getAuthorizedServices(requestUser.getId(), federationId);
         List<ServiceDiscovered> discoveredService = new ArrayList<ServiceDiscovered>();
         
         for (FederationService service : services) {

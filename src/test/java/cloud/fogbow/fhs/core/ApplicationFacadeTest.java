@@ -174,19 +174,19 @@ public class ApplicationFacadeTest {
                 ADMIN_DESCRIPTION, ADMIN_ENABLED)).thenReturn(ADMIN_ID);
         Mockito.when(this.federationHost.createFederation(ADMIN_NAME, FEDERATION_NAME_1, 
                 FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1)).thenReturn(federation1);
-        Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME, ADMIN_NAME)).
+        Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME)).
                 thenReturn(Arrays.asList(federation1, federation2));
-        Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2, ADMIN_NAME_2)).thenReturn(Arrays.asList());
+        Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2)).thenReturn(Arrays.asList());
         Mockito.when(this.federationHost.grantMembership(ADMIN_NAME, FEDERATION_ID_1, USER_ID_TO_ADD)).thenReturn(federationUser1);
         Mockito.when(this.federationHost.getFederationMembers(ADMIN_NAME, FEDERATION_ID_1)).
                 thenReturn(Arrays.asList(federationUser1, federationUser2));
-        Mockito.when(this.federationHost.registerService(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
+        Mockito.when(this.federationHost.registerService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME, SERVICE_ACCESS_POLICY_CLASS_NAME)).thenReturn(SERVICE_ID_1);
-        Mockito.when(this.federationHost.getOwnedServices(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME)).
+        Mockito.when(this.federationHost.getOwnedServices(ADMIN_NAME, FEDERATION_ID_1)).
                 thenReturn(Arrays.asList(SERVICE_ID_1, SERVICE_ID_2));
-        Mockito.when(this.federationHost.getOwnedService(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME, SERVICE_ID_1)).
+        Mockito.when(this.federationHost.getOwnedService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ID_1)).
                 thenReturn(federationService);
-        Mockito.when(this.federationHost.getAuthorizedServices(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME)).
+        Mockito.when(this.federationHost.getAuthorizedServices(ADMIN_NAME, FEDERATION_ID_1)).
                 thenReturn(Arrays.asList(federationService, federationService2));
         Mockito.when(this.federationHost.invokeService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ID_1, 
                 HttpMethod.GET, PATH, HEADERS, BODY)).thenReturn(new DefaultServiceResponse(RESPONSE_CODE, RESPONSE_DATA));
@@ -237,7 +237,7 @@ public class ApplicationFacadeTest {
         assertEquals(FEDERATION_ID_2, federationsDescriptions.get(1).getId());
         assertEquals(FEDERATION_DESCRIPTION_2, federationsDescriptions.get(1).getDescription());
         
-        Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME, ADMIN_NAME);
+        Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
@@ -247,7 +247,7 @@ public class ApplicationFacadeTest {
         
         assertTrue(federationsDescriptions.isEmpty());
         
-        Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME_2, ADMIN_NAME_2);
+        Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME_2);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_2));
     }
     
@@ -288,7 +288,7 @@ public class ApplicationFacadeTest {
         
         assertEquals(SERVICE_ID_1, serviceId.getServiceId());
         
-        Mockito.verify(this.federationHost).registerService(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME, SERVICE_ENDPOINT_1, 
+        Mockito.verify(this.federationHost).registerService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ENDPOINT_1, 
                 SERVICE_METADATA_1, SERVICE_DISCOVERY_POLICY_CLASS_NAME, SERVICE_ACCESS_POLICY_CLASS_NAME);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
@@ -301,7 +301,7 @@ public class ApplicationFacadeTest {
         assertEquals(SERVICE_ID_1, serviceIds.get(0).getServiceId());
         assertEquals(SERVICE_ID_2, serviceIds.get(1).getServiceId());
         
-        Mockito.verify(this.federationHost).getOwnedServices(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME);
+        Mockito.verify(this.federationHost).getOwnedServices(ADMIN_NAME, FEDERATION_ID_1);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
@@ -315,7 +315,7 @@ public class ApplicationFacadeTest {
         assertEquals(SERVICE_DISCOVERY_POLICY_CLASS_NAME, serviceInfo.getDiscoveryPolicy());
         assertEquals(SERVICE_ACCESS_POLICY_CLASS_NAME, serviceInfo.getAccessPolicy());
         
-        Mockito.verify(this.federationHost).getOwnedService(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME, SERVICE_ID_1);
+        Mockito.verify(this.federationHost).getOwnedService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ID_1);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
@@ -331,7 +331,7 @@ public class ApplicationFacadeTest {
         assertEquals(SERVICE_METADATA_2, discoveredService.get(1).getMetadata());
         assertEquals(SERVICE_ENDPOINT_2, discoveredService.get(1).getEndpoint());
         
-        Mockito.verify(this.federationHost).getAuthorizedServices(ADMIN_NAME, FEDERATION_ID_1, ADMIN_NAME);
+        Mockito.verify(this.federationHost).getAuthorizedServices(ADMIN_NAME, FEDERATION_ID_1);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     

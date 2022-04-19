@@ -154,8 +154,8 @@ public class FederationTest {
     
     @Test
     public void testGetAuthorizedServices() throws InvalidParameterException {
-        List<FederationService> authorizedServicesUser1 = this.federation.getAuthorizedServices(FEDERATION_USER_ID_1);
-        List<FederationService> authorizedServicesUser2 = this.federation.getAuthorizedServices(FEDERATION_USER_ID_2);
+        List<FederationService> authorizedServicesUser1 = this.federation.getAuthorizedServices(FEDERATION_USER_NAME_1);
+        List<FederationService> authorizedServicesUser2 = this.federation.getAuthorizedServices(FEDERATION_USER_NAME_2);
         
         assertEquals(1, authorizedServicesUser1.size());
         assertEquals(this.federationService1, authorizedServicesUser1.get(0));

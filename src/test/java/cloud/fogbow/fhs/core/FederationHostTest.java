@@ -158,7 +158,7 @@ public class FederationHostTest {
         Mockito.when(federation1.getService(SERVICE_ID_2)).thenReturn(service2);
         Mockito.when(federation1.getService(SERVICE_ID_3)).thenReturn(service3);
         Mockito.when(federation1.getServices()).thenReturn(Arrays.asList(service1, service2, service3));
-        Mockito.when(federation1.getAuthorizedServices(REGULAR_USER_ID_1)).thenReturn(authorizedServices);
+        Mockito.when(federation1.getAuthorizedServices(REGULAR_USER_NAME_1)).thenReturn(authorizedServices);
         Mockito.when(federation1.getMemberList()).thenReturn(Arrays.asList(user1, user2));
         Mockito.when(federation1.getMetadata()).thenReturn(federationMetadata);
         Mockito.when(federation1.isServiceOwner(SERVICE_OWNER_NAME_1)).thenReturn(true);
@@ -365,7 +365,7 @@ public class FederationHostTest {
     public void testRegisterService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
         
         Mockito.verify(this.federation1).registerService(Mockito.any(FederationService.class));
@@ -375,7 +375,7 @@ public class FederationHostTest {
     public void testNonAdminUserCannotRegisterService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(REGULAR_USER_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
+        this.federationHost.registerService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
@@ -383,7 +383,7 @@ public class FederationHostTest {
     public void testNonOwnerUserCannotRegisterService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
+        this.federationHost.registerService(ADMIN_NAME_2, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
@@ -391,7 +391,7 @@ public class FederationHostTest {
     public void testCannotRegisterServiceWithNullEndpoint() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, null, SERVICE_METADATA_1, 
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, null, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
@@ -399,7 +399,7 @@ public class FederationHostTest {
     public void testCannotRegisterServiceWithEmptyEndpoint() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, "", SERVICE_METADATA_1, 
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, "", SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
@@ -407,14 +407,14 @@ public class FederationHostTest {
     public void testGetOwnedServices() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        List<String> servicesOwnedByAdmin1 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1);
+        List<String> servicesOwnedByAdmin1 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_1, FEDERATION_ID_1);
         assertEquals(2, servicesOwnedByAdmin1.size());
         assertTrue(servicesOwnedByAdmin1.contains(SERVICE_ID_1));
         assertTrue(servicesOwnedByAdmin1.contains(SERVICE_ID_3));
         
         setUpFederationData();
 
-        List<String> servicesOwnedByAdmin2 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_2, FEDERATION_ID_1, SERVICE_OWNER_NAME_2);
+        List<String> servicesOwnedByAdmin2 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_2, FEDERATION_ID_1);
         assertEquals(1, servicesOwnedByAdmin2.size());
         assertTrue(servicesOwnedByAdmin2.contains(SERVICE_ID_2));
     }
@@ -423,14 +423,14 @@ public class FederationHostTest {
     public void testNonAdminUserCannotGetOwnedServices() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.getOwnedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1);
+        this.federationHost.getOwnedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
     @Test
     public void testGetOwnedService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        FederationService federationService = this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ID_1);
+        FederationService federationService = this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1);
         assertEquals(SERVICE_ID_1, federationService.getServiceId());
         assertEquals(SERVICE_OWNER_NAME_1, federationService.getOwnerId());
         assertEquals(SERVICE_ENDPOINT_1, federationService.getEndpoint());
@@ -443,14 +443,14 @@ public class FederationHostTest {
     public void testNonAdminUserCannotGetOwnedService() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.getOwnedService(REGULAR_USER_NAME_1, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ID_1);
+        this.federationHost.getOwnedService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1);
     }
     
     @Test
     public void testGetAuthorizedServices() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        List<FederationService> services = this.federationHost.getAuthorizedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1);
+        List<FederationService> services = this.federationHost.getAuthorizedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1);
         assertEquals(2, services.size());
         
         assertEquals(service1, services.get(0));
@@ -461,14 +461,14 @@ public class FederationHostTest {
     public void testGetOwnedFederations() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        List<Federation> federationsAdmin1 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1, ADMIN_NAME_1);
+        List<Federation> federationsAdmin1 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1);
         assertEquals(2, federationsAdmin1.size());
         assertTrue(federationsAdmin1.contains(federation1));
         assertTrue(federationsAdmin1.contains(federation3));
 
         setUpFederationData();
         
-        List<Federation> federationsAdmin2 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2, ADMIN_NAME_2);
+        List<Federation> federationsAdmin2 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2);
         assertEquals(1, federationsAdmin2.size());
         assertTrue(federationsAdmin2.contains(federation2));
     }
@@ -477,7 +477,7 @@ public class FederationHostTest {
     public void testNonAdminUserCannotGetOwnedFederations() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.getFederationsOwnedByUser(REGULAR_USER_ID_1, ADMIN_NAME_1);
+        this.federationHost.getFederationsOwnedByUser(REGULAR_USER_NAME_1);
     }
     
     @Test

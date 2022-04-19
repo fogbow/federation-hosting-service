@@ -123,9 +123,9 @@ public class Federation {
                 String.format(Messages.Log.CANNOT_FIND_SERVICE, serviceId));
     }
     
-    public List<FederationService> getAuthorizedServices(String memberId) throws InvalidParameterException {
+    public List<FederationService> getAuthorizedServices(String userId) throws InvalidParameterException {
         List<FederationService> authorizedServices = new ArrayList<FederationService>();
-        FederationUser user = getUserByMemberId(memberId);
+        FederationUser user = getUserById(userId);
         
         for (FederationService service : this.services) {
             if (service.isDiscoverableBy(user)) {
