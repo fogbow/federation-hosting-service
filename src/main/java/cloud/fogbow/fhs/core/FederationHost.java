@@ -22,6 +22,7 @@ import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 public class FederationHost {
+    public static final String INVOKER_CLASS_NAME_METADATA_KEY = "invokerClassName";
     public static final String CREDENTIALS_METADATA_KEY = "credentials";
     
     private List<FederationUser> federationAdminList;
@@ -265,7 +266,7 @@ public class FederationHost {
     }
     
     public String registerService(String requester, String federationId, String endpoint, Map<String, String> metadata, 
-            String discoveryPolicyClassName, String invokerClassName) throws UnauthorizedRequestException, InvalidParameterException {
+            String discoveryPolicyClassName, String accessPolicyClassName) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         if (!federation.isServiceOwner(requester)) {
             // TODO add message
@@ -278,9 +279,11 @@ public class FederationHost {
         }
         
         ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
-        ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
-        FederationService service = new FederationService(requester, endpoint, discoveryPolicy, invoker, metadata);
         
+        String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
+        ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
+        
+        FederationService service = new FederationService(requester, endpoint, discoveryPolicy, invoker, metadata);
         federation.registerService(service);
         
         return service.getServiceId();
