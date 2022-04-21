@@ -20,6 +20,7 @@ import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
@@ -78,6 +79,8 @@ public class FederationHostTest {
     private static final String CREDENTIAL_VALUE_2 = "credentialValue2";
     private static final String SERVICE_OWNER_NAME_1 = "serviceOwner1";
     private static final String SERVICE_OWNER_NAME_2 = "serviceOwner2";
+    private static final String ATTRIBUTE_NAME_1 = "attributeName1";
+    private static final String ATTRIBUTE_ID_1 = "attributeId1";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -102,6 +105,8 @@ public class FederationHostTest {
     private AccessPolicyInstantiator accessPolicyInstantiator;
     private JsonUtils jsonUtils;
     private ServiceAccessPolicy accessPolicy;
+    private FederationAttribute federationAttribute1;
+    private FederationAttribute federationAttribute2;
     
     private void setUpFederationData() throws InvalidParameterException {
         this.invoker = Mockito.mock(ServiceInvoker.class);
@@ -136,6 +141,9 @@ public class FederationHostTest {
         this.credentialsMapCloud1.put(CREDENTIAL_KEY_2, CREDENTIAL_VALUE_2);
         this.credentialsMap = new HashMap<String, Map<String, String>>();
         this.credentialsMap.put(CLOUD_NAME, this.credentialsMapCloud1);
+        
+        this.federationAttribute1 = Mockito.mock(FederationAttribute.class);
+        this.federationAttribute2 = Mockito.mock(FederationAttribute.class);
         
         this.service1 = Mockito.mock(FederationService.class);
         Mockito.when(this.service1.getServiceId()).thenReturn(SERVICE_ID_1);
@@ -180,6 +188,9 @@ public class FederationHostTest {
         Mockito.when(federation1.getMetadata()).thenReturn(federationMetadata);
         Mockito.when(federation1.isServiceOwner(SERVICE_OWNER_NAME_1)).thenReturn(true);
         Mockito.when(federation1.isServiceOwner(SERVICE_OWNER_NAME_2)).thenReturn(true);
+        Mockito.when(federation1.createAttribute(ATTRIBUTE_NAME_1)).thenReturn(ATTRIBUTE_ID_1);
+        Mockito.when(federation1.getAttributes()).thenReturn(
+                Arrays.asList(this.federationAttribute1, this.federationAttribute2));
         
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
@@ -532,5 +543,40 @@ public class FederationHostTest {
         Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME);
         
         assertEquals(credentialsMapCloud1, responseCredentials);
+    }
+    
+    @Test
+    public void testCreateAttribute() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        String returnedAttributeId = this.federationHost.createAttribute(ADMIN_NAME_1, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
+        
+        assertEquals(ATTRIBUTE_ID_1, returnedAttributeId);
+        Mockito.verify(this.federation1).createAttribute(ATTRIBUTE_NAME_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testCannotCreateAttributeIfUserDoesNotOwnFederation() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        this.federationHost.createAttribute(ADMIN_NAME_2, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
+    }
+    
+    @Test
+    public void testGetFederationAttributes() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        List<FederationAttribute> federationAttributes = this.federationHost.getFederationAttributes(ADMIN_NAME_1, FEDERATION_ID_1);
+        
+        assertEquals(2, federationAttributes.size());
+        assertTrue(federationAttributes.contains(this.federationAttribute1));
+        assertTrue(federationAttributes.contains(this.federationAttribute2));
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testCannotGetFederationAttributesIfUserDoesNotOwnFederation() throws UnauthorizedRequestException, InvalidParameterException {
+        setUpFederationData();
+        
+        this.federationHost.getFederationAttributes(ADMIN_NAME_2, FEDERATION_ID_1);
     }
 }

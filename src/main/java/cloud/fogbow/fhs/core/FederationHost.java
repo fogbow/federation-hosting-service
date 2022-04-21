@@ -157,17 +157,19 @@ public class FederationHost {
         // TODO implement
     }
     
-    public String createAttribute(String requester, String federationId, String attributeName) throws UnauthorizedRequestException {
+    public String createAttribute(String requester, String federationId, String attributeName)
+            throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        // FIXME should check if requester is owner
         Federation federation = lookUpFederationById(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
         return federation.createAttribute(attributeName);
     }
-    
-    public List<FederationAttribute> getFederationAttributes(String requester, String federationId) throws UnauthorizedRequestException {
+
+    public List<FederationAttribute> getFederationAttributes(String requester, String federationId)
+            throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        // FIXME should check if requester is owner
         Federation federation = lookUpFederationById(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
         return federation.getAttributes();
     }
     
@@ -248,11 +250,11 @@ public class FederationHost {
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = lookUpFederationById(federationId);
-        checkIfRequesterIsOwner(requester, federation);
+        checkIfRequesterIsFederationOwner(requester, federation);
         return federation.getMemberList();
     }
    
-    private void checkIfRequesterIsOwner(String requester, Federation federation) throws InvalidParameterException, UnauthorizedRequestException {
+    private void checkIfRequesterIsFederationOwner(String requester, Federation federation) throws InvalidParameterException, UnauthorizedRequestException {
         // FIXME should check for other fed admins 
         // in the federation
         if (!federation.getOwner().equals(requester)) {
@@ -264,14 +266,14 @@ public class FederationHost {
     public FederationUser grantMembership(String requester, String federationId, String userId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federationToAdd = getFederationOrFail(federationId); 
-        checkIfRequesterIsOwner(requester, federationToAdd);
+        checkIfRequesterIsFederationOwner(requester, federationToAdd);
         return federationToAdd.addUser(userId);
     }
 
     public FederationUser getFederationMemberInfo(String requester, String federationId, String memberId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsOwner(requester, federation);
+        checkIfRequesterIsFederationOwner(requester, federation);
         return federation.getUserByMemberId(memberId);
     }
     
