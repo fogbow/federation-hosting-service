@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -21,6 +22,9 @@ import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
+import cloud.fogbow.fhs.core.models.ServiceOperation;
+import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
+import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
@@ -62,6 +66,7 @@ public class FederationHostTest {
     private static final String SERVICE_ENDPOINT_3 = "endpoint3";
     private static final String SERVICE_DISCOVERY_POLICY_CLASS_NAME_1 = "serviceDiscoveryPolicyClassName1";
     private static final String SERVICE_INVOKER_CLASS_NAME_1 = "serviceInvokerClassName1";
+    private static final String ACCESS_POLICY_CLASS_NAME = "accessPolicyClassName";
     private static final Map<String, String> SERVICE_METADATA_1 = new HashMap<String, String>();
     private static final Map<String, String> SERVICE_METADATA_2 = new HashMap<String, String>();
     private static final Map<String, String> SERVICE_METADATA_3 = new HashMap<String, String>();
@@ -94,7 +99,9 @@ public class FederationHostTest {
     private ServiceDiscoveryPolicy discoveryPolicy1;
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
+    private AccessPolicyInstantiator accessPolicyInstantiator;
     private JsonUtils jsonUtils;
+    private ServiceAccessPolicy accessPolicy;
     
     private void setUpFederationData() throws InvalidParameterException {
         this.invoker = Mockito.mock(ServiceInvoker.class);
@@ -108,11 +115,18 @@ public class FederationHostTest {
         Mockito.when(discoveryPolicy1.isDiscoverableBy(user1)).thenReturn(true);
         Mockito.when(discoveryPolicy1.isDiscoverableBy(user2)).thenReturn(false);
         
+        this.accessPolicy = Mockito.mock(ServiceAccessPolicy.class);
+        Mockito.when(this.accessPolicy.isAllowedToPerform(user1, new ServiceOperation(HttpMethod.GET))).thenReturn(true);
+        Mockito.when(this.accessPolicy.isAllowedToPerform(user2, new ServiceOperation(HttpMethod.GET))).thenReturn(false);
+        
         this.discoveryPolicyInstantiator = Mockito.mock(DiscoveryPolicyInstantiator.class);
         Mockito.when(this.discoveryPolicyInstantiator.getDiscoveryPolicy(SERVICE_DISCOVERY_POLICY_CLASS_NAME_1)).thenReturn(discoveryPolicy1);
         
         this.serviceInvokerInstantiator = Mockito.mock(ServiceInvokerInstantiator.class);
         Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1, FEDERATION_ID_1)).thenReturn(invoker);
+        
+        this.accessPolicyInstantiator = Mockito.mock(AccessPolicyInstantiator.class);
+        Mockito.when(this.accessPolicyInstantiator.getAccessPolicy(ACCESS_POLICY_CLASS_NAME, SERVICE_METADATA_1)).thenReturn(this.accessPolicy);
         
         this.federationMetadata = new HashMap<String, String>();
         this.federationMetadata.put(FederationHost.CREDENTIALS_METADATA_KEY, 
@@ -129,6 +143,7 @@ public class FederationHostTest {
         Mockito.when(this.service1.getEndpoint()).thenReturn(SERVICE_ENDPOINT_1);
         Mockito.when(this.service1.getDiscoveryPolicy()).thenReturn(discoveryPolicy1);
         Mockito.when(this.service1.getInvoker()).thenReturn(invoker);
+        Mockito.when(this.service1.getAccessPolicy()).thenReturn(accessPolicy);
         Mockito.when(this.service1.getMetadata()).thenReturn(SERVICE_METADATA_1);
         
         this.service2 = Mockito.mock(FederationService.class);
@@ -137,6 +152,7 @@ public class FederationHostTest {
         Mockito.when(this.service2.getEndpoint()).thenReturn(SERVICE_ENDPOINT_2);
         Mockito.when(this.service2.getDiscoveryPolicy()).thenReturn(discoveryPolicy1);
         Mockito.when(this.service2.getInvoker()).thenReturn(invoker);
+        Mockito.when(this.service2.getAccessPolicy()).thenReturn(accessPolicy);
         Mockito.when(this.service2.getMetadata()).thenReturn(SERVICE_METADATA_2);
         
         this.service3 = Mockito.mock(FederationService.class);
@@ -145,6 +161,7 @@ public class FederationHostTest {
         Mockito.when(this.service3.getEndpoint()).thenReturn(SERVICE_ENDPOINT_3);
         Mockito.when(this.service3.getDiscoveryPolicy()).thenReturn(discoveryPolicy1);
         Mockito.when(this.service3.getInvoker()).thenReturn(invoker);
+        Mockito.when(this.service3.getAccessPolicy()).thenReturn(accessPolicy);
         Mockito.when(this.service3.getMetadata()).thenReturn(SERVICE_METADATA_3);
         
         List<FederationService> authorizedServices = Arrays.asList(this.service1, this.service2);
@@ -178,7 +195,8 @@ public class FederationHostTest {
         this.jsonUtils = Mockito.mock(JsonUtils.class);
         Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);
         
-        this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, discoveryPolicyInstantiator, jsonUtils);
+        this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, 
+                discoveryPolicyInstantiator, accessPolicyInstantiator, jsonUtils);
     }
     
     @Before
@@ -489,6 +507,22 @@ public class FederationHostTest {
         
         Mockito.verify(service1).invoke(user1, HttpMethod.GET, new ArrayList<String>(), 
                 new HashMap<String, String>(), new HashMap<String, Object>());
+    }
+    
+    @Test
+    public void testInvokeServiceUserIsNotAuthorizedToInvoke() throws FogbowException {
+        setUpFederationData();
+
+        try {
+            this.federationHost.invokeService(REGULAR_USER_NAME_2, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET,
+                    new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, Object>());
+            Assert.fail("Expected UnauthorizedRequestException.");
+        } catch (UnauthorizedRequestException e) {
+            
+        }
+        
+        Mockito.verify(service1, Mockito.never()).
+            invoke(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test

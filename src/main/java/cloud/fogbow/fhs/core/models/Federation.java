@@ -32,7 +32,9 @@ public class Federation {
         this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
                 new ArrayList<FederationService>(), new ArrayList<FederationAttribute>());
         
-        this.serviceOwnerAttribute = new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME);
+        // FIXME
+        this.serviceOwnerAttribute = new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME,
+                SERVICE_OWNER_ATTRIBUTE_NAME);
         this.attributes.add(serviceOwnerAttribute);
     }
     

@@ -15,6 +15,7 @@ public class Messages {
         public static final String SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY = "Service endpoint cannot be null or empty.";
         public static final String SERVICE_OWNER_CANNOT_BE_NULL_OR_EMPTY = "Service owner cannot be null or empty.";
         public static final String UNABLE_TO_FIND_CLASS_S = "Unable to find class %s.";
+        public static final String USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE = "User is not authorized to perform operation on service.";
     }
     
     public static class Log {

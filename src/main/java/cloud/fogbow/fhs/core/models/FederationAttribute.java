@@ -6,6 +6,11 @@ public class FederationAttribute {
     private String id;
     private String name;
     
+    public FederationAttribute(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+    
     public FederationAttribute(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;

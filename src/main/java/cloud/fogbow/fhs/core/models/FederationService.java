@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
@@ -16,22 +17,24 @@ public class FederationService {
     private String ownerId;
     private String endpoint;
     private ServiceDiscoveryPolicy discoveryPolicy;
+    private ServiceAccessPolicy accessPolicy;
     private ServiceInvoker invoker;
     private Map<String, String> metadata;
     
     public FederationService(String serviceId, String ownerId, String endpoint, ServiceDiscoveryPolicy discoveryPolicy,
-            ServiceInvoker invoker, Map<String, String> metadata) {
+            ServiceAccessPolicy accessPolicy, ServiceInvoker invoker, Map<String, String> metadata) {
         this.serviceId = serviceId;
         this.ownerId = ownerId;
         this.endpoint = endpoint;
         this.discoveryPolicy = discoveryPolicy;
+        this.accessPolicy = accessPolicy;
         this.invoker = invoker;
         this.metadata = metadata;
     }
     
     public FederationService(String ownerId, String endpoint, ServiceDiscoveryPolicy discoveryPolicy,
-            ServiceInvoker invoker, Map<String, String> metadata) {
-        this(UUID.randomUUID().toString(), ownerId, endpoint, discoveryPolicy, invoker, metadata);
+            ServiceAccessPolicy accessPolicy, ServiceInvoker invoker, Map<String, String> metadata) {
+        this(UUID.randomUUID().toString(), ownerId, endpoint, discoveryPolicy, accessPolicy, invoker, metadata);
     }
 
     public String getOwnerId() {
@@ -46,6 +49,10 @@ public class FederationService {
         return discoveryPolicy;
     }
 
+    public ServiceAccessPolicy getAccessPolicy() {
+        return accessPolicy;
+    }
+    
     public ServiceInvoker getInvoker() {
         return invoker;
     }

@@ -14,6 +14,9 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
+import cloud.fogbow.fhs.core.models.ServiceOperation;
+import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
+import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
@@ -29,15 +32,18 @@ public class FederationHost {
     private List<Federation> federationList;
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
+    private AccessPolicyInstantiator accessPolicyInstantiator;
     private JsonUtils jsonUtils;
     
     public FederationHost(List<FederationUser> federationAdminList, 
             List<Federation> federationList, ServiceInvokerInstantiator serviceInvokerInstantiator,
-            DiscoveryPolicyInstantiator discoveryPolicyInstantiator, JsonUtils jsonUtils) {
+            DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
+            AccessPolicyInstantiator accessPolicyInstantiator, JsonUtils jsonUtils) {
         this.federationAdminList = federationAdminList;
         this.federationList = federationList;
         this.serviceInvokerInstantiator = serviceInvokerInstantiator;
         this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
+        this.accessPolicyInstantiator = accessPolicyInstantiator;
         this.jsonUtils = jsonUtils;
     }
     
@@ -46,6 +52,7 @@ public class FederationHost {
         this.federationList = new ArrayList<Federation>();
         this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
         this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
+        this.accessPolicyInstantiator = new AccessPolicyInstantiator();
         this.jsonUtils = new JsonUtils();
     }
     
@@ -225,10 +232,17 @@ public class FederationHost {
     
     public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
-        // TODO should check if user is authorized
         Federation federation = lookUpFederationById(federationId);
         FederationService service = federation.getService(serviceId);
-        return service.invoke(federation.getUserById(requester), method, path, headers, body);
+        ServiceAccessPolicy accessPolicy = service.getAccessPolicy();
+        FederationUser federationUser = federation.getUserById(requester);
+        ServiceOperation operation = new ServiceOperation(method);
+        
+        if (accessPolicy.isAllowedToPerform(federationUser, operation)) {
+            return service.invoke(federationUser, method, path, headers, body);
+        }
+        
+        throw new UnauthorizedRequestException(Messages.Exception.USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE);
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
@@ -279,11 +293,12 @@ public class FederationHost {
         }
         
         ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
+        ServiceAccessPolicy accessPolicy = this.accessPolicyInstantiator.getAccessPolicy(accessPolicyClassName, metadata);
         
         String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
         ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
         
-        FederationService service = new FederationService(requester, endpoint, discoveryPolicy, invoker, metadata);
+        FederationService service = new FederationService(requester, endpoint, discoveryPolicy, accessPolicy, invoker, metadata);
         federation.registerService(service);
         
         return service.getServiceId();
