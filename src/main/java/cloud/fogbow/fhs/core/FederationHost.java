@@ -56,6 +56,12 @@ public class FederationHost {
         this.jsonUtils = new JsonUtils();
     }
     
+    /*
+     * 
+     * FHSOperator
+     * 
+     */
+    
     public String addFederationAdmin(String adminName, String adminEmail, 
             String adminDescription, boolean enabled) throws InvalidParameterException {
         if (adminName == null || adminName.isEmpty()) {
@@ -81,25 +87,11 @@ public class FederationHost {
         return admin;
     }
     
-    private FederationUser lookUpAdminById(String adminId) {
-        for (FederationUser admin : federationAdminList) {
-            if (admin.getMemberId().equals(adminId)) {
-                return admin;
-            }
-        }
-        
-        return null;
-    }
-    
-    private FederationUser lookUpAdminByName(String adminName) {
-        for (FederationUser admin : federationAdminList) {
-            if (admin.getName().equals(adminName)) {
-                return admin;
-            }
-        }
-        
-        return null;
-    }
+    /*
+     * 
+     * Federations
+     * 
+     */
     
     public Federation createFederation(String requester, String federationName, Map<String, String> metadata, 
             String description, boolean enabled) 
@@ -114,11 +106,18 @@ public class FederationHost {
         federationList.add(federation);
         return federation;
     }
-
-    private void checkIfRequesterIsFedAdmin(String requester) throws UnauthorizedRequestException {
-        if (lookUpAdminByName(requester) == null) {
-            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_ADMIN);
+    
+    public List<Federation> getFederationsOwnedByUser(String requester) throws UnauthorizedRequestException {
+        checkIfRequesterIsFedAdmin(requester);
+        List<Federation> ownedFederations = new ArrayList<Federation>();
+        
+        for (Federation federation : this.federationList) {
+            if (federation.getOwner().equals(requester)) {
+                ownedFederations.add(federation);
+            }
         }
+        
+        return ownedFederations;
     }
 
     // TODO test
@@ -128,27 +127,6 @@ public class FederationHost {
         return federation;
     }
     
-    private Federation getFederationOrFail(String federationId) throws InvalidParameterException {
-        Federation federation = lookUpFederationById(federationId);
-        
-        if (federation == null) {
-            throw new InvalidParameterException(
-                    String.format(Messages.Exception.CANNOT_FIND_FEDERATION, federationId));
-        }
-        
-        return federation;
-    }
-    
-    private Federation lookUpFederationById(String federationId) {
-        for (Federation federation : this.federationList) {
-            if (federation.getId().equals(federationId)) {
-                return federation;
-            }
-        }
-        
-        return null;
-    }
-    
     public void updateFederation(Federation federationToUpdate) {
         // TODO implement
     }
@@ -156,6 +134,43 @@ public class FederationHost {
     public void deleteFederation(String federationId) {
         // TODO implement
     }
+    
+    /*
+     * 
+     * Membership
+     * 
+     */
+    
+    public FederationUser grantMembership(String requester, String federationId, String userId) throws UnauthorizedRequestException, InvalidParameterException {
+        checkIfRequesterIsFedAdmin(requester);
+        Federation federationToAdd = getFederationOrFail(federationId); 
+        checkIfRequesterIsFederationOwner(requester, federationToAdd);
+        return federationToAdd.addUser(userId);
+    }
+    
+    public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
+        checkIfRequesterIsFedAdmin(requester);
+        Federation federation = lookUpFederationById(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
+        return federation.getMemberList();
+    }
+    
+    public FederationUser getFederationMemberInfo(String requester, String federationId, String memberId) throws UnauthorizedRequestException, InvalidParameterException {
+        checkIfRequesterIsFedAdmin(requester);
+        Federation federation = getFederationOrFail(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
+        return federation.getUserByMemberId(memberId);
+    }
+    
+    public void revokeMembership(String federationId, String memberId) {
+        // TODO implement
+    }
+    
+    /*
+     * 
+     * Attributes
+     * 
+     */
     
     public String createAttribute(String requester, String federationId, String attributeName)
             throws UnauthorizedRequestException, InvalidParameterException {
@@ -193,93 +208,11 @@ public class FederationHost {
         federation.revokeAttribute(memberId, attributeId);
     }
     
-    public List<FederationService> getAuthorizedServices(String requester, String federationId) throws InvalidParameterException {
-        Federation federation = lookUpFederationById(federationId);
-        return federation.getAuthorizedServices(requester);
-    }
-    
-    public List<Federation> getFederationsOwnedByUser(String requester) throws UnauthorizedRequestException {
-        checkIfRequesterIsFedAdmin(requester);
-        List<Federation> ownedFederations = new ArrayList<Federation>();
-        
-        for (Federation federation : this.federationList) {
-            if (federation.getOwner().equals(requester)) {
-                ownedFederations.add(federation);
-            }
-        }
-        
-        return ownedFederations;
-    }
-    
-    public void requestToJoinFederation(String federationId, String fhsUrl, String memberId) {
-        // TODO implement
-    }
-    
-    public List<JoinRequest> getJoinRequests(String memberId) {
-        // TODO implement
-        return null;
-    }
-    
-    public void grantJoinRequest(String memberId, String requestId) {
-        // TODO implement
-    }
-    
-    public void denyJoinRequest(String memberId, String requestId) {
-        // TODO implement
-    }
-    
-    public void leaveFederation(String federationId, String memberId) {
-        // TODO implement
-    }
-    
-    public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
-            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
-        Federation federation = lookUpFederationById(federationId);
-        FederationService service = federation.getService(serviceId);
-        ServiceAccessPolicy accessPolicy = service.getAccessPolicy();
-        FederationUser federationUser = federation.getUserById(requester);
-        ServiceOperation operation = new ServiceOperation(method);
-        
-        if (accessPolicy.isAllowedToPerform(federationUser, operation)) {
-            return service.invoke(federationUser, method, path, headers, body);
-        }
-        
-        throw new UnauthorizedRequestException(Messages.Exception.USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE);
-    }
-    
-    public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
-        checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        return federation.getMemberList();
-    }
-   
-    private void checkIfRequesterIsFederationOwner(String requester, Federation federation) throws InvalidParameterException, UnauthorizedRequestException {
-        // FIXME should check for other fed admins 
-        // in the federation
-        if (!federation.getOwner().equals(requester)) {
-            // TODO add message
-            throw new UnauthorizedRequestException();
-        }
-    }
-    
-    public FederationUser grantMembership(String requester, String federationId, String userId) throws UnauthorizedRequestException, InvalidParameterException {
-        checkIfRequesterIsFedAdmin(requester);
-        Federation federationToAdd = getFederationOrFail(federationId); 
-        checkIfRequesterIsFederationOwner(requester, federationToAdd);
-        return federationToAdd.addUser(userId);
-    }
-
-    public FederationUser getFederationMemberInfo(String requester, String federationId, String memberId) throws UnauthorizedRequestException, InvalidParameterException {
-        checkIfRequesterIsFedAdmin(requester);
-        Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        return federation.getUserByMemberId(memberId);
-    }
-    
-    public void revokeMembership(String federationId, String memberId) {
-        // TODO implement
-    }
+    /*
+     * 
+     * Services
+     * 
+     */
     
     public String registerService(String requester, String federationId, String endpoint, Map<String, String> metadata, 
             String discoveryPolicyClassName, String accessPolicyClassName) throws UnauthorizedRequestException, InvalidParameterException {
@@ -352,6 +285,67 @@ public class FederationHost {
         // TODO implement        
     }
     
+    public List<FederationService> getAuthorizedServices(String requester, String federationId) throws InvalidParameterException {
+        Federation federation = lookUpFederationById(federationId);
+        return federation.getAuthorizedServices(requester);
+    }
+    
+    public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
+            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
+        Federation federation = lookUpFederationById(federationId);
+        FederationService service = federation.getService(serviceId);
+        ServiceAccessPolicy accessPolicy = service.getAccessPolicy();
+        FederationUser federationUser = federation.getUserById(requester);
+        ServiceOperation operation = new ServiceOperation(method);
+        
+        if (accessPolicy.isAllowedToPerform(federationUser, operation)) {
+            return service.invoke(federationUser, method, path, headers, body);
+        }
+        
+        throw new UnauthorizedRequestException(Messages.Exception.USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE);
+    }
+    
+    /*
+     * 
+     * Authorization
+     * 
+     */
+    
+    public Map<String, String> map(String federationId, String cloudName) {
+        Federation federation = lookUpFederationById(federationId);
+        Map<String, String> metadata = federation.getMetadata();
+        Map<String, Map<String, String>> credentials = 
+                this.jsonUtils.fromJson(metadata.get(CREDENTIALS_METADATA_KEY), Map.class);
+        return credentials.get(cloudName);
+    }
+    
+    /*
+     * 
+     * Remote federations
+     * 
+     */
+    
+    public void requestToJoinFederation(String federationId, String fhsUrl, String memberId) {
+        // TODO implement
+    }
+    
+    public List<JoinRequest> getJoinRequests(String memberId) {
+        // TODO implement
+        return null;
+    }
+    
+    public void grantJoinRequest(String memberId, String requestId) {
+        // TODO implement
+    }
+    
+    public void denyJoinRequest(String memberId, String requestId) {
+        // TODO implement
+    }
+    
+    public void leaveFederation(String federationId, String memberId) {
+        // TODO implement
+    }
+    
     public List<Federation> getRemoteFederations() {
         // TODO implement
         return null;
@@ -368,12 +362,60 @@ public class FederationHost {
     public void updateRemoteFederation(Federation federation) {
         // TODO implement
     }
-
-    public Map<String, String> map(String federationId, String cloudName) {
+    
+    private void checkIfRequesterIsFedAdmin(String requester) throws UnauthorizedRequestException {
+        if (lookUpAdminByName(requester) == null) {
+            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_ADMIN);
+        }
+    }
+    
+    private FederationUser lookUpAdminById(String adminId) {
+        for (FederationUser admin : federationAdminList) {
+            if (admin.getMemberId().equals(adminId)) {
+                return admin;
+            }
+        }
+        
+        return null;
+    }
+    
+    private FederationUser lookUpAdminByName(String adminName) {
+        for (FederationUser admin : federationAdminList) {
+            if (admin.getName().equals(adminName)) {
+                return admin;
+            }
+        }
+        
+        return null;
+    }
+    
+    private void checkIfRequesterIsFederationOwner(String requester, Federation federation) throws InvalidParameterException, UnauthorizedRequestException {
+        // FIXME should check for other fed admins 
+        // in the federation
+        if (!federation.getOwner().equals(requester)) {
+            // TODO add message
+            throw new UnauthorizedRequestException();
+        }
+    }
+    
+    private Federation getFederationOrFail(String federationId) throws InvalidParameterException {
         Federation federation = lookUpFederationById(federationId);
-        Map<String, String> metadata = federation.getMetadata();
-        Map<String, Map<String, String>> credentials = 
-                this.jsonUtils.fromJson(metadata.get(CREDENTIALS_METADATA_KEY), Map.class);
-        return credentials.get(cloudName);
+        
+        if (federation == null) {
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.CANNOT_FIND_FEDERATION, federationId));
+        }
+        
+        return federation;
+    }
+    
+    private Federation lookUpFederationById(String federationId) {
+        for (Federation federation : this.federationList) {
+            if (federation.getId().equals(federationId)) {
+                return federation;
+            }
+        }
+        
+        return null;
     }
 }

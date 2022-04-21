@@ -55,12 +55,24 @@ public class ApplicationFacade {
         this.federationHost = localFederationHost;
     }
     
+    /*
+     * 
+     * FHSOperator
+     * 
+     */
+    
     public String addFederationAdmin(String userToken, String adminName, String adminEmail, 
             String adminDescription, boolean enabled) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.ADD_FED_ADMIN));
         return this.federationHost.addFederationAdmin(adminName, adminEmail, adminDescription, enabled);
     }
+    
+    /*
+     * 
+     * Federations
+     * 
+     */
     
     public FederationId createFederation(String userToken, String name, Map<String, String> metadata, String description, boolean enabled) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
@@ -85,6 +97,12 @@ public class ApplicationFacade {
         return federationDescriptions;
     }
 
+    /*
+     * 
+     * Membership
+     * 
+     */
+    
     public MemberId grantMembership(String userToken, String federationId, String userId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GRANT_MEMBERSHIP));
@@ -105,6 +123,12 @@ public class ApplicationFacade {
         
         return memberIds;
     }
+    
+    /*
+     * 
+     * Attributes
+     * 
+     */
     
     public AttributeDescription createAttribute(String userToken, String federationId, String attributeName) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
@@ -139,6 +163,12 @@ public class ApplicationFacade {
         this.federationHost.revokeAttribute(requestUser.getId(), federationId, memberId, attributeId);
     }
 
+    /*
+     * 
+     * Services
+     * 
+     */
+    
     public ServiceId registerService(String userToken, String federationId, String ownerId, String endpoint,
             Map<String, String> metadata, String discoveryPolicy, String accessPolicy) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
@@ -191,6 +221,12 @@ public class ApplicationFacade {
         ServiceResponse response = this.federationHost.invokeService(requestUser.getId(), federationId, serviceId, method, path, headers, body);
         return new RequestResponse(response.getCode(), response.getResponse());
     }
+    
+    /*
+     * 
+     * Authorization
+     * 
+     */
     
     public Map<String, String> map(String userToken, String federationId, String cloudName) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
