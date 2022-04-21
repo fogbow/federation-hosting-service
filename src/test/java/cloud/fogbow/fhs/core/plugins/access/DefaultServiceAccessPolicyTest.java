@@ -82,8 +82,6 @@ public class DefaultServiceAccessPolicyTest {
         
         this.accessLevelString = accessLevelString1 + ";" + accessLevelString2;
         
-        System.out.println(this.accessLevelString);
-        
         this.expectedCredentialsCloud1ForLevel1 = new HashMap<String, String>();
         this.expectedCredentialsCloud2ForLevel1 = new HashMap<String, String>();
         

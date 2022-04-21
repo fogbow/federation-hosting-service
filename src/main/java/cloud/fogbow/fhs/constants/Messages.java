@@ -12,6 +12,7 @@ public class Messages {
         public static final String NO_OPERATOR_ID_SPECIFIED = "No operator ID specified in the configuration file.";
         public static final String NO_OTHER_SERVICE_ADMIN_ID_SPECIFIED = "No other service admin ID specified in the configuration file.";
         public static final String REQUESTER_IS_NOT_ADMIN = "Requester is not admin.";
+        public static final String REQUESTER_IS_NOT_SERVICE_OWNER = "Requester is not service owner.";
         public static final String SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY = "Service endpoint cannot be null or empty.";
         public static final String SERVICE_OWNER_CANNOT_BE_NULL_OR_EMPTY = "Service owner cannot be null or empty.";
         public static final String UNABLE_TO_FIND_CLASS_S = "Unable to find class %s.";

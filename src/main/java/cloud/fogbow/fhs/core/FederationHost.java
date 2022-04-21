@@ -195,16 +195,16 @@ public class FederationHost {
     public void grantAttribute(String requester, String federationId, String memberId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        // FIXME should check if requester is owner
         Federation federation = lookUpFederationById(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
         federation.grantAttribute(memberId, attributeId);
     }
     
     public void revokeAttribute(String requester, String federationId, String memberId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        // FIXME should check if requester is owner
         Federation federation = lookUpFederationById(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
         federation.revokeAttribute(memberId, attributeId);
     }
     
@@ -218,8 +218,7 @@ public class FederationHost {
             String discoveryPolicyClassName, String accessPolicyClassName) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         if (!federation.isServiceOwner(requester)) {
-            // TODO add message
-            throw new UnauthorizedRequestException();
+            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
         }
 
         if (endpoint == null || endpoint.isEmpty()) {
@@ -242,8 +241,7 @@ public class FederationHost {
     public List<String> getOwnedServices(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         if (!federation.isServiceOwner(requester)) {
-            // TODO add message
-            throw new UnauthorizedRequestException();
+            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
         }
         
         List<String> ownedServicesIds = new ArrayList<String>();
@@ -260,8 +258,7 @@ public class FederationHost {
     public FederationService getOwnedService(String requester, String federationId, String serviceId) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = lookUpFederationById(federationId);
         if (!federation.isServiceOwner(requester)) {
-            // TODO add message
-            throw new UnauthorizedRequestException();
+            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
         }
         
         for (FederationService service : federation.getServices()) {

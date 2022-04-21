@@ -33,6 +33,7 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
+// TODO organize tests order
 public class FederationHostTest {
     private static final String ADMIN_NAME_1 = "admin1";
     private static final String ADMIN_NAME_2 = "admin2";
@@ -578,5 +579,37 @@ public class FederationHostTest {
         setUpFederationData();
         
         this.federationHost.getFederationAttributes(ADMIN_NAME_2, FEDERATION_ID_1);
+    }
+    
+    @Test
+    public void testGrantAttribute() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        this.federationHost.grantAttribute(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+
+        Mockito.verify(this.federation1).grantAttribute(REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testCannotGrantAttributeIfUserDoesNotOwnFederation() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        this.federationHost.grantAttribute(ADMIN_NAME_2, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+    }
+    
+    @Test
+    public void testRevokeAttribute() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        this.federationHost.revokeAttribute(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+
+        Mockito.verify(this.federation1).revokeAttribute(REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testCannotRevokeAttributeIfUserDoesNotOwnFederation() throws InvalidParameterException, UnauthorizedRequestException {
+        setUpFederationData();
+        
+        this.federationHost.revokeAttribute(ADMIN_NAME_2, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
 }
