@@ -130,7 +130,6 @@ public class ApplicationFacade {
      * 
      */
     
-    // TODO test
     public AttributeDescription createAttribute(String userToken, String federationId, String attributeName) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.CREATE_ATTRIBUTE));
@@ -138,7 +137,6 @@ public class ApplicationFacade {
         return new AttributeDescription(attributeId, attributeName);
     }
 
-    // TODO test
     public List<AttributeDescription> getFederationAttributes(String userToken, String federationId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_ATTRIBUTES));
@@ -152,7 +150,6 @@ public class ApplicationFacade {
         return attributesDescriptions;
     }
 
-    // TODO test
     public void grantAttribute(String userToken, String federationId, String memberId,
             String attributeId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
@@ -160,7 +157,6 @@ public class ApplicationFacade {
         this.federationHost.grantAttribute(requestUser.getId(), federationId, memberId, attributeId);
     }
     
-    // TODO test
     public void revokeAttribute(String userToken, String federationId, String memberId, String attributeId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.REVOKE_ATTRIBUTE));
@@ -254,7 +250,6 @@ public class ApplicationFacade {
         this.asPublicKey = asPublicKey;
     }
 
-    // TODO test
     public String getPublicKey() throws InternalServerErrorException, GeneralSecurityException {
         return CryptoUtil.toBase64(ServiceAsymmetricKeysHolder.getInstance().getPublicKey());
     }

@@ -24,6 +24,7 @@ import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
+import cloud.fogbow.fhs.api.http.response.AttributeDescription;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
@@ -33,6 +34,7 @@ import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
 import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
@@ -86,6 +88,10 @@ public class ApplicationFacadeTest {
     private static final Map<String, String> RESPONSE_DATA = new HashMap<String, String>();
     private static final String CLOUD_NAME = "cloudName";
     private static final Map<String, String> CREDENTIALS = new HashMap<String, String>();
+    private static final String ATTRIBUTE_ID_1 = "attributeId1";
+    private static final String ATTRIBUTE_ID_2 = "attributeId2";
+    private static final String ATTRIBUTE_NAME_1 = "attributeName1";
+    private static final String ATTRIBUTE_NAME_2 = "attributeName2";
     
     private ApplicationFacade applicationFacade;
     private FhsPublicKeysHolder publicKeysHolder;
@@ -102,6 +108,8 @@ public class ApplicationFacadeTest {
     private FederationService federationService2; 
     private ServiceDiscoveryPolicy serviceDiscoveryPolicy;
     private ServiceInvoker serviceInvoker;
+    private FederationAttribute federationAttribute1;
+    private FederationAttribute federationAttribute2;
     
     @Before
     public void setUp() throws FogbowException {
@@ -151,6 +159,14 @@ public class ApplicationFacadeTest {
         Mockito.when(federation2.getDescription()).thenReturn(FEDERATION_DESCRIPTION_2);
         Mockito.when(federation2.enabled()).thenReturn(FEDERATION_ENABLED_2);
         
+        federationAttribute1 = Mockito.mock(FederationAttribute.class);
+        Mockito.when(federationAttribute1.getId()).thenReturn(ATTRIBUTE_ID_1);
+        Mockito.when(federationAttribute1.getName()).thenReturn(ATTRIBUTE_NAME_1);
+        
+        federationAttribute2 = Mockito.mock(FederationAttribute.class);
+        Mockito.when(federationAttribute2.getId()).thenReturn(ATTRIBUTE_ID_2);
+        Mockito.when(federationAttribute2.getName()).thenReturn(ATTRIBUTE_NAME_2);
+        
         asPublicKey = Mockito.mock(RSAPublicKey.class);
         
         this.publicKeysHolder = Mockito.mock(FhsPublicKeysHolder.class);
@@ -180,6 +196,9 @@ public class ApplicationFacadeTest {
         Mockito.when(this.federationHost.grantMembership(ADMIN_NAME, FEDERATION_ID_1, USER_ID_TO_ADD)).thenReturn(federationUser1);
         Mockito.when(this.federationHost.getFederationMembers(ADMIN_NAME, FEDERATION_ID_1)).
                 thenReturn(Arrays.asList(federationUser1, federationUser2));
+        Mockito.when(this.federationHost.createAttribute(ADMIN_NAME, FEDERATION_ID_1, ATTRIBUTE_NAME_1)).thenReturn(ATTRIBUTE_ID_1);
+        Mockito.when(this.federationHost.getFederationAttributes(ADMIN_NAME, FEDERATION_ID_1)).
+                thenReturn(Arrays.asList(federationAttribute1, federationAttribute2));
         Mockito.when(this.federationHost.registerService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME, SERVICE_ACCESS_POLICY_CLASS_NAME)).thenReturn(SERVICE_ID_1);
         Mockito.when(this.federationHost.getOwnedServices(ADMIN_NAME, FEDERATION_ID_1)).
@@ -278,6 +297,47 @@ public class ApplicationFacadeTest {
         assertEquals(USER_ENABLED_2, members.get(1).isEnabled());
         
         Mockito.verify(this.federationHost).getFederationMembers(ADMIN_NAME, FEDERATION_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testCreateAttribute() throws FogbowException {
+        AttributeDescription returnedDescription = this.applicationFacade.createAttribute(TOKEN_1, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
+        
+        assertEquals(ATTRIBUTE_NAME_1, returnedDescription.getName());
+        assertEquals(ATTRIBUTE_ID_1, returnedDescription.getId());
+        
+        Mockito.verify(this.federationHost).createAttribute(ADMIN_NAME, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testGetFederationAttributes() throws FogbowException {
+        List<AttributeDescription> returnedDescriptions = this.applicationFacade.getFederationAttributes(TOKEN_1, FEDERATION_ID_1);
+        
+        assertEquals(2, returnedDescriptions.size());
+        assertEquals(ATTRIBUTE_ID_1, returnedDescriptions.get(0).getId());
+        assertEquals(ATTRIBUTE_NAME_1, returnedDescriptions.get(0).getName());
+        assertEquals(ATTRIBUTE_ID_2, returnedDescriptions.get(1).getId());
+        assertEquals(ATTRIBUTE_NAME_2, returnedDescriptions.get(1).getName());
+        
+        Mockito.verify(this.federationHost).getFederationAttributes(ADMIN_NAME, FEDERATION_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testGrantAttribute() throws FogbowException {
+        this.applicationFacade.grantAttribute(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1, ATTRIBUTE_ID_1);
+        
+        Mockito.verify(this.federationHost).grantAttribute(ADMIN_NAME, FEDERATION_ID_1, MEMBER_ID_1, ATTRIBUTE_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testRevokeAttribute() throws FogbowException {
+        this.applicationFacade.revokeAttribute(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1, ATTRIBUTE_ID_1);
+        
+        Mockito.verify(this.federationHost).revokeAttribute(ADMIN_NAME, FEDERATION_ID_1, MEMBER_ID_1, ATTRIBUTE_ID_1);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     

@@ -12,17 +12,18 @@ public class FederationUser {
     private boolean enabled;
     private List<String> attributes;
     
-    public FederationUser(String id, String name, String email, String description, boolean enabled) {
+    public FederationUser(String id, String name, String email, String description, boolean enabled,
+            List<String> attributes) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.description = description;
         this.enabled = enabled;
-        this.attributes = new ArrayList<String>();
+        this.attributes = attributes;
     }
     
     public FederationUser(String name, String email, String description, boolean enabled) {
-        this(UUID.randomUUID().toString(), name, email, description, enabled);
+        this(UUID.randomUUID().toString(), name, email, description, enabled, new ArrayList<String>());
     }
 
     public String getMemberId() {

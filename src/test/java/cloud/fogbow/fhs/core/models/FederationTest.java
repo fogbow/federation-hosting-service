@@ -1,6 +1,9 @@
 package cloud.fogbow.fhs.core.models;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +16,7 @@ import org.mockito.Mockito;
 
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 
+// TODO documentation
 public class FederationTest {
     private static final String FEDERATION_ID_1 = "federationId1";
     private static final String FEDERATION_OWNER_1 = "federationOwner1";
@@ -34,6 +38,10 @@ public class FederationTest {
     private static final String NOT_REGISTERED_USER_ID = "notRegisteredUserId";
     private static final String FEDERATION_SERVICE_ID_1 = "federationServiceId1";
     private static final String FEDERATION_SERVICE_ID_2 = "federationServiceId2";
+    private static final String ATTRIBUTE_ID_1 = "attributeId1";
+    private static final String ATTRIBUTE_NAME_1 = "attributeName1";
+    private static final String ATTRIBUTE_ID_2 = "attributeId2";
+    private static final String ATTRIBUTE_NAME_2 = "attributeName2";
     private List<FederationUser> federationMembers;
     private List<FederationService> federationServices;
     private List<FederationAttribute> federationAttributes;
@@ -42,13 +50,17 @@ public class FederationTest {
     private FederationUser federationUser2;
     private FederationService federationService1;
     private FederationService federationService2;
+    private FederationAttribute federationAttribute1;
+    private FederationAttribute federationAttribute2;
     
     @Before
     public void setUp() {
         this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, 
-                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1);
+                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
+                new ArrayList<String>());
         this.federationUser2 = new FederationUser(FEDERATION_USER_ID_2, FEDERATION_USER_NAME_2, 
-                FEDERATION_USER_EMAIL_2, FEDERATION_USER_DESCRIPTION_2, FEDERATION_USER_ENABLED_2);
+                FEDERATION_USER_EMAIL_2, FEDERATION_USER_DESCRIPTION_2, FEDERATION_USER_ENABLED_2, 
+                new ArrayList<String>());
         
         this.federationMembers = new ArrayList<FederationUser>();
         this.federationMembers.add(this.federationUser1);
@@ -67,7 +79,12 @@ public class FederationTest {
         this.federationServices.add(federationService1);
         this.federationServices.add(federationService2);
         
+        this.federationAttribute1 = new FederationAttribute(ATTRIBUTE_ID_1, ATTRIBUTE_NAME_1);
+        this.federationAttribute2 = new FederationAttribute(ATTRIBUTE_ID_2, ATTRIBUTE_NAME_2);
+        
         this.federationAttributes = new ArrayList<FederationAttribute>();
+        this.federationAttributes.add(federationAttribute1);
+        this.federationAttributes.add(federationAttribute2);
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
@@ -167,5 +184,104 @@ public class FederationTest {
     @Test(expected = InvalidParameterException.class)
     public void testGetAuthorizedServicesNotRegisteredUser() throws InvalidParameterException {
         this.federation.getAuthorizedServices("unregisteredUserId");
+    }
+    
+    @Test
+    public void testCreateAndGetAttributes() {
+        this.federationAttributes = new ArrayList<FederationAttribute>();
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
+        
+        List<FederationAttribute> attributesBeforeCreation = this.federation.getAttributes();
+        
+        assertTrue(attributesBeforeCreation.isEmpty());
+        
+        String returnedAttributeId = this.federation.createAttribute(ATTRIBUTE_NAME_1);
+        
+        assertNotNull(returnedAttributeId);
+        
+        List<FederationAttribute> attributesAfterCreation = this.federation.getAttributes();
+        
+        assertEquals(1, attributesAfterCreation.size());
+        assertEquals(ATTRIBUTE_NAME_1, attributesAfterCreation.get(0).getName());
+        assertEquals(returnedAttributeId, attributesAfterCreation.get(0).getId());
+    }
+    
+    @Test
+    public void testGrantAttribute() throws InvalidParameterException {
+        List<String> attributesBeforeGrant = this.federationUser1.getAttributes();
+        
+        assertTrue(attributesBeforeGrant.isEmpty());
+        
+        this.federation.grantAttribute(FEDERATION_USER_ID_1, ATTRIBUTE_ID_1);
+        
+        List<String> attributesAfterGrant = this.federationUser1.getAttributes();
+        
+        assertEquals(1, attributesAfterGrant.size());
+        assertEquals(ATTRIBUTE_ID_1, attributesAfterGrant.get(0));
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testGrantAttributeFailsIfAttributeDoesNotExist() throws InvalidParameterException {
+        this.federation.grantAttribute(FEDERATION_USER_ID_1, "invalidattributeid");
+    }
+    
+    @Test
+    public void testRevokeAttribute() throws InvalidParameterException {
+        List<String> federationUser1Attributes = new ArrayList<String>();
+        federationUser1Attributes.add(ATTRIBUTE_ID_1);
+        
+        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, 
+                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
+                federationUser1Attributes);
+        
+        this.federationMembers = new ArrayList<FederationUser>();
+        this.federationMembers.add(this.federationUser1);
+        this.federationMembers.add(this.federationUser2);
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
+        
+        List<String> attributesBeforeRevoke = this.federationUser1.getAttributes();
+        
+        assertEquals(1, attributesBeforeRevoke.size());
+        assertEquals(ATTRIBUTE_ID_1, attributesBeforeRevoke.get(0));
+        
+        this.federation.revokeAttribute(FEDERATION_USER_ID_1, ATTRIBUTE_ID_1);
+        
+        List<String> attributesAfterRevoke = this.federationUser1.getAttributes();
+        assertTrue(attributesAfterRevoke.isEmpty());
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testRevokeAttributeFailsIfAttributeDoesNotExist() throws InvalidParameterException {
+        this.federation.revokeAttribute(FEDERATION_USER_ID_1, "invalidattributeid");
+    }
+    
+    @Test
+    public void testIsServiceOwner() throws InvalidParameterException {
+        List<String> federationUser1Attributes = new ArrayList<String>();
+        federationUser1Attributes.add(Federation.SERVICE_OWNER_ATTRIBUTE_NAME);
+        
+        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, 
+                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
+                federationUser1Attributes);
+        
+        this.federationMembers = new ArrayList<FederationUser>();
+        this.federationMembers.add(this.federationUser1);
+        this.federationMembers.add(this.federationUser2);
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                this.federationAttributes);
+        
+        assertTrue(this.federation.isServiceOwner(FEDERATION_USER_NAME_1));
+        assertFalse(this.federation.isServiceOwner(FEDERATION_USER_NAME_2));
     }
 }

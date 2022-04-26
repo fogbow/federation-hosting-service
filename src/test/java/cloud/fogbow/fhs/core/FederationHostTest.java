@@ -114,8 +114,10 @@ public class FederationHostTest {
         
         this.admin1 = new FederationUser(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
         this.admin2 = new FederationUser(ADMIN_NAME_2, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2);
-        this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, REGULAR_USER_EMAIL_1, REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1);
-        this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, REGULAR_USER_EMAIL_2, REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2);
+        this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, REGULAR_USER_EMAIL_1, 
+                REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>());
+        this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, REGULAR_USER_EMAIL_2, 
+                REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>());
 
         this.discoveryPolicy1 = Mockito.mock(ServiceDiscoveryPolicy.class);
         Mockito.when(discoveryPolicy1.isDiscoverableBy(user1)).thenReturn(true);
