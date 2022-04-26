@@ -51,6 +51,7 @@ public class FederationUser {
         this.attributes.add(attributeId);
     }
 
+    // TODO test
     public void removeAttribute(String attributeId) {
         // TODO should check if attributeId has already been added 
         this.attributes.remove(attributeId);

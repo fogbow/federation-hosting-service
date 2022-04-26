@@ -31,6 +31,7 @@ public class FogbowServiceInvoker extends HttpServiceInvoker {
     public FogbowServiceInvoker(Map<String, String> metadata) throws ConfigurationErrorException {
         this.serviceType = metadata.get(SERVICE_TYPE_KEY);
         
+        // TODO test
         if (!SERVICE_TYPES.contains(this.serviceType)) {
             // TODO add message
             throw new ConfigurationErrorException();
@@ -57,6 +58,7 @@ public class FogbowServiceInvoker extends HttpServiceInvoker {
         String token = headers.get(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY);
         RSAPublicKey servicePublicKey = null;
         
+        // TODO test
         if (this.serviceType.equals(SERVICE_TYPE_RAS)) {
             servicePublicKey = FhsPublicKeysHolder.getInstance().getRasPublicKey();
         }

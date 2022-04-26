@@ -138,6 +138,7 @@ public class Federation {
         return authorizedServices;
     }
     
+    // TODO test
     public String createAttribute(String attributeName) {
         FederationAttribute newAttribute = new FederationAttribute(attributeName);
         this.attributes.add(newAttribute);
