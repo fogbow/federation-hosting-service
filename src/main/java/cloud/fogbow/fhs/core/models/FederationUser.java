@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.fhs.constants.Messages;
+
 public class FederationUser {
     private String id;
     private String name;
@@ -46,15 +49,21 @@ public class FederationUser {
         return enabled;
     }
 
-    // TODO test
-    public void addAttribute(String attributeId) {
-        // TODO should check if attributeId has already been added
+    public void addAttribute(String attributeId) throws InvalidParameterException {
+        if (this.attributes.contains(attributeId)) {
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.USER_ALREADY_HAS_ATTRIBUTE, this.id, attributeId));
+        }
+        
         this.attributes.add(attributeId);
     }
 
-    // TODO test
-    public void removeAttribute(String attributeId) {
-        // TODO should check if attributeId has already been added 
+    public void removeAttribute(String attributeId) throws InvalidParameterException {
+        if (!this.attributes.contains(attributeId)) {
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.USER_DOES_NOT_HAVE_ATTRIBUTE, this.id, attributeId));
+        }
+        
         this.attributes.remove(attributeId);
     }
 

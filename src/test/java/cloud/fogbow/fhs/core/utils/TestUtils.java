@@ -27,4 +27,14 @@ public class TestUtils {
         
         return list;
     }
+    
+    public static <T> List<T> getListWithElements(T ... elements) {
+        List<T> list = new ArrayList<T>();
+        
+        for (T element : elements) {
+            list.add(element);
+        }
+        
+        return list;
+    }
 }

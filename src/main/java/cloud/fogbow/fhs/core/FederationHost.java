@@ -120,7 +120,6 @@ public class FederationHost {
         return ownedFederations;
     }
 
-    // TODO test
     public Federation getFederation(String requester, String federationId) throws InvalidParameterException, UnauthorizedRequestException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId); 
@@ -268,9 +267,8 @@ public class FederationHost {
             }
         }
 
-        // TODO add message
-        // TODO test
-        throw new InvalidParameterException();
+        throw new InvalidParameterException(
+                String.format(Messages.Exception.SERVICE_NOT_FOUND, serviceId, federationId));
     }
     
     public void updateService(String federationId, String owner, String serviceId, 
@@ -386,12 +384,13 @@ public class FederationHost {
         return null;
     }
     
-    private void checkIfRequesterIsFederationOwner(String requester, Federation federation) throws InvalidParameterException, UnauthorizedRequestException {
+    private void checkIfRequesterIsFederationOwner(String requester, Federation federation) 
+            throws InvalidParameterException, UnauthorizedRequestException {
         // FIXME should check for other fed admins 
         // in the federation
         if (!federation.getOwner().equals(requester)) {
-            // TODO add message
-            throw new UnauthorizedRequestException();
+            throw new UnauthorizedRequestException(
+                    String.format(Messages.Exception.REQUESTER_DOES_NOT_OWN_FEDERATION, requester, federation.getId()));
         }
     }
     
