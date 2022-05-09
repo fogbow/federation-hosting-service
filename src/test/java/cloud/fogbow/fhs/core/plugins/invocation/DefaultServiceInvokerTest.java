@@ -33,6 +33,7 @@ public class DefaultServiceInvokerTest {
     private static final int RESPONSE_CODE = 200;
     private static final String RESPONSE_CONTENT = "content";
     private static final String ENDPOINT = "endpoint";
+    private static final FederationUser USER = Mockito.mock(FederationUser.class);
     
     private DefaultServiceInvoker serviceInvoker;
     
@@ -74,7 +75,7 @@ public class DefaultServiceInvokerTest {
         headersToPrepare.put("headerKey1", "headerValue1");
         headersToPrepare.put("headerKey2", "headerValue2");
         
-        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headersToPrepare); 
+        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headersToPrepare, USER); 
         
         assertEquals(2, preparedHeaders.size());
         assertEquals("headerValue1", preparedHeaders.get("headerKey1"));

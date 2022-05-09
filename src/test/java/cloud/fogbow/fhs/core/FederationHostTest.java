@@ -81,6 +81,8 @@ public class FederationHostTest {
     private static final String SERVICE_OWNER_NAME_2 = "serviceOwner2";
     private static final String ATTRIBUTE_NAME_1 = "attributeName1";
     private static final String ATTRIBUTE_ID_1 = "attributeId1";
+    private static final Map<String, String> USER_AUTHORIZATION_PROPERTIES = new HashMap<String, String>();
+    private static final String IDENTITY_PLUGIN_CLASS_NAME = "identityPluginClassName";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -111,12 +113,12 @@ public class FederationHostTest {
     private void setUpFederationData() throws InvalidParameterException {
         this.invoker = Mockito.mock(ServiceInvoker.class);
         
-        this.admin1 = new FederationUser(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
-        this.admin2 = new FederationUser(ADMIN_NAME_2, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2);
-        this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, REGULAR_USER_EMAIL_1, 
-                REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>());
-        this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, REGULAR_USER_EMAIL_2, 
-                REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>());
+        this.admin1 = new FederationUser(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
+        this.admin2 = new FederationUser(ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2, USER_AUTHORIZATION_PROPERTIES);
+        this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, FEDERATION_ID_1, REGULAR_USER_EMAIL_1, 
+                REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
+        this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, FEDERATION_ID_1, REGULAR_USER_EMAIL_2, 
+                REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
 
         this.discoveryPolicy1 = Mockito.mock(ServiceDiscoveryPolicy.class);
         Mockito.when(discoveryPolicy1.isDiscoverableBy(user1)).thenReturn(true);
@@ -225,8 +227,8 @@ public class FederationHostTest {
     
     @Test
     public void testFederationAdminCreation() throws InvalidParameterException {
-        String adminId1 = this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
-        String adminId2 = this.federationHost.addFederationAdmin(ADMIN_NAME_2, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2);
+        String adminId1 = this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
+        String adminId2 = this.federationHost.addFederationAdmin(ADMIN_NAME_2, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2, USER_AUTHORIZATION_PROPERTIES);
         
         FederationUser returnedUser1 = this.federationHost.getFederationAdmin(adminId1);
         FederationUser returnedUser2 = this.federationHost.getFederationAdmin(adminId2);
@@ -245,25 +247,25 @@ public class FederationHostTest {
     public void testCannotCreateFederationAdminWithNullUsername() throws InvalidParameterException {
         setUpFederationData();
         
-        this.federationHost.addFederationAdmin(null, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
+        this.federationHost.addFederationAdmin(null, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationAdminWithEmptyUsername() throws InvalidParameterException {
         setUpFederationData();
         
-        this.federationHost.addFederationAdmin("", ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
+        this.federationHost.addFederationAdmin("", ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationAdminWithAlreadyUsedUsername() throws InvalidParameterException {
         try {
-            this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1);
+            this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
         } catch (InvalidParameterException e) {
             fail("Not expected to fail in the first call.");
         }
         
-        this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2);
+        this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = InvalidParameterException.class)
@@ -351,23 +353,26 @@ public class FederationHostTest {
     public void testGrantMembership() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.grantMembership(ADMIN_NAME_1, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP);
+        this.federationHost.grantMembership(ADMIN_NAME_1, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
+                USER_AUTHORIZATION_PROPERTIES);
         
-        Mockito.verify(this.federation1).addUser(USER_ID_TO_GRANT_MEMBERSHIP);
+        Mockito.verify(this.federation1).addUser(USER_ID_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGrantMembership() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP);
+        this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
+                USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonOwnerUserCannotGrantMembership() throws UnauthorizedRequestException, InvalidParameterException {
         setUpFederationData();
 
-        this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP);
+        this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
+                USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test

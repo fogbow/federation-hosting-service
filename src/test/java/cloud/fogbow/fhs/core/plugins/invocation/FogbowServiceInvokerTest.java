@@ -96,7 +96,7 @@ public class FogbowServiceInvokerTest {
         this.body.put(BODY_KEY_1, BODY_VALUE_1);
         this.body.put(BODY_KEY_2, BODY_VALUE_2);
         
-        this.serviceInvoker = new FogbowServiceInvoker(this.metadata);
+        this.serviceInvoker = new FogbowServiceInvoker(this.metadata, null);
     }
     
     @Test
@@ -114,7 +114,7 @@ public class FogbowServiceInvokerTest {
     public void testPrepareHeaders() throws FogbowException {
         int headersSize = this.headers.size();
         
-        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers);
+        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers, null);
         
         assertEquals(headersSize, preparedHeaders.size());
         assertEquals(REWRAP_TOKEN, preparedHeaders.get(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY));

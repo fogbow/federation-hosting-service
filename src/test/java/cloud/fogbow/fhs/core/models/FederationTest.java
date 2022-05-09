@@ -42,6 +42,7 @@ public class FederationTest {
     private static final String ATTRIBUTE_NAME_1 = "attributeName1";
     private static final String ATTRIBUTE_ID_2 = "attributeId2";
     private static final String ATTRIBUTE_NAME_2 = "attributeName2";
+    private static final String IDENTITY_PLUGIN_CLASS_NAME = "identityPluginClassName";
     private List<FederationUser> federationMembers;
     private List<FederationService> federationServices;
     private List<FederationAttribute> federationAttributes;
@@ -55,12 +56,12 @@ public class FederationTest {
     
     @Before
     public void setUp() {
-        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, 
+        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
                 FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
-                new ArrayList<String>());
-        this.federationUser2 = new FederationUser(FEDERATION_USER_ID_2, FEDERATION_USER_NAME_2, 
+                new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
+        this.federationUser2 = new FederationUser(FEDERATION_USER_ID_2, FEDERATION_USER_NAME_2, FEDERATION_ID_1,
                 FEDERATION_USER_EMAIL_2, FEDERATION_USER_DESCRIPTION_2, FEDERATION_USER_ENABLED_2, 
-                new ArrayList<String>());
+                new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         this.federationMembers = new ArrayList<FederationUser>();
         this.federationMembers.add(this.federationUser1);
@@ -93,7 +94,7 @@ public class FederationTest {
     }
     
     @Test
-    public void testAddUser() {
+    public void testAddUser() throws InvalidParameterException {
         this.federationMembers = new ArrayList<FederationUser>();
         this.federationServices = new ArrayList<FederationService>();
         
@@ -106,7 +107,7 @@ public class FederationTest {
         
         assertEquals(0, federationUserListBefore.size());
         
-        this.federation.addUser(USER_ID_TO_ADD);
+        this.federation.addUser(USER_ID_TO_ADD, new HashMap<String, String>());
         
         List<FederationUser> federationUserListAfter = this.federation.getMemberList();
         
@@ -234,9 +235,9 @@ public class FederationTest {
         List<String> federationUser1Attributes = new ArrayList<String>();
         federationUser1Attributes.add(ATTRIBUTE_ID_1);
         
-        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, 
+        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
                 FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
-                federationUser1Attributes);
+                federationUser1Attributes, IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         this.federationMembers = new ArrayList<FederationUser>();
         this.federationMembers.add(this.federationUser1);
@@ -268,9 +269,9 @@ public class FederationTest {
         List<String> federationUser1Attributes = new ArrayList<String>();
         federationUser1Attributes.add(Federation.SERVICE_OWNER_ATTRIBUTE_NAME);
         
-        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, 
+        this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
                 FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
-                federationUser1Attributes);
+                federationUser1Attributes, IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         this.federationMembers = new ArrayList<FederationUser>();
         this.federationMembers.add(this.federationUser1);

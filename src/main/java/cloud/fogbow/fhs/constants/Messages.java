@@ -7,8 +7,10 @@ public class Messages {
         public static final String ADMIN_NAME_CANNOT_BE_NULL_OR_EMPTY = "Admin name cannot be null or empty.";
         public static final String ATTRIBUTE_DOES_NOT_EXIST_IN_FEDERATION = "Attribute %s does not exist in federation %s.";
         public static final String CANNOT_FIND_FEDERATION = "Cannot find federation %s.";
+        public static final String EXPIRED_TOKEN = "Expired token.";
         public static final String FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY = "Federation name cannot be null or empty.";
         public static final String GENERIC_EXCEPTION_S = Log.GENERIC_EXCEPTION_S;
+        public static final String INVALID_TOKEN = "Invalid token.";
         public static final String MEMBER_NOT_FOUND_IN_FEDERATION = "Member %s not found in federation %s.";
         public static final String NO_OPERATOR_ID_SPECIFIED = "No operator ID specified in the configuration file.";
         public static final String NO_OTHER_SERVICE_ADMIN_ID_SPECIFIED = "No other service admin ID specified in the configuration file.";
@@ -43,6 +45,8 @@ public class Messages {
         public static final String INVOKE_POST_REQUEST_RECEIVED = "Invoke post request received.";
         public static final String INVOKE_PUT_REQUEST_RECEIVED = "Invoke put request received.";
         public static final String LIST_MEMBERS_RECEIVED = "List members received.";
+        public static final String LOGIN_RECEIVED = "Login received.";
+        public static final String LOGOUT_RECEIVED = "Logout received.";
         public static final String MAP_RECEIVED = "Map received.";
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";

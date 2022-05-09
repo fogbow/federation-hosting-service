@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import cloud.fogbow.common.util.connectivity.HttpResponse;
+import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
@@ -23,7 +24,7 @@ public class DefaultServiceInvoker extends HttpServiceInvoker {
     }
 
     @Override
-    Map<String, String> prepareHeaders(Map<String, String> headers) {
+    Map<String, String> prepareHeaders(Map<String, String> headers, FederationUser user) {
         return headers;
     }
 

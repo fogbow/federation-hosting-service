@@ -17,6 +17,8 @@ import cloud.fogbow.fhs.core.models.JoinRequest;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
 import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
@@ -63,7 +65,7 @@ public class FederationHost {
      */
     
     public String addFederationAdmin(String adminName, String adminEmail, 
-            String adminDescription, boolean enabled) throws InvalidParameterException {
+            String adminDescription, boolean enabled, Map<String, String> authenticationProperties) throws InvalidParameterException {
         if (adminName == null || adminName.isEmpty()) {
             throw new InvalidParameterException(Messages.Exception.ADMIN_NAME_CANNOT_BE_NULL_OR_EMPTY);
         }
@@ -72,7 +74,7 @@ public class FederationHost {
             throw new InvalidParameterException(Messages.Exception.ADMIN_ALREADY_EXISTS);
         }
         
-        FederationUser newAdmin = new FederationUser(adminName, adminEmail, adminDescription, enabled);
+        FederationUser newAdmin = new FederationUser(adminName, "", adminEmail, adminDescription, enabled, authenticationProperties);
         federationAdminList.add(newAdmin);
         return newAdmin.getMemberId();
     }
@@ -140,11 +142,12 @@ public class FederationHost {
      * 
      */
     
-    public FederationUser grantMembership(String requester, String federationId, String userId) throws UnauthorizedRequestException, InvalidParameterException {
+    public FederationUser grantMembership(String requester, String federationId, String userId, Map<String, String> authenticationProperties) 
+            throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federationToAdd = getFederationOrFail(federationId); 
         checkIfRequesterIsFederationOwner(requester, federationToAdd);
-        return federationToAdd.addUser(userId);
+        return federationToAdd.addUser(userId, authenticationProperties);
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
@@ -413,5 +416,18 @@ public class FederationHost {
         }
         
         return null;
+    }
+
+    public FederationAuthenticationPlugin getAuthorizationPluginForUser(String federationId, String memberId) throws InvalidParameterException {
+        if (federationId == null) {
+            FederationUser admin = lookUpAdminById(memberId);
+            String identityPluginClassName = admin.getIdentityPluginClassName();
+            Map<String, String> identityPluginProperties = admin.getIdentityPluginProperties(); 
+            return new FederationAuthenticationPluginInstantiator().getAuthenticationPlugin(identityPluginClassName, 
+                    identityPluginProperties);
+        } else {
+            Federation federation = lookUpFederationById(federationId);
+            return federation.getAuthenticationPluginForMember(memberId);
+        }
     }
 }

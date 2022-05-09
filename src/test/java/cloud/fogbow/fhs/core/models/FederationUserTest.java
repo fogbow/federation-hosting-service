@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.junit.Test;
 
@@ -18,12 +19,15 @@ public class FederationUserTest {
     private static final boolean USER_ENABLED = false;
     private static final String ATTRIBUTE_ID_1 = "attributeId1";
     private static final String ATTRIBUTE_ID_2 = "attributeId2";
+    private static final String IDENTITY_PLUGIN_CLASS_NAME = "identityPluginClassName";
+    private static final String FEDERATION_ID = "federationId";
     private FederationUser federationUser;
     
     @Test
     public void testAddAttribute() throws InvalidParameterException {
-        federationUser = new FederationUser(USER_ID, USER_NAME, USER_EMAIL, 
-                USER_DESCRIPTION, USER_ENABLED, new ArrayList<String>());
+        federationUser = new FederationUser(USER_ID, USER_NAME, USER_EMAIL, FEDERATION_ID,
+                USER_DESCRIPTION, USER_ENABLED, new ArrayList<String>(), 
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         assertTrue(federationUser.getAttributes().isEmpty());
         
@@ -35,16 +39,18 @@ public class FederationUserTest {
     
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddAttributeAlreadyAdded() throws InvalidParameterException {
-        federationUser = new FederationUser(USER_ID, USER_NAME, USER_EMAIL, 
-                USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1));
+        federationUser = new FederationUser(USER_ID, USER_NAME, FEDERATION_ID, USER_EMAIL, 
+                USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1), 
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         federationUser.addAttribute(ATTRIBUTE_ID_1);
     }
     
     @Test
     public void testRemoveAttribute() throws InvalidParameterException {
-        federationUser = new FederationUser(USER_ID, USER_NAME, USER_EMAIL, 
-                USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1));
+        federationUser = new FederationUser(USER_ID, USER_NAME, FEDERATION_ID, USER_EMAIL, 
+                USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1), 
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         federationUser.removeAttribute(ATTRIBUTE_ID_1);
         
@@ -53,8 +59,9 @@ public class FederationUserTest {
     
     @Test(expected = InvalidParameterException.class)
     public void testCannotRemoveNotFoundAttribute() throws InvalidParameterException {
-        federationUser = new FederationUser(USER_ID, USER_NAME, USER_EMAIL, 
-                USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1));
+        federationUser = new FederationUser(USER_ID, USER_NAME, FEDERATION_ID, USER_EMAIL,
+                USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1), 
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
         
         federationUser.removeAttribute(ATTRIBUTE_ID_2);
     }

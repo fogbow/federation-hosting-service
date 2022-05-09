@@ -35,7 +35,7 @@ public class FhsOperator {
         try {
             LOGGER.info(Messages.Log.ADD_FEDERATION_ADMIN_RECEIVED);
             String memberId = ApplicationFacade.getInstance().addFederationAdmin(systemUserToken, fedAdmin.getName(), 
-                    fedAdmin.getEmail(), fedAdmin.getDescription(), fedAdmin.getEnabled());
+                    fedAdmin.getEmail(), fedAdmin.getDescription(), fedAdmin.getEnabled(), fedAdmin.getAuthenticationProperties());
             return new ResponseEntity<>(new MemberId(memberId), HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);

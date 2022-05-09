@@ -2,6 +2,7 @@ package cloud.fogbow.fhs.core.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import cloud.fogbow.common.exceptions.InvalidParameterException;
@@ -10,23 +11,31 @@ import cloud.fogbow.fhs.constants.Messages;
 public class FederationUser {
     private String id;
     private String name;
+    private String federationId;
     private String email;
     private String description;
     private boolean enabled;
     private List<String> attributes;
+    private String identityPluginClassName;
+    private Map<String, String> identityPluginProperties;
     
-    public FederationUser(String id, String name, String email, String description, boolean enabled,
-            List<String> attributes) {
+    public FederationUser(String id, String name, String federationId, String email, String description, boolean enabled,
+            List<String> attributes, String identityPluginClassName, Map<String, String> identityPluginProperties) {
         this.id = id;
         this.name = name;
+        this.federationId = federationId;
         this.email = email;
         this.description = description;
         this.enabled = enabled;
         this.attributes = attributes;
+        this.identityPluginClassName = identityPluginClassName;
+        this.identityPluginProperties = identityPluginProperties;
     }
     
-    public FederationUser(String name, String email, String description, boolean enabled) {
-        this(UUID.randomUUID().toString(), name, email, description, enabled, new ArrayList<String>());
+    public FederationUser(String name, String federationId, String email, String description, boolean enabled, Map<String, String> authenticationProperties) {
+        // FIXME constant
+        this(UUID.randomUUID().toString(), name, federationId, email, description, enabled, new ArrayList<String>(),
+                authenticationProperties.get("identityPluginClassName"), authenticationProperties);
     }
 
     public String getMemberId() {
@@ -35,6 +44,10 @@ public class FederationUser {
 
     public String getName() {
         return name;
+    }
+    
+    public String getFederationId() {
+        return federationId;
     }
 
     public String getEmail() {
@@ -69,5 +82,13 @@ public class FederationUser {
 
     public List<String> getAttributes() {
         return this.attributes;
+    }
+
+    public String getIdentityPluginClassName() {
+        return this.identityPluginClassName;
+    }
+
+    public Map<String, String> getIdentityPluginProperties() {
+        return this.identityPluginProperties;
     }
 }

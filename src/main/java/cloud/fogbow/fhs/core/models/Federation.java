@@ -7,9 +7,14 @@ import java.util.UUID;
 
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.constants.Messages;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
 public class Federation {
+    public static final String MEMBER_ATTRIBUTE_NAME = "member";
     public static final String SERVICE_OWNER_ATTRIBUTE_NAME = "serviceOwner";
+    private static final FederationAttribute MEMBER_ATTRIBUTE = 
+            new FederationAttribute(MEMBER_ATTRIBUTE_NAME, MEMBER_ATTRIBUTE_NAME);
     private static FederationAttribute SERVICE_OWNER_ATTRIBUTE = 
             new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME, SERVICE_OWNER_ATTRIBUTE_NAME);
     
@@ -32,6 +37,7 @@ public class Federation {
             String description, boolean enabled) {
         this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
                 new ArrayList<FederationService>(), new ArrayList<FederationAttribute>());
+        this.attributes.add(MEMBER_ATTRIBUTE);
         this.attributes.add(SERVICE_OWNER_ATTRIBUTE);
     }
     
@@ -51,8 +57,9 @@ public class Federation {
     }
 
     // FIXME should receive email and description
-    public FederationUser addUser(String userId) {
-        FederationUser newMember = new FederationUser(userId, "", "", true);
+    public FederationUser addUser(String userId, Map<String, String> authenticationProperties) throws InvalidParameterException {
+        FederationUser newMember = new FederationUser(userId, this.id, "", "", true, authenticationProperties);
+        newMember.addAttribute(MEMBER_ATTRIBUTE_NAME);
         this.members.add(newMember);
         return newMember;
     }
@@ -175,5 +182,13 @@ public class Federation {
     
     public Map<String, String> getMetadata() {
         return metadata;
+    }
+
+    public FederationAuthenticationPlugin getAuthenticationPluginForMember(String memberId) throws InvalidParameterException {
+        FederationUser user = getUserByMemberId(memberId);
+        String identityPluginClassName = user.getIdentityPluginClassName();
+        Map<String, String> identityPluginProperties = user.getIdentityPluginProperties(); 
+        return new FederationAuthenticationPluginInstantiator().getAuthenticationPlugin(identityPluginClassName, 
+                identityPluginProperties);
     }
 }

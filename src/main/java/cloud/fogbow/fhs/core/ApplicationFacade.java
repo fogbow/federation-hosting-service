@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import cloud.fogbow.as.core.util.AuthenticationUtil;
 import cloud.fogbow.common.constants.HttpMethod;
+import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
+import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
 import cloud.fogbow.common.util.CryptoUtil;
@@ -29,6 +31,9 @@ import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
+import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public class ApplicationFacade {
@@ -37,6 +42,7 @@ public class ApplicationFacade {
     private RSAPublicKey asPublicKey;
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
     private FederationHost federationHost;
+    private List<FederationUser> fhsOperators;
     
     public static ApplicationFacade getInstance() {
         synchronized (ApplicationFacade.class) {
@@ -55,6 +61,10 @@ public class ApplicationFacade {
         this.federationHost = localFederationHost;
     }
     
+    public void setFhsOperators(List<FederationUser> fhsOperators) {
+        this.fhsOperators = fhsOperators;
+    }
+    
     /*
      * 
      * FHSOperator
@@ -62,10 +72,10 @@ public class ApplicationFacade {
      */
     
     public String addFederationAdmin(String userToken, String adminName, String adminEmail, 
-            String adminDescription, boolean enabled) throws FogbowException {
+            String adminDescription, boolean enabled, Map<String, String> authenticationProperties) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.ADD_FED_ADMIN));
-        return this.federationHost.addFederationAdmin(adminName, adminEmail, adminDescription, enabled);
+        return this.federationHost.addFederationAdmin(adminName, adminEmail, adminDescription, enabled, authenticationProperties);
     }
     
     /*
@@ -103,10 +113,11 @@ public class ApplicationFacade {
      * 
      */
     
-    public MemberId grantMembership(String userToken, String federationId, String userId) throws FogbowException {
+    public MemberId grantMembership(String userToken, String federationId, String userId, 
+            Map<String, String> authenticationProperties) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GRANT_MEMBERSHIP));
-        FederationUser user = this.federationHost.grantMembership(requestUser.getId(), federationId, userId);
+        FederationUser user = this.federationHost.grantMembership(requestUser.getId(), federationId, userId, authenticationProperties);
         return new MemberId(user.getMemberId());
     }
     
@@ -224,6 +235,44 @@ public class ApplicationFacade {
     
     /*
      * 
+     * Authentication
+     * 
+     */
+
+    public String login(String federationId, String memberId, Map<String, String> credentials)
+            throws InvalidParameterException, UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
+        FederationUser fhsOperator = getUserByName(memberId);
+        
+        if (fhsOperator != null) {
+            String identityPluginClassName = fhsOperator.getIdentityPluginClassName();
+            Map<String, String> identityPluginProperties = fhsOperator.getIdentityPluginProperties(); 
+            FederationAuthenticationPlugin authenticationPlugin = new FederationAuthenticationPluginInstantiator().
+                    getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
+            return authenticationPlugin.authenticate(credentials);
+        }
+        
+        FederationAuthenticationPlugin authenticationPlugin = this.federationHost.getAuthorizationPluginForUser(federationId, memberId); 
+        return authenticationPlugin.authenticate(credentials);
+    }
+    
+    private FederationUser getUserByName(String name) {
+        for (FederationUser user : this.fhsOperators) {
+            if (user.getName().equals(name)) {
+                return user;
+            }
+        }
+        
+        return null;
+    }
+    
+
+    public void logout(String loginSessionId) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    /*
+     * 
      * Authorization
      * 
      */
@@ -235,8 +284,8 @@ public class ApplicationFacade {
     }
     
     private SystemUser authenticate(String userToken) throws FogbowException {
-        RSAPublicKey keyRSA = getAsPublicKey();
-        return AuthenticationUtil.authenticate(keyRSA, userToken);
+        return AuthenticationUtil.authenticate(
+                ServiceAsymmetricKeysHolder.getInstance().getPublicKey() , userToken);
     }
     
     private RSAPublicKey getAsPublicKey() throws FogbowException {

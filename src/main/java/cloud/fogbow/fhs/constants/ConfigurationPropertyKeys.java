@@ -12,4 +12,5 @@ public class ConfigurationPropertyKeys {
     
     public static final String OPERATOR_IDS_KEY = "operator_ids";
     public static final String OTHER_SERVICES_ADMIN_IDS_KEY = "other_services_admin_ids";
+    public static final String TOKEN_EXPIRATION_INTERVAL = "token_expiration_interval";
 }
