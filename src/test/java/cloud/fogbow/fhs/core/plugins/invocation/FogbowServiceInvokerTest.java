@@ -22,22 +22,23 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import cloud.fogbow.as.core.util.TokenProtector;
-import cloud.fogbow.common.constants.FogbowConstants;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.common.util.connectivity.HttpResponse;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.core.FhsPublicKeysHolder;
+import cloud.fogbow.fhs.core.models.FederationUser;
+import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ FhsPublicKeysHolder.class, TokenProtector.class, 
-    ServiceAsymmetricKeysHolder.class })
+    ServiceAsymmetricKeysHolder.class, AuthenticationUtil.class })
 public class FogbowServiceInvokerTest {
     private static final String PATH_1 = "path1";
     private static final String PATH_2 = "path2";
     private static final String TOKEN = "token";
-    private static final String REWRAP_TOKEN = "rewrapToken";
     private static final String HEADER_KEY_1 = "headerKey1";
     private static final String HEADER_KEY_2 = "headerKey2";
     private static final String HEADER_VALUE_1 = "headerValue1";
@@ -48,6 +49,8 @@ public class FogbowServiceInvokerTest {
     private static final String BODY_VALUE_2 = "bodyValue2";
     private static final int RESPONSE_CODE = 201;
     private static final String RESPONSE_CONTENT = "content";
+    private static final String USER_NAME = "user";
+    private static final String FEDERATION_ID = "federation";
     private FogbowServiceInvoker serviceInvoker;
     private Map<String, String> metadata;
     private List<String> path;
@@ -82,10 +85,10 @@ public class FogbowServiceInvokerTest {
         
         PowerMockito.mockStatic(ServiceAsymmetricKeysHolder.class);
         BDDMockito.given(ServiceAsymmetricKeysHolder.getInstance()).willReturn(serviceKeysHolder);
-        
-        PowerMockito.mockStatic(TokenProtector.class);
-        BDDMockito.given(TokenProtector.rewrap(
-                fhsPrivateKey, rasPublicKey, TOKEN, FogbowConstants.TOKEN_STRING_SEPARATOR)).willReturn(REWRAP_TOKEN);
+
+        PowerMockito.mockStatic(AuthenticationUtil.class);
+        BDDMockito.given(AuthenticationUtil.createFogbowToken(Mockito.any(SystemUser.class), 
+                Mockito.any(RSAPrivateKey.class), Mockito.any(RSAPublicKey.class))).willReturn(TOKEN);
         
         this.headers = new HashMap<String, String>();
         this.headers.put(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY, TOKEN);
@@ -114,10 +117,14 @@ public class FogbowServiceInvokerTest {
     public void testPrepareHeaders() throws FogbowException {
         int headersSize = this.headers.size();
         
-        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers, null);
+        FederationUser user = Mockito.mock(FederationUser.class);
+        Mockito.when(user.getName()).thenReturn(USER_NAME);
+        Mockito.when(user.getFederationId()).thenReturn(FEDERATION_ID);
+        
+        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers, user);
         
         assertEquals(headersSize, preparedHeaders.size());
-        assertEquals(REWRAP_TOKEN, preparedHeaders.get(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY));
+        assertEquals(TOKEN, preparedHeaders.get(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY));
         assertEquals(HEADER_VALUE_1, preparedHeaders.get(HEADER_KEY_1));
         assertEquals(HEADER_VALUE_2, preparedHeaders.get(HEADER_KEY_2));
     }

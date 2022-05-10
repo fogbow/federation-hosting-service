@@ -39,7 +39,6 @@ import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 public class ApplicationFacade {
 
     private static ApplicationFacade instance;
-    private RSAPublicKey asPublicKey;
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
     private FederationHost federationHost;
     private List<FederationUser> fhsOperators;
@@ -284,19 +283,8 @@ public class ApplicationFacade {
     }
     
     private SystemUser authenticate(String userToken) throws FogbowException {
-        return AuthenticationUtil.authenticate(
-                ServiceAsymmetricKeysHolder.getInstance().getPublicKey() , userToken);
-    }
-    
-    private RSAPublicKey getAsPublicKey() throws FogbowException {
-        if (this.asPublicKey == null) {
-            this.asPublicKey = FhsPublicKeysHolder.getInstance().getAsPublicKey();
-        }
-        return this.asPublicKey;
-    }
-    
-    public void setAsPublicKey(RSAPublicKey asPublicKey) {
-        this.asPublicKey = asPublicKey;
+        RSAPublicKey publicKey = ServiceAsymmetricKeysHolder.getInstance().getPublicKey();
+        return AuthenticationUtil.authenticate(publicKey, userToken);
     }
 
     public String getPublicKey() throws InternalServerErrorException, GeneralSecurityException {

@@ -19,11 +19,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import cloud.fogbow.as.core.util.AuthenticationUtil;
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
+import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.fhs.api.http.response.AttributeDescription;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
@@ -38,13 +38,15 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
+import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
 
 // TODO add checks to authorization
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ FhsPublicKeysHolder.class , AuthenticationUtil.class })
+@PrepareForTest({ FhsPublicKeysHolder.class , AuthenticationUtil.class, 
+    ServiceAsymmetricKeysHolder.class })
 public class ApplicationFacadeTest {
     private static final String TOKEN_1 = "userToken";
     private static final String TOKEN_2 = "userToken2";
@@ -96,7 +98,6 @@ public class ApplicationFacadeTest {
     private static final Map<String, String> USER_AUTHORIZATION_PROPERTIES = null;
     
     private ApplicationFacade applicationFacade;
-    private FhsPublicKeysHolder publicKeysHolder;
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
     private FederationHost federationHost;
     private RSAPublicKey asPublicKey;
@@ -171,16 +172,16 @@ public class ApplicationFacadeTest {
         
         asPublicKey = Mockito.mock(RSAPublicKey.class);
         
-        this.publicKeysHolder = Mockito.mock(FhsPublicKeysHolder.class);
-        Mockito.when(this.publicKeysHolder.getAsPublicKey()).thenReturn(asPublicKey);
-        
-        PowerMockito.mockStatic(FhsPublicKeysHolder.class);
-        BDDMockito.given(FhsPublicKeysHolder.getInstance()).willReturn(publicKeysHolder);
-        
         systemUser1 = Mockito.mock(SystemUser.class);
         Mockito.when(systemUser1.getId()).thenReturn(ADMIN_NAME);
         systemUser2 = Mockito.mock(SystemUser.class);
         Mockito.when(systemUser2.getId()).thenReturn(ADMIN_NAME_2);
+        
+        ServiceAsymmetricKeysHolder keysHolder = Mockito.mock(ServiceAsymmetricKeysHolder.class);
+        Mockito.when(keysHolder.getPublicKey()).thenReturn(asPublicKey);
+        
+        PowerMockito.mockStatic(ServiceAsymmetricKeysHolder.class);
+        BDDMockito.given(ServiceAsymmetricKeysHolder.getInstance()).willReturn(keysHolder);
         
         PowerMockito.mockStatic(AuthenticationUtil.class);
         BDDMockito.given(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1)).willReturn(systemUser1);
@@ -215,7 +216,6 @@ public class ApplicationFacadeTest {
         
         applicationFacade = ApplicationFacade.getInstance();
         
-        applicationFacade.setAsPublicKey(null);
         applicationFacade.setAuthorizationPlugin(authorizationPlugin);
         applicationFacade.setLocalFederationHost(federationHost);
     }
