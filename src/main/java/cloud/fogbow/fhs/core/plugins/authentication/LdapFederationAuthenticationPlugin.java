@@ -13,6 +13,7 @@ import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 
+// TODO test
 public class LdapFederationAuthenticationPlugin implements FederationAuthenticationPlugin {
     private static final Logger LOGGER = Logger.getLogger(LdapFederationAuthenticationPlugin.class);
 

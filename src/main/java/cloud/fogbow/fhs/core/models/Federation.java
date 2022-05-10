@@ -184,6 +184,7 @@ public class Federation {
         return metadata;
     }
 
+    // TODO test
     public FederationAuthenticationPlugin getAuthenticationPluginForMember(String memberId) throws InvalidParameterException {
         FederationUser user = getUserByMemberId(memberId);
         String identityPluginClassName = user.getIdentityPluginClassName();

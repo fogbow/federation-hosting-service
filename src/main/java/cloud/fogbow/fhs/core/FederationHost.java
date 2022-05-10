@@ -418,6 +418,7 @@ public class FederationHost {
         return null;
     }
 
+    // TODO test
     public FederationAuthenticationPlugin getAuthorizationPluginForUser(String federationId, String memberId) throws InvalidParameterException {
         if (federationId == null) {
             FederationUser admin = lookUpAdminById(memberId);

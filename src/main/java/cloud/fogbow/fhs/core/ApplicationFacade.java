@@ -238,6 +238,7 @@ public class ApplicationFacade {
      * 
      */
 
+    // TODO test
     public String login(String federationId, String memberId, Map<String, String> credentials)
             throws InvalidParameterException, UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
         FederationUser fhsOperator = getUserByName(memberId);
