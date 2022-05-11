@@ -16,8 +16,11 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import cloud.fogbow.common.constants.HttpMethod;
+import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
@@ -26,6 +29,8 @@ import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
 import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
@@ -34,6 +39,8 @@ import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
 public class FederationHostTest {
+    private static final String ADMIN_ID_1 = "adminId1";
+    private static final String ADMIN_ID_2 = "adminId2";
     private static final String ADMIN_NAME_1 = "admin1";
     private static final String ADMIN_NAME_2 = "admin2";
     private static final String ADMIN_EMAIL_1 = "adminEmail1";
@@ -83,6 +90,16 @@ public class FederationHostTest {
     private static final String ATTRIBUTE_ID_1 = "attributeId1";
     private static final Map<String, String> USER_AUTHORIZATION_PROPERTIES = new HashMap<String, String>();
     private static final String IDENTITY_PLUGIN_CLASS_NAME = "identityPluginClassName";
+    private static final String ADMIN_TOKEN_1 = "adminToken1";
+    private static final String REGULAR_USER_TOKEN_1 = "regularUserToken1";
+    private static final String ADMIN_CREDENTIAL_KEY_1 = "adminCredentialKey1";
+    private static final String ADMIN_CREDENTIAL_KEY_2 = "adminCredentialKey2";
+    private static final String ADMIN_CREDENTIAL_VALUE_1 = "adminCredentialValue1";
+    private static final String ADMIN_CREDENTIAL_VALUE_2 = "adminCredentialValue2";
+    private static final String REGULAR_USER_CREDENTIAL_KEY_1 = "regularUserCredentialKey1";
+    private static final String REGULAR_USER_CREDENTIAL_KEY_2 = "regularUserCredentialKey2";
+    private static final String REGULAR_USER_CREDENTIAL_VALUE_1 = "regularUserCredentialValue1";
+    private static final String REGULAR_USER_CREDENTIAL_VALUE_2 = "regularUserCredentialValue2";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -105,20 +122,29 @@ public class FederationHostTest {
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
     private AccessPolicyInstantiator accessPolicyInstantiator;
+    private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
+    private FederationAuthenticationPlugin authenticationPlugin;
     private JsonUtils jsonUtils;
     private ServiceAccessPolicy accessPolicy;
     private FederationAttribute federationAttribute1;
     private FederationAttribute federationAttribute2;
+    private Map<String, String> adminCredentials1;
+    private Map<String, String> regularUserCredentials1;
     
-    private void setUpFederationData() throws InvalidParameterException {
+    private void setUpFederationData() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
         this.invoker = Mockito.mock(ServiceInvoker.class);
         
-        this.admin1 = new FederationUser(ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
-        this.admin2 = new FederationUser(ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2, USER_AUTHORIZATION_PROPERTIES);
+        this.admin1 = new FederationUser(ADMIN_ID_1, ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, 
+                ADMIN_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
+        this.admin2 = new FederationUser(ADMIN_ID_2, ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, 
+                ADMIN_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
         this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, FEDERATION_ID_1, REGULAR_USER_EMAIL_1, 
-                REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
+                REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, 
+                USER_AUTHORIZATION_PROPERTIES);
         this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, FEDERATION_ID_1, REGULAR_USER_EMAIL_2, 
-                REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
+                REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, 
+                USER_AUTHORIZATION_PROPERTIES);
 
         this.discoveryPolicy1 = Mockito.mock(ServiceDiscoveryPolicy.class);
         Mockito.when(discoveryPolicy1.isDiscoverableBy(user1)).thenReturn(true);
@@ -136,6 +162,22 @@ public class FederationHostTest {
         
         this.accessPolicyInstantiator = Mockito.mock(AccessPolicyInstantiator.class);
         Mockito.when(this.accessPolicyInstantiator.getAccessPolicy(ACCESS_POLICY_CLASS_NAME, SERVICE_METADATA_1)).thenReturn(this.accessPolicy);
+        
+        this.adminCredentials1 = new HashMap<String, String>();
+        this.adminCredentials1.put(ADMIN_CREDENTIAL_KEY_1, ADMIN_CREDENTIAL_VALUE_1);
+        this.adminCredentials1.put(ADMIN_CREDENTIAL_KEY_2, ADMIN_CREDENTIAL_VALUE_2);
+        
+        this.regularUserCredentials1 = new HashMap<String, String>();
+        this.regularUserCredentials1.put(REGULAR_USER_CREDENTIAL_KEY_1, REGULAR_USER_CREDENTIAL_VALUE_1);
+        this.regularUserCredentials1.put(REGULAR_USER_CREDENTIAL_KEY_2, REGULAR_USER_CREDENTIAL_VALUE_2);
+        
+        this.authenticationPlugin = Mockito.mock(FederationAuthenticationPlugin.class);
+        Mockito.when(this.authenticationPlugin.authenticate(adminCredentials1)).thenReturn(ADMIN_TOKEN_1);
+        Mockito.when(this.authenticationPlugin.authenticate(regularUserCredentials1)).thenReturn(REGULAR_USER_TOKEN_1);
+        
+        this.authenticationPluginInstantiator = Mockito.mock(FederationAuthenticationPluginInstantiator.class);
+        Mockito.when(this.authenticationPluginInstantiator.getAuthenticationPlugin(
+                IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES)).thenReturn(authenticationPlugin);
         
         this.federationMetadata = new HashMap<String, String>();
         this.federationMetadata.put(FederationHost.CREDENTIALS_METADATA_KEY, 
@@ -195,6 +237,8 @@ public class FederationHostTest {
         Mockito.when(federation1.createAttribute(ATTRIBUTE_NAME_1)).thenReturn(ATTRIBUTE_ID_1);
         Mockito.when(federation1.getAttributes()).thenReturn(
                 Arrays.asList(this.federationAttribute1, this.federationAttribute2));
+        Mockito.when(federation1.login(REGULAR_USER_ID_1, this.regularUserCredentials1)).thenReturn(
+                REGULAR_USER_TOKEN_1);
         
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
@@ -211,7 +255,7 @@ public class FederationHostTest {
         Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);
         
         this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, 
-                discoveryPolicyInstantiator, accessPolicyInstantiator, jsonUtils);
+                discoveryPolicyInstantiator, accessPolicyInstantiator, jsonUtils, authenticationPluginInstantiator);
     }
     
     @Before
@@ -244,14 +288,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotCreateFederationAdminWithNullUsername() throws InvalidParameterException {
+    public void testCannotCreateFederationAdminWithNullUsername() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.addFederationAdmin(null, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotCreateFederationAdminWithEmptyUsername() throws InvalidParameterException {
+    public void testCannotCreateFederationAdminWithEmptyUsername() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.addFederationAdmin("", ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
@@ -269,7 +313,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testGetUnknownFederationAdmin() throws InvalidParameterException {
+    public void testGetUnknownFederationAdmin() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.getFederationAdmin(ADMIN_NAME_1);
@@ -282,7 +326,7 @@ public class FederationHostTest {
      */
     
     @Test
-    public void testCreateFederation() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testCreateFederation() throws FogbowException {
         setUpFederationData();
 
         Federation federation = this.federationHost.createFederation(ADMIN_NAME_1, FEDERATION_NAME_1, 
@@ -297,7 +341,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotCreateFederation() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonAdminUserCannotCreateFederation() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.createFederation(REGULAR_USER_NAME_1, FEDERATION_NAME_1, federationMetadata, 
@@ -305,7 +349,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotCreateFederationWithNullName() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testCannotCreateFederationWithNullName() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.createFederation(ADMIN_NAME_1, null, federationMetadata, 
@@ -313,7 +357,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotCreateFederationWithEmptyName() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testCannotCreateFederationWithEmptyName() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.createFederation(ADMIN_NAME_1, "", federationMetadata, 
@@ -321,7 +365,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testGetFederation() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testGetFederation() throws FogbowException {
         setUpFederationData();
         
         Federation returnedFederation1 = this.federationHost.getFederation(ADMIN_NAME_1, FEDERATION_ID_1);
@@ -330,14 +374,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testGetNonExistentFederation() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetNonExistentFederation() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederation(ADMIN_NAME_1, "nonexistentid");
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGetFederation() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testNonAdminUserCannotGetFederation() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederation(REGULAR_USER_NAME_1, FEDERATION_ID_1);
@@ -350,7 +394,7 @@ public class FederationHostTest {
      */
     
     @Test
-    public void testGrantMembership() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGrantMembership() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.grantMembership(ADMIN_NAME_1, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
@@ -360,7 +404,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGrantMembership() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonAdminUserCannotGrantMembership() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
@@ -368,7 +412,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonOwnerUserCannotGrantMembership() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonOwnerUserCannotGrantMembership() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
@@ -376,7 +420,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testGetFederationMembers() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetFederationMembers() throws FogbowException {
         setUpFederationData();
 
         List<FederationUser> members = this.federationHost.getFederationMembers(ADMIN_NAME_1, FEDERATION_ID_1);
@@ -387,21 +431,21 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGetFederationMembers() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonAdminUserCannotGetFederationMembers() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederationMembers(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonOwnerUserCannotGetFederationMembers() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonOwnerUserCannotGetFederationMembers() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederationMembers(ADMIN_NAME_2, FEDERATION_ID_1);
     }
     
     @Test
-    public void testGetFederationMemberInfo() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
 
         FederationUser user = this.federationHost.getFederationMemberInfo(ADMIN_NAME_1, FEDERATION_ID_1, user1.getMemberId());
@@ -410,14 +454,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGetFederationMemberInfo() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonAdminUserCannotGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederationMemberInfo(REGULAR_USER_NAME_1, FEDERATION_ID_1, user1.getMemberId());
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonOwnerUserCannotGetFederationMemberInfo() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonOwnerUserCannotGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederationMemberInfo(ADMIN_NAME_2, FEDERATION_ID_1, user1.getMemberId());
@@ -430,7 +474,7 @@ public class FederationHostTest {
      */
     
     @Test
-    public void testCreateAttribute() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testCreateAttribute() throws FogbowException {
         setUpFederationData();
         
         String returnedAttributeId = this.federationHost.createAttribute(ADMIN_NAME_1, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
@@ -440,14 +484,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testCannotCreateAttributeIfUserDoesNotOwnFederation() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testCannotCreateAttributeIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.createAttribute(ADMIN_NAME_2, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
     }
     
     @Test
-    public void testGetFederationAttributes() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testGetFederationAttributes() throws FogbowException {
         setUpFederationData();
         
         List<FederationAttribute> federationAttributes = this.federationHost.getFederationAttributes(ADMIN_NAME_1, FEDERATION_ID_1);
@@ -458,14 +502,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testCannotGetFederationAttributesIfUserDoesNotOwnFederation() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testCannotGetFederationAttributesIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.getFederationAttributes(ADMIN_NAME_2, FEDERATION_ID_1);
     }
     
     @Test
-    public void testGrantAttribute() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testGrantAttribute() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.grantAttribute(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
@@ -474,14 +518,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testCannotGrantAttributeIfUserDoesNotOwnFederation() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testCannotGrantAttributeIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.grantAttribute(ADMIN_NAME_2, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
     @Test
-    public void testRevokeAttribute() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testRevokeAttribute() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.revokeAttribute(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
@@ -490,7 +534,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testCannotRevokeAttributeIfUserDoesNotOwnFederation() throws InvalidParameterException, UnauthorizedRequestException {
+    public void testCannotRevokeAttributeIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.revokeAttribute(ADMIN_NAME_2, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
@@ -504,7 +548,7 @@ public class FederationHostTest {
     
     // TODO improve this test
     @Test
-    public void testRegisterService() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testRegisterService() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
@@ -514,7 +558,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonServiceOwnerUserCannotRegisterService() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonServiceOwnerUserCannotRegisterService() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.registerService(ADMIN_NAME_2, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
@@ -522,7 +566,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotRegisterServiceWithNullEndpoint() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testCannotRegisterServiceWithNullEndpoint() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, null, SERVICE_METADATA_1, 
@@ -530,7 +574,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testCannotRegisterServiceWithEmptyEndpoint() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testCannotRegisterServiceWithEmptyEndpoint() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, "", SERVICE_METADATA_1, 
@@ -538,7 +582,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testGetOwnedServices() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetOwnedServices() throws FogbowException {
         setUpFederationData();
 
         List<String> servicesOwnedByAdmin1 = this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_1, FEDERATION_ID_1);
@@ -554,14 +598,14 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonServiceOwnerUserCannotGetOwnedServices() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonServiceOwnerUserCannotGetOwnedServices() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getOwnedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
     @Test
-    public void testGetOwnedService() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetOwnedService() throws FogbowException {
         setUpFederationData();
 
         FederationService federationService = this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1);
@@ -574,21 +618,21 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonServiceOwnerUserCannotGetOwnedService() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonServiceOwnerUserCannotGetOwnedService() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getOwnedService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1);
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testGetOwnedServiceFailsIfServiceIdIsInvalid() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetOwnedServiceFailsIfServiceIdIsInvalid() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, "invalidserviceid");
     }
     
     @Test
-    public void testGetAuthorizedServices() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetAuthorizedServices() throws FogbowException {
         setUpFederationData();
 
         List<FederationService> services = this.federationHost.getAuthorizedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1);
@@ -599,7 +643,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testGetOwnedFederations() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testGetOwnedFederations() throws FogbowException {
         setUpFederationData();
 
         List<Federation> federationsAdmin1 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1);
@@ -615,7 +659,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGetOwnedFederations() throws UnauthorizedRequestException, InvalidParameterException {
+    public void testNonAdminUserCannotGetOwnedFederations() throws FogbowException {
         setUpFederationData();
 
         this.federationHost.getFederationsOwnedByUser(REGULAR_USER_NAME_1);
@@ -650,12 +694,58 @@ public class FederationHostTest {
     
     /*
      * 
+     * Authentication
+     * 
+     */
+    
+    @Test
+    public void testFederationAdminLogin() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        setUpFederationData();
+        
+        String returnedToken = this.federationHost.login(null, ADMIN_ID_1, adminCredentials1);
+        
+        assertEquals(ADMIN_TOKEN_1, returnedToken);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testFederationAdminLoginInvalidAdmin() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        setUpFederationData();
+        
+        String returnedToken = this.federationHost.login(null, "invalidAdminId", adminCredentials1);
+        
+        assertEquals(ADMIN_TOKEN_1, returnedToken);
+    }
+    
+    @Test
+    public void testNonFederationAdminLogin() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        setUpFederationData();
+        
+        String returnedToken = this.federationHost.login(FEDERATION_ID_1, REGULAR_USER_ID_1, regularUserCredentials1);
+        
+        assertEquals(REGULAR_USER_TOKEN_1, returnedToken);
+        
+        Mockito.verify(this.federation1).login(REGULAR_USER_ID_1, regularUserCredentials1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testNonFederationAdminLoginInvalidFederationId() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        setUpFederationData();
+        
+        this.federationHost.login("invalidFederationId", REGULAR_USER_ID_1, regularUserCredentials1);
+    }
+    
+    /*
+     * 
      * Authorization
      * 
      */
     
     @Test
-    public void testMap() throws InvalidParameterException {
+    public void testMap() throws FogbowException {
         setUpFederationData();
         
         Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME);

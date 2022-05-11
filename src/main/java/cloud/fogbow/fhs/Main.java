@@ -26,6 +26,7 @@ import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
 @Component
 public class Main implements ApplicationRunner {
@@ -42,12 +43,14 @@ public class Main implements ApplicationRunner {
         AuthorizationPlugin<FhsOperation> authorizationPlugin = AuthorizationPluginInstantiator.getAuthorizationPlugin(className);
         FederationHost federationHost = new FederationHost();
         List<FederationUser> fhsOperators = loadFhsOperatorsOrFail();
-
+        FederationAuthenticationPluginInstantiator authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
+        
         ApplicationFacade applicationFacade = ApplicationFacade.getInstance();
         
         applicationFacade.setFhsOperators(fhsOperators);
         applicationFacade.setAuthorizationPlugin(authorizationPlugin);
         applicationFacade.setLocalFederationHost(federationHost);
+        applicationFacade.setAuthenticationPluginInstantiator(authenticationPluginInstantiator);
     }
 
     @VisibleForTesting

@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import cloud.fogbow.common.exceptions.ConfigurationErrorException;
+import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -27,6 +30,7 @@ public class Federation {
     private List<FederationService> services;
     private List<FederationAttribute> attributes;
     private Map<String, String> metadata;
+    private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     
     public Federation(String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled) {
@@ -36,7 +40,8 @@ public class Federation {
     public Federation(String id, String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled) {
         this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
-                new ArrayList<FederationService>(), new ArrayList<FederationAttribute>());
+                new ArrayList<FederationService>(), new ArrayList<FederationAttribute>(), 
+                new FederationAuthenticationPluginInstantiator());
         this.attributes.add(MEMBER_ATTRIBUTE);
         this.attributes.add(SERVICE_OWNER_ATTRIBUTE);
     }
@@ -44,7 +49,8 @@ public class Federation {
     public Federation(String id, String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled, 
             List<FederationUser> members, List<FederationService> services, 
-            List<FederationAttribute> attributes) {
+            List<FederationAttribute> attributes, 
+            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator) {
         this.id = id;
         this.owner = owner;
         this.name = name;
@@ -54,6 +60,7 @@ public class Federation {
         this.members = members;
         this.services = services;
         this.attributes = attributes;
+        this.authenticationPluginInstantiator = authenticationPluginInstantiator;
     }
 
     // FIXME should receive email and description
@@ -184,12 +191,13 @@ public class Federation {
         return metadata;
     }
 
-    // TODO test
-    public FederationAuthenticationPlugin getAuthenticationPluginForMember(String memberId) throws InvalidParameterException {
+    public String login(String memberId, Map<String, String> credentials) throws InvalidParameterException, 
+    UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
         FederationUser user = getUserByMemberId(memberId);
         String identityPluginClassName = user.getIdentityPluginClassName();
         Map<String, String> identityPluginProperties = user.getIdentityPluginProperties(); 
-        return new FederationAuthenticationPluginInstantiator().getAuthenticationPlugin(identityPluginClassName, 
-                identityPluginProperties);
+        FederationAuthenticationPlugin authenticationPlugin = authenticationPluginInstantiator.
+                getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
+        return authenticationPlugin.authenticate(credentials);
     }
 }

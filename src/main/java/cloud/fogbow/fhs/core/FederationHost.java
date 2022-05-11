@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 import cloud.fogbow.common.constants.HttpMethod;
+import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.models.Federation;
@@ -36,17 +39,20 @@ public class FederationHost {
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
     private AccessPolicyInstantiator accessPolicyInstantiator;
     private JsonUtils jsonUtils;
+    private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     
     public FederationHost(List<FederationUser> federationAdminList, 
             List<Federation> federationList, ServiceInvokerInstantiator serviceInvokerInstantiator,
             DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
-            AccessPolicyInstantiator accessPolicyInstantiator, JsonUtils jsonUtils) {
+            AccessPolicyInstantiator accessPolicyInstantiator, JsonUtils jsonUtils, 
+            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator) {
         this.federationAdminList = federationAdminList;
         this.federationList = federationList;
         this.serviceInvokerInstantiator = serviceInvokerInstantiator;
         this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
         this.accessPolicyInstantiator = accessPolicyInstantiator;
         this.jsonUtils = jsonUtils;
+        this.authenticationPluginInstantiator = authenticationPluginInstantiator;
     }
     
     public FederationHost() {
@@ -56,6 +62,7 @@ public class FederationHost {
         this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
         this.accessPolicyInstantiator = new AccessPolicyInstantiator();
         this.jsonUtils = new JsonUtils();
+        this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
     }
     
     /*
@@ -305,6 +312,27 @@ public class FederationHost {
     
     /*
      * 
+     * Authentication
+     * 
+     */
+
+    public String login(String federationId, String memberId, Map<String, String> credentials) throws InvalidParameterException, 
+    UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
+        if (federationId == null || federationId.isEmpty()) {
+            FederationUser admin = getAdminByIdOrFail(memberId);
+            String identityPluginClassName = admin.getIdentityPluginClassName();
+            Map<String, String> identityPluginProperties = admin.getIdentityPluginProperties(); 
+            FederationAuthenticationPlugin authenticationPlugin = 
+                    this.authenticationPluginInstantiator.getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
+            return authenticationPlugin.authenticate(credentials);
+        } else {
+            Federation federation = getFederationOrFail(federationId);
+            return federation.login(memberId, credentials);
+        }
+    }
+    
+    /*
+     * 
      * Authorization
      * 
      */
@@ -367,6 +395,17 @@ public class FederationHost {
         }
     }
     
+    private FederationUser getAdminByIdOrFail(String adminId) throws InvalidParameterException {
+        FederationUser federationUser = lookUpAdminById(adminId);
+        
+        if (federationUser == null) { 
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.CANNOT_FIND_FEDERATION_ADMIN, adminId));
+        }
+        
+        return federationUser;
+    }
+    
     private FederationUser lookUpAdminById(String adminId) {
         for (FederationUser admin : federationAdminList) {
             if (admin.getMemberId().equals(adminId)) {
@@ -416,19 +455,5 @@ public class FederationHost {
         }
         
         return null;
-    }
-
-    // TODO test
-    public FederationAuthenticationPlugin getAuthorizationPluginForUser(String federationId, String memberId) throws InvalidParameterException {
-        if (federationId == null) {
-            FederationUser admin = lookUpAdminById(memberId);
-            String identityPluginClassName = admin.getIdentityPluginClassName();
-            Map<String, String> identityPluginProperties = admin.getIdentityPluginProperties(); 
-            return new FederationAuthenticationPluginInstantiator().getAuthenticationPlugin(identityPluginClassName, 
-                    identityPluginProperties);
-        } else {
-            Federation federation = lookUpFederationById(federationId);
-            return federation.getAuthenticationPluginForMember(memberId);
-        }
     }
 }

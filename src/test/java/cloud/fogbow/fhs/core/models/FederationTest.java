@@ -14,7 +14,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import cloud.fogbow.common.exceptions.ConfigurationErrorException;
+import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
+import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
 // TODO documentation
 public class FederationTest {
@@ -43,6 +48,12 @@ public class FederationTest {
     private static final String ATTRIBUTE_ID_2 = "attributeId2";
     private static final String ATTRIBUTE_NAME_2 = "attributeName2";
     private static final String IDENTITY_PLUGIN_CLASS_NAME = "identityPluginClassName";
+    private static final String FEDERATION_USER_TOKEN_1 = "userToken1";
+    private static final String FEDERATION_USER_TOKEN_2 = "userToken2";
+    private static final String FEDERATION_USER_1_CREDENTIAL_KEY = "federationUser1CredentialKey";
+    private static final String FEDERATION_USER_1_CREDENTIAL_VALUE = "federationUser1CredentialValue";
+    private static final String FEDERATION_USER_2_CREDENTIAL_KEY = "federationUser2CredentialKey";
+    private static final String FEDERATION_USER_2_CREDENTIAL_VALUE = "federationUser2CredentialValue";
     private List<FederationUser> federationMembers;
     private List<FederationService> federationServices;
     private List<FederationAttribute> federationAttributes;
@@ -53,9 +64,13 @@ public class FederationTest {
     private FederationService federationService2;
     private FederationAttribute federationAttribute1;
     private FederationAttribute federationAttribute2;
+    private Map<String, String> federationUserCredentials1;
+    private Map<String, String> federationUserCredentials2;
+    private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
+    private FederationAuthenticationPlugin authenticationPlugin;
     
     @Before
-    public void setUp() {
+    public void setUp() throws UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
         this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
                 FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
                 new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
@@ -87,10 +102,23 @@ public class FederationTest {
         this.federationAttributes.add(federationAttribute1);
         this.federationAttributes.add(federationAttribute2);
         
+        this.federationUserCredentials1 = new HashMap<String, String>();
+        this.federationUserCredentials1.put(FEDERATION_USER_1_CREDENTIAL_KEY, FEDERATION_USER_1_CREDENTIAL_VALUE);
+        this.federationUserCredentials2 = new HashMap<String, String>();
+        this.federationUserCredentials2.put(FEDERATION_USER_2_CREDENTIAL_KEY, FEDERATION_USER_2_CREDENTIAL_VALUE);
+        
+        this.authenticationPlugin = Mockito.mock(FederationAuthenticationPlugin.class);
+        Mockito.when(this.authenticationPlugin.authenticate(federationUserCredentials1)).thenReturn(FEDERATION_USER_TOKEN_1);
+        Mockito.when(this.authenticationPlugin.authenticate(federationUserCredentials2)).thenReturn(FEDERATION_USER_TOKEN_2);
+        
+        this.authenticationPluginInstantiator = Mockito.mock(FederationAuthenticationPluginInstantiator.class);
+        Mockito.when(this.authenticationPluginInstantiator.getAuthenticationPlugin(IDENTITY_PLUGIN_CLASS_NAME, 
+                new HashMap<String, String>())).thenReturn(authenticationPlugin);
+        
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
     }
     
     @Test
@@ -101,7 +129,7 @@ public class FederationTest {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
         
         List<FederationUser> federationUserListBefore = this.federation.getMemberList();
         
@@ -137,7 +165,7 @@ public class FederationTest {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
         
         FederationService service = Mockito.mock(FederationService.class); 
 
@@ -165,7 +193,7 @@ public class FederationTest {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
         
         this.federation.getService("unregisteredServiceId");
     }
@@ -194,7 +222,7 @@ public class FederationTest {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
         
         List<FederationAttribute> attributesBeforeCreation = this.federation.getAttributes();
         
@@ -246,7 +274,7 @@ public class FederationTest {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
         
         List<String> attributesBeforeRevoke = this.federationUser1.getAttributes();
         
@@ -280,9 +308,25 @@ public class FederationTest {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes);
+                this.federationAttributes, this.authenticationPluginInstantiator);
         
         assertTrue(this.federation.isServiceOwner(FEDERATION_USER_NAME_1));
         assertFalse(this.federation.isServiceOwner(FEDERATION_USER_NAME_2));
+    }
+    
+    @Test
+    public void testLogin() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        String returnedToken1 = this.federation.login(FEDERATION_USER_ID_1, this.federationUserCredentials1);
+        String returnedToken2 = this.federation.login(FEDERATION_USER_ID_2, this.federationUserCredentials2);
+        
+        assertEquals(FEDERATION_USER_TOKEN_1, returnedToken1);
+        assertEquals(FEDERATION_USER_TOKEN_2, returnedToken2);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testLoginUserNotFound() throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        this.federation.login("notfederateduser", this.federationUserCredentials1);
     }
 }

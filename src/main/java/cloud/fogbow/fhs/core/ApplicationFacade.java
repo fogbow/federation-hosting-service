@@ -42,6 +42,7 @@ public class ApplicationFacade {
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
     private FederationHost federationHost;
     private List<FederationUser> fhsOperators;
+    private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;  
     
     public static ApplicationFacade getInstance() {
         synchronized (ApplicationFacade.class) {
@@ -62,6 +63,11 @@ public class ApplicationFacade {
     
     public void setFhsOperators(List<FederationUser> fhsOperators) {
         this.fhsOperators = fhsOperators;
+    }
+    
+    public void setAuthenticationPluginInstantiator(
+            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator) {
+        this.authenticationPluginInstantiator = authenticationPluginInstantiator;
     }
     
     /*
@@ -238,7 +244,6 @@ public class ApplicationFacade {
      * 
      */
 
-    // TODO test
     public String login(String federationId, String memberId, Map<String, String> credentials)
             throws InvalidParameterException, UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
         FederationUser fhsOperator = getUserByName(memberId);
@@ -246,13 +251,12 @@ public class ApplicationFacade {
         if (fhsOperator != null) {
             String identityPluginClassName = fhsOperator.getIdentityPluginClassName();
             Map<String, String> identityPluginProperties = fhsOperator.getIdentityPluginProperties(); 
-            FederationAuthenticationPlugin authenticationPlugin = new FederationAuthenticationPluginInstantiator().
-                    getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
+            FederationAuthenticationPlugin authenticationPlugin = this.authenticationPluginInstantiator.getAuthenticationPlugin(
+                    identityPluginClassName, identityPluginProperties);
             return authenticationPlugin.authenticate(credentials);
         }
         
-        FederationAuthenticationPlugin authenticationPlugin = this.federationHost.getAuthorizationPluginForUser(federationId, memberId); 
-        return authenticationPlugin.authenticate(credentials);
+        return this.federationHost.login(federationId, memberId, credentials);
     }
     
     private FederationUser getUserByName(String name) {

@@ -9,8 +9,13 @@ public class ConfigurationPropertyKeys {
     public static final String AS_PRIVATE_KEY_FILE_PATH = "as_private_key_file_path";
     public static final String RAS_URL_KEY = "ras_url";
     public static final String RAS_PORT_KEY = "ras_port";
+    public static final String PROVIDER_ID_KEY = "provider_id";
     
     public static final String OPERATOR_IDS_KEY = "operator_ids";
     public static final String OTHER_SERVICES_ADMIN_IDS_KEY = "other_services_admin_ids";
     public static final String TOKEN_EXPIRATION_INTERVAL = "token_expiration_interval";
+    
+    public static final String LDAP_BASE_KEY = "ldap_base";
+    public static final String LDAP_URL_KEY = "ldap_url";
+    public static final String LDAP_ENCRYPT_TYPE_KEY = "ldap_encrypt_type";
 }
