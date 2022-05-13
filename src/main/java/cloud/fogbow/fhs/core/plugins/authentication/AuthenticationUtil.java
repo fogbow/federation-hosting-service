@@ -99,7 +99,6 @@ public class AuthenticationUtil {
         }
     }
 
-    // FIXME constant
     private static String generateExpirationTime() {
         String expirationIntervalProperty = PropertiesHolder.getInstance().getProperty(
                 ConfigurationPropertyKeys.TOKEN_EXPIRATION_INTERVAL, 

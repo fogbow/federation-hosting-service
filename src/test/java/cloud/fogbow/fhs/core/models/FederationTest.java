@@ -30,6 +30,8 @@ public class FederationTest {
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription";
     private static final boolean FEDERATION_ENABLED = true;
     private static final String USER_ID_TO_ADD = "userIdToAdd";
+    private static final String USER_EMAIL_TO_ADD = "userEmailToAdd";
+    private static final String USER_DESCRIPTION_TO_ADD = "userDescriptionToAdd";
     private static final String FEDERATION_USER_ID_1 = "userFederationId1";
     private static final String FEDERATION_USER_NAME_1 = "userId1";
     private static final String FEDERATION_USER_EMAIL_1 = "userEmail1";
@@ -135,7 +137,7 @@ public class FederationTest {
         
         assertEquals(0, federationUserListBefore.size());
         
-        this.federation.addUser(USER_ID_TO_ADD, new HashMap<String, String>());
+        this.federation.addUser(USER_ID_TO_ADD, USER_EMAIL_TO_ADD, USER_DESCRIPTION_TO_ADD, new HashMap<String, String>());
         
         List<FederationUser> federationUserListAfter = this.federation.getMemberList();
         

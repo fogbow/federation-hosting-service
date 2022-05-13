@@ -40,7 +40,7 @@ public class Membership {
         try {
             LOGGER.info(Messages.Log.GRANT_MEMBERSHIP_RECEIVED);
             MemberId memberId = ApplicationFacade.getInstance().grantMembership(systemUserToken, federationId, federationUser.getName(), 
-                    federationUser.getAuthenticationProperties());
+                    federationUser.getEmail(), federationUser.getDescription(), federationUser.getAuthenticationProperties());
             return new ResponseEntity<>(memberId, HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);

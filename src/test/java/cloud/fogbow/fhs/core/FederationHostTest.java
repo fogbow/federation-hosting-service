@@ -56,6 +56,8 @@ public class FederationHostTest {
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription1";
     private static final boolean FEDERATION_ENABLED_1 = true;
     private static final String USER_ID_TO_GRANT_MEMBERSHIP = "userIdToGrantMembership";
+    private static final String USER_EMAIL_TO_GRANT_MEMBERSHIP = "userEmailToGrantMembership";
+    private static final String USER_DESCRIPTION_TO_GRANT_MEMBERSHIP = "userDescriptionToGrantMembership";
     private static final String REGULAR_USER_ID_1 = "regularUserId1";
     private static final String REGULAR_USER_ID_2 = "regularUserId2";
     private static final String REGULAR_USER_NAME_1 = "regularUser1";
@@ -398,9 +400,10 @@ public class FederationHostTest {
         setUpFederationData();
 
         this.federationHost.grantMembership(ADMIN_NAME_1, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
-                USER_AUTHORIZATION_PROPERTIES);
+                USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
         
-        Mockito.verify(this.federation1).addUser(USER_ID_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
+        Mockito.verify(this.federation1).addUser(USER_ID_TO_GRANT_MEMBERSHIP, USER_EMAIL_TO_GRANT_MEMBERSHIP, 
+                USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -408,7 +411,7 @@ public class FederationHostTest {
         setUpFederationData();
 
         this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
-                USER_AUTHORIZATION_PROPERTIES);
+                USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -416,7 +419,7 @@ public class FederationHostTest {
         setUpFederationData();
 
         this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
-                USER_AUTHORIZATION_PROPERTIES);
+                USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test

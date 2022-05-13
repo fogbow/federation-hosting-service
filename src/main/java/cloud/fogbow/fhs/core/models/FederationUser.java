@@ -9,6 +9,8 @@ import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.constants.Messages;
 
 public class FederationUser {
+    public static final String IDENTITY_PLUGIN_CLASS_NAME_KEY = "identityPluginClassName";
+    
     private String id;
     private String name;
     private String federationId;
@@ -32,10 +34,10 @@ public class FederationUser {
         this.identityPluginProperties = identityPluginProperties;
     }
     
-    public FederationUser(String name, String federationId, String email, String description, boolean enabled, Map<String, String> authenticationProperties) {
-        // FIXME constant
+    public FederationUser(String name, String federationId, String email, String description, 
+            boolean enabled, Map<String, String> authenticationProperties) {
         this(UUID.randomUUID().toString(), name, federationId, email, description, enabled, new ArrayList<String>(),
-                authenticationProperties.get("identityPluginClassName"), authenticationProperties);
+                authenticationProperties.get(IDENTITY_PLUGIN_CLASS_NAME_KEY), authenticationProperties);
     }
 
     public String getMemberId() {

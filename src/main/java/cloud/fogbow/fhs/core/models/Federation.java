@@ -63,9 +63,8 @@ public class Federation {
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
     }
 
-    // FIXME should receive email and description
-    public FederationUser addUser(String userId, Map<String, String> authenticationProperties) throws InvalidParameterException {
-        FederationUser newMember = new FederationUser(userId, this.id, "", "", true, authenticationProperties);
+    public FederationUser addUser(String userId, String email, String description, Map<String, String> authenticationProperties) throws InvalidParameterException {
+        FederationUser newMember = new FederationUser(userId, this.id, email, description, true, authenticationProperties);
         newMember.addAttribute(MEMBER_ATTRIBUTE_NAME);
         this.members.add(newMember);
         return newMember;

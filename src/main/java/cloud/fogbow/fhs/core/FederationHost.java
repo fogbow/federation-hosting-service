@@ -149,12 +149,12 @@ public class FederationHost {
      * 
      */
     
-    public FederationUser grantMembership(String requester, String federationId, String userId, Map<String, String> authenticationProperties) 
-            throws UnauthorizedRequestException, InvalidParameterException {
+    public FederationUser grantMembership(String requester, String federationId, String userId, String email, String description, 
+            Map<String, String> authenticationProperties) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federationToAdd = getFederationOrFail(federationId); 
         checkIfRequesterIsFederationOwner(requester, federationToAdd);
-        return federationToAdd.addUser(userId, authenticationProperties);
+        return federationToAdd.addUser(userId, email, description, authenticationProperties);
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {

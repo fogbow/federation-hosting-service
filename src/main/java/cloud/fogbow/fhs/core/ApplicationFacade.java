@@ -119,10 +119,11 @@ public class ApplicationFacade {
      */
     
     public MemberId grantMembership(String userToken, String federationId, String userId, 
-            Map<String, String> authenticationProperties) throws FogbowException {
+            String email, String description, Map<String, String> authenticationProperties) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GRANT_MEMBERSHIP));
-        FederationUser user = this.federationHost.grantMembership(requestUser.getId(), federationId, userId, authenticationProperties);
+        FederationUser user = this.federationHost.grantMembership(requestUser.getId(), federationId, userId, email, 
+                description, authenticationProperties);
         return new MemberId(user.getMemberId());
     }
     
