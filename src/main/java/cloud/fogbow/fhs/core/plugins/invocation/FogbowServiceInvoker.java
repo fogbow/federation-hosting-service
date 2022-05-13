@@ -3,7 +3,6 @@ package cloud.fogbow.fhs.core.plugins.invocation;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +11,12 @@ import cloud.fogbow.common.constants.FogbowConstants;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.models.SystemUser;
+import cloud.fogbow.common.util.PublicKeysHolder;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.common.util.connectivity.HttpResponse;
 import cloud.fogbow.fhs.api.http.CommonKeys;
-import cloud.fogbow.fhs.core.FhsPublicKeysHolder;
+import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
@@ -25,29 +26,25 @@ import cloud.fogbow.fhs.core.utils.MapUtils;
 
 public class FogbowServiceInvoker extends HttpServiceInvoker {
     private static final String INVOKER_NAME = "FogbowServiceInvoker";
-    public static final String SERVICE_TYPE_KEY = "serviceType";
-    public static final String SERVICE_TYPE_RAS = "ras";
-    private static final List<String> SERVICE_TYPES = Arrays.asList(SERVICE_TYPE_RAS);
     private static final String RESPONSE_CONTENT_KEY = "content";
-    private String serviceType;
+    public static final String SERVICE_PUBLIC_KEY_ENDPOINT = "servicePublicKeyEndpoint";
+    
     private String localProviderId;
+    private String servicePublicKeyEndpoint;
     
     public FogbowServiceInvoker(Map<String, String> metadata, String localProviderId) throws ConfigurationErrorException {
         this.localProviderId = localProviderId;
-        this.serviceType = metadata.get(SERVICE_TYPE_KEY);
+        this.servicePublicKeyEndpoint = metadata.get(SERVICE_PUBLIC_KEY_ENDPOINT);
         
-        // TODO test
-        if (!SERVICE_TYPES.contains(this.serviceType)) {
-            // TODO add message
-            throw new ConfigurationErrorException();
+        if (this.servicePublicKeyEndpoint == null || this.servicePublicKeyEndpoint.isEmpty()) {
+            throw new ConfigurationErrorException(Messages.Exception.INVALID_SERVICE_PUBLIC_KEY_ENDPOINT);
         }
     }
     
     public FogbowServiceInvoker(String serializedMetadata) 
             throws IOException, GeneralSecurityException, ConfigurationErrorException {
-        // FIXME constant
-        this(new MapUtils().deserializeMap(serializedMetadata), 
-                PropertiesHolder.getInstance().getProperty("provider_id"));
+        this(new MapUtils().deserializeMap(serializedMetadata),
+                PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.PROVIDER_ID_KEY));
     }
     
     @Override
@@ -65,18 +62,10 @@ public class FogbowServiceInvoker extends HttpServiceInvoker {
         SystemUser systemUser = new SystemUser(
                 String.join(FogbowConstants.FEDERATION_ID_SEPARATOR, user.getName(), user.getFederationId()), 
                 user.getName(), this.localProviderId);
-        
-        RSAPublicKey servicePublicKey = null;
-        
-        // FIXME
-        if (this.serviceType.equals(SERVICE_TYPE_RAS)) {
-            servicePublicKey = FhsPublicKeysHolder.getInstance().getRasPublicKey();
-        }
-        
+        RSAPublicKey servicePublicKey = PublicKeysHolder.getPublicKey(this.servicePublicKeyEndpoint);
         String userToken = AuthenticationUtil.createFogbowToken(systemUser, 
                 ServiceAsymmetricKeysHolder.getInstance().getPrivateKey(), servicePublicKey);
         headers.put(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY, userToken);
-        
         return headers;
     }
 

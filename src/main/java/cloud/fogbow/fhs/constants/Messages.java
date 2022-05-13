@@ -11,6 +11,7 @@ public class Messages {
         public static final String EXPIRED_TOKEN = "Expired token.";
         public static final String FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY = "Federation name cannot be null or empty.";
         public static final String GENERIC_EXCEPTION_S = Log.GENERIC_EXCEPTION_S;
+        public static final String INVALID_SERVICE_PUBLIC_KEY_ENDPOINT = "Invalid service public key endpoint.";
         public static final String INVALID_TOKEN = "Invalid token.";
         public static final String MEMBER_NOT_FOUND_IN_FEDERATION = "Member %s not found in federation %s.";
         public static final String NO_OPERATOR_ID_SPECIFIED = "No operator ID specified in the configuration file.";

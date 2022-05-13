@@ -24,17 +24,17 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import cloud.fogbow.as.core.util.TokenProtector;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.models.SystemUser;
+import cloud.fogbow.common.util.PublicKeysHolder;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.common.util.connectivity.HttpResponse;
 import cloud.fogbow.fhs.api.http.CommonKeys;
-import cloud.fogbow.fhs.core.FhsPublicKeysHolder;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ FhsPublicKeysHolder.class, TokenProtector.class, 
-    ServiceAsymmetricKeysHolder.class, AuthenticationUtil.class })
+@PrepareForTest({ TokenProtector.class, ServiceAsymmetricKeysHolder.class, 
+    AuthenticationUtil.class, PublicKeysHolder.class })
 public class FogbowServiceInvokerTest {
     private static final String PATH_1 = "path1";
     private static final String PATH_2 = "path2";
@@ -51,34 +51,30 @@ public class FogbowServiceInvokerTest {
     private static final String RESPONSE_CONTENT = "content";
     private static final String USER_NAME = "user";
     private static final String FEDERATION_ID = "federation";
+    private static final String SERVICE_PUBLIC_KEY_ENDPOINT = "http://0.0.0.0/service/publicKey";
+    
     private FogbowServiceInvoker serviceInvoker;
     private Map<String, String> metadata;
     private List<String> path;
     private Map<String, String> headers;
     private Map<String, Object> body;
-    private String serviceType;
     private RSAPublicKey rasPublicKey;
     private RSAPrivateKey fhsPrivateKey;
     
     @Before
     public void setUp() throws FogbowException {
-        this.serviceType = "ras";
-        
         this.path = new ArrayList<String>();
         this.path.add(PATH_1);
         this.path.add(PATH_2);
         
         this.metadata = new HashMap<String, String>();
-        this.metadata.put(FogbowServiceInvoker.SERVICE_TYPE_KEY, this.serviceType);
+        this.metadata.put(FogbowServiceInvoker.SERVICE_PUBLIC_KEY_ENDPOINT, SERVICE_PUBLIC_KEY_ENDPOINT);
         
         this.rasPublicKey = Mockito.mock(RSAPublicKey.class);
         this.fhsPrivateKey = Mockito.mock(RSAPrivateKey.class);
         
-        FhsPublicKeysHolder publicKeysHolder = Mockito.mock(FhsPublicKeysHolder.class);
-        Mockito.when(publicKeysHolder.getRasPublicKey()).thenReturn(this.rasPublicKey);
-        
-        PowerMockito.mockStatic(FhsPublicKeysHolder.class);
-        BDDMockito.given(FhsPublicKeysHolder.getInstance()).willReturn(publicKeysHolder);
+        PowerMockito.mockStatic(PublicKeysHolder.class);
+        BDDMockito.given(PublicKeysHolder.getPublicKey(SERVICE_PUBLIC_KEY_ENDPOINT)).willReturn(rasPublicKey);
         
         ServiceAsymmetricKeysHolder serviceKeysHolder = Mockito.mock(ServiceAsymmetricKeysHolder.class);
         Mockito.when(serviceKeysHolder.getPrivateKey()).thenReturn(this.fhsPrivateKey);
@@ -91,7 +87,6 @@ public class FogbowServiceInvokerTest {
                 Mockito.any(RSAPrivateKey.class), Mockito.any(RSAPublicKey.class))).willReturn(TOKEN);
         
         this.headers = new HashMap<String, String>();
-        this.headers.put(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY, TOKEN);
         this.headers.put(HEADER_KEY_1, HEADER_VALUE_1);
         this.headers.put(HEADER_KEY_2, HEADER_VALUE_2);
         
@@ -115,15 +110,13 @@ public class FogbowServiceInvokerTest {
     
     @Test
     public void testPrepareHeaders() throws FogbowException {
-        int headersSize = this.headers.size();
-        
         FederationUser user = Mockito.mock(FederationUser.class);
         Mockito.when(user.getName()).thenReturn(USER_NAME);
         Mockito.when(user.getFederationId()).thenReturn(FEDERATION_ID);
         
         Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers, user);
         
-        assertEquals(headersSize, preparedHeaders.size());
+        assertEquals(3, preparedHeaders.size());
         assertEquals(TOKEN, preparedHeaders.get(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY));
         assertEquals(HEADER_VALUE_1, preparedHeaders.get(HEADER_KEY_1));
         assertEquals(HEADER_VALUE_2, preparedHeaders.get(HEADER_KEY_2));
