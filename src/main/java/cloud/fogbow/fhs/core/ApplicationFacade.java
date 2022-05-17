@@ -11,6 +11,7 @@ import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.exceptions.NotImplementedOperationException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
@@ -247,7 +248,12 @@ public class ApplicationFacade {
 
     public String login(String federationId, String memberId, Map<String, String> credentials)
             throws InvalidParameterException, UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
-        FederationUser fhsOperator = getUserByName(memberId);
+        return this.federationHost.login(federationId, memberId, credentials);
+    }
+    
+    public String operatorLogin(String operatorId, Map<String, String> credentials) throws UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException, InvalidParameterException {
+        FederationUser fhsOperator = getUserByName(operatorId);
         
         if (fhsOperator != null) {
             String identityPluginClassName = fhsOperator.getIdentityPluginClassName();
@@ -257,7 +263,13 @@ public class ApplicationFacade {
             return authenticationPlugin.authenticate(credentials);
         }
         
-        return this.federationHost.login(federationId, memberId, credentials);
+        // TODO add message
+        throw new InvalidParameterException();
+    }
+
+    public String federationAdminLogin(String operatorId, Map<String, String> credentials) throws InvalidParameterException, 
+    UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
+        return this.federationHost.federationAdminLogin(operatorId, credentials);
     }
     
     private FederationUser getUserByName(String name) {
@@ -269,11 +281,9 @@ public class ApplicationFacade {
         
         return null;
     }
-    
 
-    public void logout(String loginSessionId) {
-        // TODO Auto-generated method stub
-        
+    public void logout(String loginSessionId) throws NotImplementedOperationException {
+        throw new NotImplementedOperationException();
     }
     
     /*

@@ -34,6 +34,7 @@ public class Messages {
         public static final String CREATE_FEDERATION_ATTRIBUTE_RECEIVED = "Create federation attribute received.";
         public static final String CREATE_FEDERATION_RECEIVED = "Create federation received.";
         public static final String DISCOVER_SERVICES_RECEIVED = "Discover services received.";
+        public static final String FEDERATION_ADMIN_LOGIN_RECEIVED = "Federation admin login received.";
         public static final String GENERIC_EXCEPTION_S = "Operation returned error: %s.";
         public static final String GET_FEDERATION_ATTRIBUTES_RECEIVED = "Get federation attributes received.";
         public static final String GET_FEDERATIONS_RECEIVED = "Get federations received.";
@@ -50,6 +51,7 @@ public class Messages {
         public static final String LOGIN_RECEIVED = "Login received.";
         public static final String LOGOUT_RECEIVED = "Logout received.";
         public static final String MAP_RECEIVED = "Map received.";
+        public static final String OPERATOR_LOGIN_RECEIVED = "Operator login received.";
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";
     }

@@ -706,7 +706,7 @@ public class FederationHostTest {
     ConfigurationErrorException, InternalServerErrorException {
         setUpFederationData();
         
-        String returnedToken = this.federationHost.login(null, ADMIN_ID_1, adminCredentials1);
+        String returnedToken = this.federationHost.federationAdminLogin(ADMIN_ID_1, adminCredentials1);
         
         assertEquals(ADMIN_TOKEN_1, returnedToken);
     }

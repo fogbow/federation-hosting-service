@@ -495,8 +495,8 @@ public class ApplicationFacadeTest {
     @Test
     public void testFhsOperatorLogin() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
-        String returnedToken1 = this.applicationFacade.login("", FHS_OPERATOR_ID_1, fhsOperatorCredentials1);
-        String returnedToken2 = this.applicationFacade.login("", FHS_OPERATOR_ID_2, fhsOperatorCredentials2);
+        String returnedToken1 = this.applicationFacade.operatorLogin(FHS_OPERATOR_ID_1, fhsOperatorCredentials1);
+        String returnedToken2 = this.applicationFacade.operatorLogin(FHS_OPERATOR_ID_2, fhsOperatorCredentials2);
         
         assertEquals(FHS_OPERATOR_TOKEN_1, returnedToken1);
         assertEquals(FHS_OPERATOR_TOKEN_2, returnedToken2);

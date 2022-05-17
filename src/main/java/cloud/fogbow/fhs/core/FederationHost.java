@@ -318,17 +318,18 @@ public class FederationHost {
 
     public String login(String federationId, String memberId, Map<String, String> credentials) throws InvalidParameterException, 
     UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
-        if (federationId == null || federationId.isEmpty()) {
-            FederationUser admin = getAdminByIdOrFail(memberId);
-            String identityPluginClassName = admin.getIdentityPluginClassName();
-            Map<String, String> identityPluginProperties = admin.getIdentityPluginProperties(); 
-            FederationAuthenticationPlugin authenticationPlugin = 
-                    this.authenticationPluginInstantiator.getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
-            return authenticationPlugin.authenticate(credentials);
-        } else {
-            Federation federation = getFederationOrFail(federationId);
-            return federation.login(memberId, credentials);
-        }
+        Federation federation = getFederationOrFail(federationId);
+        return federation.login(memberId, credentials);
+    }
+
+    public String federationAdminLogin(String federationAdminId, Map<String, String> credentials) throws InvalidParameterException, UnauthenticatedUserException, 
+    ConfigurationErrorException, InternalServerErrorException {
+        FederationUser admin = getAdminByIdOrFail(federationAdminId);
+        String identityPluginClassName = admin.getIdentityPluginClassName();
+        Map<String, String> identityPluginProperties = admin.getIdentityPluginProperties();
+        FederationAuthenticationPlugin authenticationPlugin = 
+                this.authenticationPluginInstantiator.getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
+        return authenticationPlugin.authenticate(credentials);
     }
     
     /*

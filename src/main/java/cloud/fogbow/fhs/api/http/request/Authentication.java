@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.response.Token;
+import cloud.fogbow.fhs.api.parameters.FederationAdminLoginData;
 import cloud.fogbow.fhs.api.parameters.LoginData;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
@@ -40,15 +40,15 @@ public class Authentication {
             throw e;
         }
     }
-    
-    // FIXME
-    @RequestMapping(value = "/MemberLogout/{loginSessionId}", method = RequestMethod.DELETE)
-    public ResponseEntity<Boolean> logout(
-            @PathVariable String loginSessionId) throws FogbowException {
+
+    @RequestMapping(value = "/FedAdmin", method = RequestMethod.POST)
+    public ResponseEntity<Token> federationAdminLogin(
+            @RequestBody FederationAdminLoginData loginData) throws FogbowException { 
         try {
-            LOGGER.info(Messages.Log.LOGOUT_RECEIVED);
-            ApplicationFacade.getInstance().logout(loginSessionId);
-            return new ResponseEntity<>(HttpStatus.OK);
+            LOGGER.info(Messages.Log.FEDERATION_ADMIN_LOGIN_RECEIVED);
+            String encryptedToken = ApplicationFacade.getInstance().federationAdminLogin(
+                    loginData.getFederationAdminId(), loginData.getCredentials());
+            return new ResponseEntity<Token>(new Token(encryptedToken), HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
             throw e;

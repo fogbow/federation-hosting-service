@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.MemberId;
+import cloud.fogbow.fhs.api.http.response.Token;
 import cloud.fogbow.fhs.api.parameters.FederationUser;
+import cloud.fogbow.fhs.api.parameters.OperatorLoginData;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
@@ -39,6 +41,19 @@ public class FhsOperator {
             return new ResponseEntity<>(new MemberId(memberId), HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
+    
+    @RequestMapping(value = "/Login", method = RequestMethod.POST)
+    public ResponseEntity<Token> operatorLogin(
+            @RequestBody OperatorLoginData loginData) throws FogbowException { 
+        try {
+            LOGGER.info(Messages.Log.OPERATOR_LOGIN_RECEIVED);
+            String encryptedToken = ApplicationFacade.getInstance().operatorLogin(loginData.getOperatorId(), loginData.getCredentials());
+            return new ResponseEntity<Token>(new Token(encryptedToken), HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
             throw e;
         }
     }
