@@ -67,7 +67,7 @@ public class FederationService {
     
     public ServiceResponse invoke(FederationUser user, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
-        return this.invoker.invoke(user, endpoint, method, path, headers, body);
+        return this.invoker.invoke(user, serviceId, endpoint, method, path, headers, body);
     }
     
     public boolean isDiscoverableBy(FederationUser user) {

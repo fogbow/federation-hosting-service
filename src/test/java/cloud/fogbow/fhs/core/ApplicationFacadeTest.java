@@ -271,7 +271,8 @@ public class ApplicationFacadeTest {
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME)).
                 thenReturn(Arrays.asList(federation1, federation2));
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2)).thenReturn(Arrays.asList());
-        Mockito.when(this.federationHost.grantMembership(ADMIN_NAME, FEDERATION_ID_1, USER_ID_TO_ADD, USER_EMAIL_TO_ADD, USER_DESCRIPTION_TO_ADD, USER_AUTHORIZATION_PROPERTIES)).thenReturn(federationUser1);
+        Mockito.when(this.federationHost.grantMembership(ADMIN_NAME, FEDERATION_ID_1, USER_ID_TO_ADD, USER_EMAIL_TO_ADD,
+                USER_DESCRIPTION_TO_ADD, USER_AUTHORIZATION_PROPERTIES)).thenReturn(federationUser1);
         Mockito.when(this.federationHost.getFederationMembers(ADMIN_NAME, FEDERATION_ID_1)).
                 thenReturn(Arrays.asList(federationUser1, federationUser2));
         Mockito.when(this.federationHost.createAttribute(ADMIN_NAME, FEDERATION_ID_1, ATTRIBUTE_NAME_1)).thenReturn(ATTRIBUTE_ID_1);
@@ -287,7 +288,7 @@ public class ApplicationFacadeTest {
                 thenReturn(Arrays.asList(federationService, federationService2));
         Mockito.when(this.federationHost.invokeService(ADMIN_NAME, FEDERATION_ID_1, SERVICE_ID_1, 
                 HttpMethod.GET, PATH, HEADERS, BODY)).thenReturn(new DefaultServiceResponse(RESPONSE_CODE, RESPONSE_DATA));
-        Mockito.when(this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME)).thenReturn(CREDENTIALS);
+        Mockito.when(this.federationHost.map(FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, CLOUD_NAME)).thenReturn(CREDENTIALS);
         Mockito.when(this.federationHost.login("", USER_ID_1, userCredentials1)).thenReturn(USER_TOKEN_1);
         
         this.fhsOperators = new ArrayList<FederationUser>();
@@ -516,11 +517,11 @@ public class ApplicationFacadeTest {
     
     @Test
     public void testMap() throws FogbowException {
-        Map<String, String> response = this.applicationFacade.map(TOKEN_1, FEDERATION_ID_1, CLOUD_NAME);
+        Map<String, String> response = this.applicationFacade.map(TOKEN_1, FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, CLOUD_NAME);
         
         assertEquals(response, CREDENTIALS);
         
-        Mockito.verify(this.federationHost).map(FEDERATION_ID_1, CLOUD_NAME);
+        Mockito.verify(this.federationHost).map(FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, CLOUD_NAME);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
 }

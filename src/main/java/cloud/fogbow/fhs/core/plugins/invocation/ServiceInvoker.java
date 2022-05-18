@@ -10,6 +10,6 @@ import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 public interface ServiceInvoker {
     String getName();
-    ServiceResponse invoke(FederationUser user, String endpoint, HttpMethod method, List<String> path,
-            Map<String, String> headers, Map<String, Object> body) throws FogbowException;
+    ServiceResponse invoke(FederationUser user, String serviceId, String endpoint, HttpMethod method,
+            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException;
 }

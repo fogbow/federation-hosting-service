@@ -59,25 +59,27 @@ public class DefaultServiceAccessPolicyTest {
     private FederationUser user1;
     private FederationUser user2;
     private FederationUser user3;
+    private Map<String, String> mapOptions1;
+    private Map<String, String> mapOptions2;
 
     @Before
     public void setUp() {
         this.accessLevelString1 = 
                 String.format("%s:", ACCESS_LEVEL_1_NAME) +
-                String.format("%s,%s-%s,%s:", GET_METHOD_STRING, PATH_OPERATION, POST_METHOD_STRING, PATH_OPERATION) + 
+                String.format("%s,%s~%s,%s:", GET_METHOD_STRING, PATH_OPERATION, POST_METHOD_STRING, PATH_OPERATION) + 
                 String.format("%s:", ATTRIBUTE_1) + 
-                String.format("%s=%s&%s-%s&%s,", CLOUD_NAME_1, CREDENTIAL_NAME_1, CREDENTIAL_VALUE_1, 
+                String.format("%s=%s#%s~%s#%s,", CLOUD_NAME_1, CREDENTIAL_NAME_1, CREDENTIAL_VALUE_1, 
                         CREDENTIAL_NAME_2, CREDENTIAL_VALUE_2) + 
-                String.format("%s=%s&%s-%s&%s", CLOUD_NAME_2, CREDENTIAL_NAME_3, CREDENTIAL_VALUE_3, 
+                String.format("%s=%s#%s~%s#%s", CLOUD_NAME_2, CREDENTIAL_NAME_3, CREDENTIAL_VALUE_3, 
                         CREDENTIAL_NAME_4, CREDENTIAL_VALUE_4);
         
         this.accessLevelString2 = 
                 String.format("%s:", ACCESS_LEVEL_2_NAME) +
                 String.format("%s,%s:", GET_METHOD_STRING, PATH_OPERATION) + 
                 String.format("%s:", ATTRIBUTE_0) + 
-                String.format("%s=%s&%s-%s&%s,", CLOUD_NAME_1, CREDENTIAL_NAME_5, CREDENTIAL_VALUE_5, 
+                String.format("%s=%s#%s~%s#%s,", CLOUD_NAME_1, CREDENTIAL_NAME_5, CREDENTIAL_VALUE_5, 
                         CREDENTIAL_NAME_6, CREDENTIAL_VALUE_6) + 
-                String.format("%s=%s&%s-%s&%s", CLOUD_NAME_2, CREDENTIAL_NAME_7, CREDENTIAL_VALUE_7, 
+                String.format("%s=%s#%s~%s#%s", CLOUD_NAME_2, CREDENTIAL_NAME_7, CREDENTIAL_VALUE_7, 
                         CREDENTIAL_NAME_8, CREDENTIAL_VALUE_8);
         
         this.accessLevelString = accessLevelString1 + ";" + accessLevelString2;
@@ -106,6 +108,12 @@ public class DefaultServiceAccessPolicyTest {
         Mockito.when(this.user2.getAttributes()).thenReturn(Arrays.asList(new String[]{ATTRIBUTE_1}));
         this.user3 = Mockito.mock(FederationUser.class);
         Mockito.when(this.user3.getAttributes()).thenReturn(Arrays.asList(new String[]{ATTRIBUTE_2}));
+        
+        this.mapOptions1 = new HashMap<String, String>();
+        this.mapOptions1.put("cloudName", CLOUD_NAME_1);
+        
+        this.mapOptions2 = new HashMap<String, String>();
+        this.mapOptions2.put("cloudName", CLOUD_NAME_2);
     }
     
     @Test

@@ -33,6 +33,7 @@ public class DefaultServiceInvokerTest {
     private static final int RESPONSE_CODE = 200;
     private static final String RESPONSE_CONTENT = "content";
     private static final String ENDPOINT = "endpoint";
+    private static final String SERVICE_ID = "serviceId";
     private static final FederationUser USER = Mockito.mock(FederationUser.class);
     
     private DefaultServiceInvoker serviceInvoker;
@@ -75,7 +76,7 @@ public class DefaultServiceInvokerTest {
         headersToPrepare.put("headerKey1", "headerValue1");
         headersToPrepare.put("headerKey2", "headerValue2");
         
-        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headersToPrepare, USER); 
+        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headersToPrepare, USER, SERVICE_ID); 
         
         assertEquals(2, preparedHeaders.size());
         assertEquals("headerValue1", preparedHeaders.get("headerKey1"));
@@ -120,7 +121,8 @@ public class DefaultServiceInvokerTest {
         BDDMockito.given(HttpRequestClient.doGenericRequestGenericBody(
                 HttpMethod.GET, ENDPOINT + "/" + PATH_1 + "/" + PATH_2, headers, body)).willReturn(response);
         
-        ServiceResponse invocationResponse = this.serviceInvoker.invoke(federationUser, ENDPOINT, HttpMethod.GET, path, headers, body);
+        ServiceResponse invocationResponse = this.serviceInvoker.invoke(federationUser, SERVICE_ID, ENDPOINT, 
+                HttpMethod.GET, path, headers, body);
         
         assertEquals(RESPONSE_CODE, invocationResponse.getCode());
         Map<String, String> responseContentMap = invocationResponse.getResponse();

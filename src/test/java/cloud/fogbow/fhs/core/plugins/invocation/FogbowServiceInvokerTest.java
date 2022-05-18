@@ -52,6 +52,7 @@ public class FogbowServiceInvokerTest {
     private static final String USER_NAME = "user";
     private static final String FEDERATION_ID = "federation";
     private static final String SERVICE_PUBLIC_KEY_ENDPOINT = "http://0.0.0.0/service/publicKey";
+    private static final String SERVICE_ID = "serviceId";
     
     private FogbowServiceInvoker serviceInvoker;
     private Map<String, String> metadata;
@@ -114,7 +115,7 @@ public class FogbowServiceInvokerTest {
         Mockito.when(user.getName()).thenReturn(USER_NAME);
         Mockito.when(user.getFederationId()).thenReturn(FEDERATION_ID);
         
-        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers, user);
+        Map<String, String> preparedHeaders = this.serviceInvoker.prepareHeaders(headers, user, SERVICE_ID);
         
         assertEquals(3, preparedHeaders.size());
         assertEquals(TOKEN, preparedHeaders.get(CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY));

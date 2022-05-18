@@ -199,4 +199,10 @@ public class Federation {
                 getAuthenticationPlugin(identityPluginClassName, identityPluginProperties);
         return authenticationPlugin.authenticate(credentials);
     }
+
+    public Map<String, String> map(String serviceId, String userId, String cloudName) throws InvalidParameterException {
+        FederationService service = getService(serviceId);
+        FederationUser user = getUserById(userId);
+        return service.getAccessPolicy().getCredentialsForAccess(user, cloudName);
+    }
 }

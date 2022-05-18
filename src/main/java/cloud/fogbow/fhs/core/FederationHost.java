@@ -38,7 +38,6 @@ public class FederationHost {
     private ServiceInvokerInstantiator serviceInvokerInstantiator;
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
     private AccessPolicyInstantiator accessPolicyInstantiator;
-    private JsonUtils jsonUtils;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     
     public FederationHost(List<FederationUser> federationAdminList, 
@@ -51,7 +50,6 @@ public class FederationHost {
         this.serviceInvokerInstantiator = serviceInvokerInstantiator;
         this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
         this.accessPolicyInstantiator = accessPolicyInstantiator;
-        this.jsonUtils = jsonUtils;
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
     }
     
@@ -61,7 +59,6 @@ public class FederationHost {
         this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
         this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
         this.accessPolicyInstantiator = new AccessPolicyInstantiator();
-        this.jsonUtils = new JsonUtils();
         this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
     }
     
@@ -338,12 +335,9 @@ public class FederationHost {
      * 
      */
     
-    public Map<String, String> map(String federationId, String cloudName) {
+    public Map<String, String> map(String federationId, String serviceId, String userId, String cloudName) throws InvalidParameterException {
         Federation federation = lookUpFederationById(federationId);
-        Map<String, String> metadata = federation.getMetadata();
-        Map<String, Map<String, String>> credentials = 
-                this.jsonUtils.fromJson(metadata.get(CREDENTIALS_METADATA_KEY), Map.class);
-        return credentials.get(cloudName);
+        return federation.map(serviceId, userId, cloudName);
     }
     
     /*

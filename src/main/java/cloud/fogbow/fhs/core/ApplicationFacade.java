@@ -292,10 +292,11 @@ public class ApplicationFacade {
      * 
      */
     
-    public Map<String, String> map(String userToken, String federationId, String cloudName) throws FogbowException {
+    public Map<String, String> map(String userToken, String federationId, String serviceId, String userId, 
+            String cloudName) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.MAP));
-        return this.federationHost.map(federationId, cloudName);
+        return this.federationHost.map(federationId, serviceId, userId, cloudName);
     }
     
     private SystemUser authenticate(String userToken) throws FogbowException {

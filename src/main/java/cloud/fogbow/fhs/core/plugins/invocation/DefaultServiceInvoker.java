@@ -24,7 +24,7 @@ public class DefaultServiceInvoker extends HttpServiceInvoker {
     }
 
     @Override
-    Map<String, String> prepareHeaders(Map<String, String> headers, FederationUser user) {
+    Map<String, String> prepareHeaders(Map<String, String> headers, FederationUser user, String serviceId) {
         return headers;
     }
 

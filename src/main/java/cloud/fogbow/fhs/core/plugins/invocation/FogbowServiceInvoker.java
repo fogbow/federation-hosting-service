@@ -58,10 +58,15 @@ public class FogbowServiceInvoker extends HttpServiceInvoker {
     }
 
     @Override
-    Map<String, String> prepareHeaders(Map<String, String> headers, FederationUser user) throws FogbowException {
+    Map<String, String> prepareHeaders(Map<String, String> headers, FederationUser user, String serviceId) throws FogbowException {
         SystemUser systemUser = new SystemUser(
                 String.join(FogbowConstants.FEDERATION_ID_SEPARATOR, user.getName(), user.getFederationId()), 
                 user.getName(), this.localProviderId);
+        HashMap<String, String> userMetadata = new HashMap<String, String>();
+        // FIXME constant
+        userMetadata.put("serviceId", serviceId);
+        systemUser.setMetadata(userMetadata);
+        
         RSAPublicKey servicePublicKey = PublicKeysHolder.getPublicKey(this.servicePublicKeyEndpoint);
         String userToken = AuthenticationUtil.createFogbowToken(systemUser, 
                 ServiceAsymmetricKeysHolder.getInstance().getPrivateKey(), servicePublicKey);

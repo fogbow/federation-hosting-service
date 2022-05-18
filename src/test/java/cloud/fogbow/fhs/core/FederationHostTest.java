@@ -241,6 +241,8 @@ public class FederationHostTest {
                 Arrays.asList(this.federationAttribute1, this.federationAttribute2));
         Mockito.when(federation1.login(REGULAR_USER_ID_1, this.regularUserCredentials1)).thenReturn(
                 REGULAR_USER_TOKEN_1);
+        Mockito.when(federation1.map(SERVICE_ID_1, REGULAR_USER_ID_1, CLOUD_NAME)).thenReturn(
+                credentialsMapCloud1);
         
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
@@ -751,7 +753,7 @@ public class FederationHostTest {
     public void testMap() throws FogbowException {
         setUpFederationData();
         
-        Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, CLOUD_NAME);
+        Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, SERVICE_ID_1, REGULAR_USER_ID_1, CLOUD_NAME);
         
         assertEquals(credentialsMapCloud1, responseCredentials);
     }

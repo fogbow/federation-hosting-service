@@ -18,12 +18,12 @@ import cloud.fogbow.fhs.core.models.ServiceOperation;
 public class DefaultServiceAccessPolicy implements ServiceAccessPolicy {
     public static final String ACCESS_LEVELS_SEPARATOR = ";";
     private static final String ACCESS_LEVELS_FIELDS_SEPARATOR = ":";
-    private static final String ACCESS_LEVEL_OPERATIONS_SEPARATOR = "-";
+    private static final String ACCESS_LEVEL_OPERATIONS_SEPARATOR = "~";
     private static final String ACCESS_LEVEL_OPERATION_FIELDS_SEPARATOR = ",";
     private static final String ACCESS_LEVEL_ATTRIBUTES_SEPARATOR = ",";
     private static final String ACCESS_LEVEL_CLOUD_CREDENTIALS_FIELD_SEPARATOR = "=";
-    private static final String ACCESS_LEVEL_CLOUD_CREDENTIALS_PAIRS_SEPARATOR = "-";
-    private static final String CREDENTIALS_PAIR_SEPARATOR = "&";
+    private static final String ACCESS_LEVEL_CLOUD_CREDENTIALS_PAIRS_SEPARATOR = "~";
+    private static final String CREDENTIALS_PAIR_SEPARATOR = "#";
 
     private Map<String, AccessLevel> accessLevels;
     private Map<Pair<String, AccessLevel>, Map<String, String>> credentialsByCloudAndAccessLevel;

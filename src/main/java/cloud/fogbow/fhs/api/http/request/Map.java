@@ -26,14 +26,17 @@ public class Map {
     
     private final Logger LOGGER = Logger.getLogger(Map.class);
     
-    @RequestMapping(value = "/{federationId}/{cloudName}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{federationId}/{serviceId}/{userId}/{cloudName}", method = RequestMethod.GET)
     public ResponseEntity<java.util.Map<String, String>> map(
             @PathVariable String federationId,
+            @PathVariable String serviceId,
+            @PathVariable String userId,
             @PathVariable String cloudName,
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
         try {
             LOGGER.info(Messages.Log.MAP_RECEIVED);
-            java.util.Map<String, String> credentials = ApplicationFacade.getInstance().map(systemUserToken, federationId, cloudName);
+            java.util.Map<String, String> credentials = ApplicationFacade.getInstance().map(systemUserToken, federationId, 
+                    serviceId, userId, cloudName);
             return new ResponseEntity<>(credentials, HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
