@@ -97,4 +97,55 @@ public class Invocation {
             throw e;
         }
     }
+    
+    @RequestMapping(value = "/{federationId}/{serviceId}", method = RequestMethod.PATCH)
+    public ResponseEntity<RequestResponse> invocationPatch(
+            @PathVariable String federationId,
+            @PathVariable String serviceId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
+            @RequestBody RequestData requestData) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.INVOKE_PATCH_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.PATCH, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
+    
+    @RequestMapping(value = "/{federationId}/{serviceId}", method = RequestMethod.OPTIONS)
+    public ResponseEntity<RequestResponse> invocationOptions(
+            @PathVariable String federationId,
+            @PathVariable String serviceId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
+            @RequestBody RequestData requestData) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.INVOKE_OPTIONS_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.OPTIONS, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
+    
+    @RequestMapping(value = "/{federationId}/{serviceId}", method = RequestMethod.HEAD)
+    public ResponseEntity<RequestResponse> invocationHead(
+            @PathVariable String federationId,
+            @PathVariable String serviceId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
+            @RequestBody RequestData requestData) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.INVOKE_HEAD_REQUEST_RECEIVED);
+            RequestResponse response = ApplicationFacade.getInstance().invocation(systemUserToken, federationId, serviceId, HttpMethod.HEAD, 
+                    requestData.getPath(), requestData.getHeaders(), requestData.getBody());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
 }

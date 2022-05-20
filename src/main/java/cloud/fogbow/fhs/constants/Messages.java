@@ -45,6 +45,9 @@ public class Messages {
         public static final String GRANT_MEMBERSHIP_RECEIVED = "Grant membership received.";
         public static final String INVOKE_DELETE_REQUEST_RECEIVED = "Invoke delete request received.";
         public static final String INVOKE_GET_REQUEST_RECEIVED = "Invoke get request received.";
+        public static final String INVOKE_HEAD_REQUEST_RECEIVED = "Invoke head request received.";
+        public static final String INVOKE_OPTIONS_REQUEST_RECEIVED = "Invoke options request received.";
+        public static final String INVOKE_PATCH_REQUEST_RECEIVED = "Invoke patch request received.";
         public static final String INVOKE_POST_REQUEST_RECEIVED = "Invoke post request received.";
         public static final String INVOKE_PUT_REQUEST_RECEIVED = "Invoke put request received.";
         public static final String LIST_MEMBERS_RECEIVED = "List members received.";
