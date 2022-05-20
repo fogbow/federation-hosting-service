@@ -61,4 +61,19 @@ public class Attributes {
             throw e;
         }
     }
+    
+    @RequestMapping(value = "/{federationId}/{attributeId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> deleteAttribute(
+            @PathVariable String federationId,
+            @PathVariable String attributeId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.DELETE_FEDERATION_ATTRIBUTE_RECEIVED);
+            ApplicationFacade.getInstance().deleteFederationAttribute(systemUserToken, federationId, attributeId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
 }

@@ -20,6 +20,7 @@ import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.fhs.api.http.response.AttributeDescription;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
+import cloud.fogbow.fhs.api.http.response.FederationInfo;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
 import cloud.fogbow.fhs.api.http.response.MemberId;
 import cloud.fogbow.fhs.api.http.response.RequestResponse;
@@ -113,6 +114,22 @@ public class ApplicationFacade {
         return federationDescriptions;
     }
 
+    // TODO test
+    public FederationInfo getFederationInfo(String userToken, String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_FEDERATION_INFO));
+        Federation federation = this.federationHost.getFederation(requestUser.getId(), federationId);
+        return new FederationInfo(federationId, federation.getName(), federation.getMemberList().size(), 
+                federation.getServices().size());
+    }
+
+    // TODO test
+    public void deleteFederation(String userToken, String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_FEDERATION));
+        this.federationHost.deleteFederation(requestUser.getId(), federationId);
+    }
+
     /*
      * 
      * Membership
@@ -141,6 +158,22 @@ public class ApplicationFacade {
         
         return memberIds;
     }
+
+    // TODO test
+    public FederationMember getMemberInfo(String userToken, String federationId, String memberId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_MEMBER_INFO));
+        FederationUser member = this.federationHost.getFederationMemberInfo(requestUser.getId(), federationId, memberId);
+        return new FederationMember(member.getMemberId(), member.getName(), 
+                member.getEmail(), member.getDescription(), member.isEnabled(), member.getAttributes());
+    }
+
+    // TODO test
+    public void revokeMembership(String userToken, String federationId, String memberId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.REVOKE_MEMBERSHIP));
+        this.federationHost.revokeMembership(requestUser.getId(), federationId, memberId);
+    }
     
     /*
      * 
@@ -166,6 +199,13 @@ public class ApplicationFacade {
         }
         
         return attributesDescriptions;
+    }
+
+    // TODO test
+    public void deleteFederationAttribute(String userToken, String federationId, String attributeId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_ATTRIBUTE));
+        this.federationHost.deleteAttribute(requestUser.getId(), federationId, attributeId);
     }
 
     public void grantAttribute(String userToken, String federationId, String memberId,
@@ -216,7 +256,23 @@ public class ApplicationFacade {
         return new ServiceInfo(service.getServiceId(), service.getEndpoint(), service.getMetadata(), 
                 service.getDiscoveryPolicy().getName(), service.getInvoker().getName());
     }
-    
+
+    // TODO test
+    public void updateService(String userToken, String federationId, String ownerId, String serviceId,
+            Map<String, String> metadata, String discoveryPolicy, String accessPolicy) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.UPDATE_SERVICE));
+        this.federationHost.updateService(requestUser.getId(), federationId, ownerId, serviceId, 
+                metadata, discoveryPolicy, accessPolicy);
+    }
+
+    // TODO test
+    public void deleteService(String userToken, String federationId, String ownerId, String serviceId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_SERVICE));
+        this.federationHost.deleteService(requestUser.getId(), federationId, ownerId, serviceId);        
+    }
+
     public List<ServiceDiscovered> discoverServices(String userToken, String federationId, String memberId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DISCOVER_SERVICES));

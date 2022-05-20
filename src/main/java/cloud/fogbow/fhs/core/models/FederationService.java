@@ -48,13 +48,25 @@ public class FederationService {
     public ServiceDiscoveryPolicy getDiscoveryPolicy() {
         return discoveryPolicy;
     }
+    
+    public void setDiscoveryPolicy(ServiceDiscoveryPolicy discoveryPolicy) {
+        this.discoveryPolicy = discoveryPolicy;
+    }
 
     public ServiceAccessPolicy getAccessPolicy() {
         return accessPolicy;
     }
     
+    public void setAccessPolicy(ServiceAccessPolicy accessPolicy) {
+        this.accessPolicy = accessPolicy;
+    }
+    
     public ServiceInvoker getInvoker() {
         return invoker;
+    }
+    
+    public void setInvoker(ServiceInvoker invoker) {
+        this.invoker = invoker;
     }
 
     public Map<String, String> getMetadata() {

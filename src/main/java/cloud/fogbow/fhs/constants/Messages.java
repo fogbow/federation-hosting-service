@@ -33,11 +33,16 @@ public class Messages {
         public static final String CANNOT_FIND_SERVICE = "Cannot find service %s.";
         public static final String CREATE_FEDERATION_ATTRIBUTE_RECEIVED = "Create federation attribute received.";
         public static final String CREATE_FEDERATION_RECEIVED = "Create federation received.";
+        public static final String DELETE_FEDERATION_ATTRIBUTE_RECEIVED = "Delete federation attribute received.";
+        public static final String DELETE_FEDERATION_RECEIVED = "Delte federation received.";
+        public static final String DELETE_SERVICE_RECEIVED = "Delete service received.";
         public static final String DISCOVER_SERVICES_RECEIVED = "Discover services received.";
         public static final String FEDERATION_ADMIN_LOGIN_RECEIVED = "Federation admin login received.";
         public static final String GENERIC_EXCEPTION_S = "Operation returned error: %s.";
         public static final String GET_FEDERATION_ATTRIBUTES_RECEIVED = "Get federation attributes received.";
+        public static final String GET_FEDERATION_INFO_RECEIVED = "Get federation info received.";
         public static final String GET_FEDERATIONS_RECEIVED = "Get federations received.";
+        public static final String GET_MEMBER_INFO_RECEIVED = "Get member info received.";
         public static final String GET_PUBLIC_KEY = "Get public key received.";
         public static final String GET_SERVICE_RECEIVED = "Get service received.";
         public static final String GET_SERVICES_RECEIVED = "Get services received.";
@@ -57,5 +62,7 @@ public class Messages {
         public static final String OPERATOR_LOGIN_RECEIVED = "Operator login received.";
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";
+        public static final String REVOKE_MEMBERSHIP_RECEIVED = "Revoke membership received.";
+        public static final String UPDATE_SERVICE_RECEIVED = "Update service received.";
     }
 }

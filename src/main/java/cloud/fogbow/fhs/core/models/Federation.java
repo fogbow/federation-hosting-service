@@ -91,6 +91,12 @@ public class Federation {
         throw new InvalidParameterException(
                 String.format(Messages.Exception.MEMBER_NOT_FOUND_IN_FEDERATION, memberId, this.id));
     }
+    
+    // TODO test
+    public void revokeMembership(String memberId) throws InvalidParameterException {
+        FederationUser member = getUserByMemberId(memberId);
+        this.members.remove(member);
+    }
 
     public String getOwner() {
         return owner;
@@ -135,6 +141,12 @@ public class Federation {
                 String.format(Messages.Log.CANNOT_FIND_SERVICE, serviceId));
     }
     
+    // TODO test
+    public void deleteService(String serviceId) throws InvalidParameterException {
+        FederationService service = getService(serviceId);
+        this.services.remove(service);
+    }
+    
     public List<FederationService> getAuthorizedServices(String userId) throws InvalidParameterException {
         List<FederationService> authorizedServices = new ArrayList<FederationService>();
         FederationUser user = getUserById(userId);
@@ -158,12 +170,19 @@ public class Federation {
         return this.attributes;
     }
 
+    public void deleteAttribute(String attributeId) throws InvalidParameterException {
+        FederationAttribute attribute = getAttributeById(attributeId);
+        this.attributes.remove(attribute);
+    }
+
     public void grantAttribute(String memberId, String attributeId) throws InvalidParameterException {
         checkIfAttributeExists(attributeId);
         FederationUser user = getUserByMemberId(memberId);
         user.addAttribute(attributeId);
     }
 
+    // TODO when revoking service owner attribute should check if
+    // the member has no registered services.
     public void revokeAttribute(String memberId, String attributeId) throws InvalidParameterException {
         checkIfAttributeExists(attributeId);
         FederationUser user = getUserByMemberId(memberId);
@@ -171,14 +190,19 @@ public class Federation {
     }
 
     private void checkIfAttributeExists(String attributeId) throws InvalidParameterException {
+        if (getAttributeById(attributeId) == null) {
+            throw new InvalidParameterException(String.format(Messages.Exception.ATTRIBUTE_DOES_NOT_EXIST_IN_FEDERATION, 
+                    attributeId, this.id));
+        }
+    }
+    
+    private FederationAttribute getAttributeById(String attributeId) {
         for (FederationAttribute attribute : this.attributes) {
             if (attribute.getId().equals(attributeId)) {
-                return;
+                return attribute;
             }
         }
-        
-        throw new InvalidParameterException(String.format(Messages.Exception.ATTRIBUTE_DOES_NOT_EXIST_IN_FEDERATION, 
-                attributeId, this.id));
+        return null;
     }
     
     public boolean isServiceOwner(String requester) throws InvalidParameterException {

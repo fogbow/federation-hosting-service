@@ -18,6 +18,7 @@ import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
 import cloud.fogbow.fhs.api.parameters.Service;
+import cloud.fogbow.fhs.api.parameters.ServiceUpdate;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
@@ -75,6 +76,40 @@ public class Services {
             ServiceInfo serviceInfo = ApplicationFacade.getInstance().getService(systemUserToken, federationId, 
                     ownerId, serviceId);
             return new ResponseEntity<>(serviceInfo, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
+    
+    @RequestMapping(value = "/{federationId}/{ownerId}/{serviceId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> deleteService(
+            @PathVariable String federationId,
+            @PathVariable String ownerId,
+            @PathVariable String serviceId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.DELETE_SERVICE_RECEIVED);
+            ApplicationFacade.getInstance().deleteService(systemUserToken, federationId, ownerId, serviceId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
+    
+    @RequestMapping(value = "/{federationId}/{ownerId}/{serviceId}", method = RequestMethod.PUT)
+    public ResponseEntity<Boolean> updateService(
+            @PathVariable String federationId,
+            @PathVariable String ownerId,
+            @PathVariable String serviceId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
+            @RequestBody ServiceUpdate serviceUpdate) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.UPDATE_SERVICE_RECEIVED);
+            ApplicationFacade.getInstance().updateService(systemUserToken, federationId, ownerId, serviceId, 
+                    serviceUpdate.getMetadata(), serviceUpdate.getDiscoveryPolicy(), serviceUpdate.getAccessPolicy());
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
             throw e;

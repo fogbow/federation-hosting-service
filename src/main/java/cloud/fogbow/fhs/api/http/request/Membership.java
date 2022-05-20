@@ -61,4 +61,34 @@ public class Membership {
             throw e;
         }
     }
+    
+    @RequestMapping(value = "/{federationId}/{memberId}", method = RequestMethod.GET)
+    public ResponseEntity<FederationMember> getMemberInfo(
+            @PathVariable String federationId,
+            @PathVariable String memberId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.GET_MEMBER_INFO_RECEIVED);
+            FederationMember member = ApplicationFacade.getInstance().getMemberInfo(systemUserToken, federationId, memberId);
+            return new ResponseEntity<>(member, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
+    
+    @RequestMapping(value = "/{federationId}/{memberId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> revokeMembership(
+            @PathVariable String federationId,
+            @PathVariable String memberId,
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.REVOKE_MEMBERSHIP_RECEIVED);
+            ApplicationFacade.getInstance().revokeMembership(systemUserToken, federationId, memberId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Exception.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
 }
