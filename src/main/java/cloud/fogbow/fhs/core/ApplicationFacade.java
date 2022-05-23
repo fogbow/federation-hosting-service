@@ -311,6 +311,7 @@ public class ApplicationFacade {
     ConfigurationErrorException, InternalServerErrorException, InvalidParameterException {
         FederationUser fhsOperator = getUserByName(operatorId);
         
+        // TODO test
         if (fhsOperator != null) {
             String identityPluginClassName = fhsOperator.getIdentityPluginClassName();
             Map<String, String> identityPluginProperties = fhsOperator.getIdentityPluginProperties(); 
@@ -323,6 +324,7 @@ public class ApplicationFacade {
         throw new InvalidParameterException();
     }
 
+    // TODO test
     public String federationAdminLogin(String operatorId, Map<String, String> credentials) throws InvalidParameterException, 
     UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
         return this.federationHost.federationAdminLogin(operatorId, credentials);

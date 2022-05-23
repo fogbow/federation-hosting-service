@@ -170,6 +170,7 @@ public class Federation {
         return this.attributes;
     }
 
+    // TODO test
     public void deleteAttribute(String attributeId) throws InvalidParameterException {
         FederationAttribute attribute = getAttributeById(attributeId);
         this.attributes.remove(attribute);
@@ -224,6 +225,7 @@ public class Federation {
         return authenticationPlugin.authenticate(credentials);
     }
 
+    // TODO test
     public Map<String, String> map(String serviceId, String userId, String cloudName) throws InvalidParameterException {
         FederationService service = getService(serviceId);
         FederationUser user = getUserById(userId);
