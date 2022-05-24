@@ -132,9 +132,13 @@ public class FederationHostTest {
     private FederationAttribute federationAttribute2;
     private Map<String, String> adminCredentials1;
     private Map<String, String> regularUserCredentials1;
+    private Map<String, String> updatedServiceMetadata;
     
     private void setUpFederationData() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
+        this.updatedServiceMetadata = new HashMap<String, String>();
+        this.updatedServiceMetadata.put(FederationHost.INVOKER_CLASS_NAME_METADATA_KEY, SERVICE_INVOKER_CLASS_NAME_1);
+        
         this.invoker = Mockito.mock(ServiceInvoker.class);
         
         this.admin1 = new FederationUser(ADMIN_ID_1, ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, 
@@ -161,9 +165,11 @@ public class FederationHostTest {
         
         this.serviceInvokerInstantiator = Mockito.mock(ServiceInvokerInstantiator.class);
         Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1, FEDERATION_ID_1)).thenReturn(invoker);
+        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, updatedServiceMetadata, FEDERATION_ID_1)).thenReturn(invoker);
         
         this.accessPolicyInstantiator = Mockito.mock(AccessPolicyInstantiator.class);
         Mockito.when(this.accessPolicyInstantiator.getAccessPolicy(ACCESS_POLICY_CLASS_NAME, SERVICE_METADATA_1)).thenReturn(this.accessPolicy);
+        Mockito.when(this.accessPolicyInstantiator.getAccessPolicy(ACCESS_POLICY_CLASS_NAME, updatedServiceMetadata)).thenReturn(this.accessPolicy);
         
         this.adminCredentials1 = new HashMap<String, String>();
         this.adminCredentials1.put(ADMIN_CREDENTIAL_KEY_1, ADMIN_CREDENTIAL_VALUE_1);
@@ -391,6 +397,36 @@ public class FederationHostTest {
         this.federationHost.getFederation(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
+    @Test
+    public void testDeleteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederation(ADMIN_NAME_1, FEDERATION_ID_1);
+        
+        Mockito.verify(this.federationList).remove(federation1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testDeleteNonExistentFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederation(ADMIN_NAME_1, "nonexistentid");
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotDeleteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederation(REGULAR_USER_NAME_1, FEDERATION_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonOwnerAdminCannotDeleteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederation(ADMIN_NAME_2, FEDERATION_ID_1);
+    }
+    
     /*
      * 
      * Membership
@@ -406,6 +442,14 @@ public class FederationHostTest {
         
         Mockito.verify(this.federation1).addUser(USER_ID_TO_GRANT_MEMBERSHIP, USER_EMAIL_TO_GRANT_MEMBERSHIP, 
                 USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGrantMembershipOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.grantMembership(ADMIN_NAME_1, "invalidfederationid", USER_ID_TO_GRANT_MEMBERSHIP, 
+                USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -435,6 +479,13 @@ public class FederationHostTest {
         assertEquals(REGULAR_USER_NAME_2, members.get(1).getName());
     }
     
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGetMembersFromInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.getFederationMembers(ADMIN_NAME_1, "invalidfederationid");
+    }
+    
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetFederationMembers() throws FogbowException {
         setUpFederationData();
@@ -458,6 +509,13 @@ public class FederationHostTest {
         assertEquals(REGULAR_USER_NAME_1, user.getName());
     }
     
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGetFederationMemberInfoFromInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.getFederationMemberInfo(ADMIN_NAME_1, "invalidfederationid", user1.getMemberId());
+    }
+    
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
@@ -471,6 +529,37 @@ public class FederationHostTest {
 
         this.federationHost.getFederationMemberInfo(ADMIN_NAME_2, FEDERATION_ID_1, user1.getMemberId());
     }
+    
+    @Test
+    public void testRevokeMembership() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.revokeMembership(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1);
+        
+        Mockito.verify(this.federation1).revokeMembership(REGULAR_USER_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRevokeMembershipFromInvalidFederation() throws FogbowException  {
+        setUpFederationData();
+        
+        this.federationHost.revokeMembership(ADMIN_NAME_1, "invalidfederationid", REGULAR_USER_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotRevokeMembership() throws FogbowException {
+        setUpFederationData();
+
+        this.federationHost.revokeMembership(REGULAR_USER_NAME_1, FEDERATION_ID_1, user1.getMemberId());
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonOwnerUserCannotRevokeMembership() throws FogbowException {
+        setUpFederationData();
+
+        this.federationHost.revokeMembership(ADMIN_NAME_2, FEDERATION_ID_1, user1.getMemberId());
+    }
+    
     
     /*
      * 
@@ -486,6 +575,13 @@ public class FederationHostTest {
         
         assertEquals(ATTRIBUTE_ID_1, returnedAttributeId);
         Mockito.verify(this.federation1).createAttribute(ATTRIBUTE_NAME_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotCreateAttributeOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.createAttribute(ADMIN_NAME_1, "invalidfederationid", ATTRIBUTE_NAME_1);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -506,11 +602,48 @@ public class FederationHostTest {
         assertTrue(federationAttributes.contains(this.federationAttribute2));
     }
     
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGetFederationAttributesFromInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.getFederationAttributes(ADMIN_NAME_1, "invalidfederationid");
+    }
+    
     @Test(expected = UnauthorizedRequestException.class)
     public void testCannotGetFederationAttributesIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.getFederationAttributes(ADMIN_NAME_2, FEDERATION_ID_1);
+    }
+    
+    @Test
+    public void testDeleteAttribute() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteAttribute(ADMIN_NAME_1, FEDERATION_ID_1, ATTRIBUTE_ID_1);
+        
+        Mockito.verify(this.federation1).deleteAttribute(ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotDeleteAttributeFromInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteAttribute(ADMIN_NAME_1, "invalidfederationid", ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotDeleteAttribute() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteAttribute(REGULAR_USER_NAME_1, FEDERATION_ID_1, ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminOwnerCannotDeleteAttribute() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteAttribute(ADMIN_NAME_2, FEDERATION_ID_1, ATTRIBUTE_ID_1);
     }
     
     @Test
@@ -520,6 +653,13 @@ public class FederationHostTest {
         this.federationHost.grantAttribute(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
 
         Mockito.verify(this.federation1).grantAttribute(REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGrantAttributeOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.grantAttribute(ADMIN_NAME_1, "invalidfederationid", REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -536,6 +676,13 @@ public class FederationHostTest {
         this.federationHost.revokeAttribute(ADMIN_NAME_1, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
 
         Mockito.verify(this.federation1).revokeAttribute(REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRevokeAttributeOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.revokeAttribute(ADMIN_NAME_1, "invalidfederationid", REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -560,6 +707,14 @@ public class FederationHostTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
         
         Mockito.verify(this.federation1).registerService(Mockito.any(FederationService.class));
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRegisterServiceOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.registerService(SERVICE_OWNER_NAME_1, "invalidfederationid", SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
+                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -602,6 +757,13 @@ public class FederationHostTest {
         assertTrue(servicesOwnedByAdmin2.contains(SERVICE_ID_2));
     }
     
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGetOwnedServicesOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_1, "invalidfederationid");
+    }
+    
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotGetOwnedServices() throws FogbowException {
         setUpFederationData();
@@ -622,6 +784,13 @@ public class FederationHostTest {
         assertEquals(SERVICE_METADATA_1, federationService.getMetadata());
     }
     
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotGetOwnedServiceOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, "invalidfederationid", SERVICE_ID_1);
+    }
+    
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotGetOwnedService() throws FogbowException {
         setUpFederationData();
@@ -634,6 +803,63 @@ public class FederationHostTest {
         setUpFederationData();
 
         this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, "invalidserviceid");
+    }
+    
+    @Test
+    public void testUpdateService() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, 
+                SERVICE_ID_1, updatedServiceMetadata, SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, 
+                ACCESS_POLICY_CLASS_NAME);
+        
+        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, updatedServiceMetadata, FEDERATION_ID_1)).thenReturn(invoker);
+        
+        Mockito.verify(this.service1).setDiscoveryPolicy(discoveryPolicy1);
+        Mockito.verify(this.service1).setAccessPolicy(accessPolicy);
+        Mockito.verify(this.service1).setInvoker(invoker);
+        Mockito.verify(this.service1).setMetadata(updatedServiceMetadata);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotUpdateServiceOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateService(SERVICE_OWNER_NAME_1, "invalidfederationid", SERVICE_OWNER_NAME_1, 
+                SERVICE_ID_1, updatedServiceMetadata, SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, 
+                ACCESS_POLICY_CLASS_NAME);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonServiceOwnerUserCannotUpdateService() throws FogbowException {
+        setUpFederationData();
+
+        this.federationHost.updateService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, 
+                SERVICE_ID_1, updatedServiceMetadata, SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, 
+                ACCESS_POLICY_CLASS_NAME);
+    }
+    
+    @Test
+    public void testDeleteService() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ID_1);
+        
+        Mockito.verify(this.federation1).deleteService(SERVICE_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotDeleteServiceOnInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteService(SERVICE_OWNER_NAME_1, "invalidfederationid", SERVICE_OWNER_NAME_1, SERVICE_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonServiceOwnerUserCannotDeleteService() throws FogbowException {
+        setUpFederationData();
+
+        this.federationHost.deleteService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ID_1);
     }
     
     @Test

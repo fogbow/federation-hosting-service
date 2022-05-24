@@ -92,7 +92,8 @@ public class Federation {
                 String.format(Messages.Exception.MEMBER_NOT_FOUND_IN_FEDERATION, memberId, this.id));
     }
     
-    // TODO test
+    // TODO should check if the user is a service owner and has registered services.
+    // In this case, it should not allow the user removal.
     public void revokeMembership(String memberId) throws InvalidParameterException {
         FederationUser member = getUserByMemberId(memberId);
         this.members.remove(member);
@@ -141,7 +142,6 @@ public class Federation {
                 String.format(Messages.Log.CANNOT_FIND_SERVICE, serviceId));
     }
     
-    // TODO test
     public void deleteService(String serviceId) throws InvalidParameterException {
         FederationService service = getService(serviceId);
         this.services.remove(service);
@@ -170,7 +170,9 @@ public class Federation {
         return this.attributes;
     }
 
-    // TODO test
+    // TODO should check if the attribute to be removed is not 'Member' of 'ServiceOwner'
+    // In this case, it should throw exception.
+    // TODO should check if some user uses the attribute.
     public void deleteAttribute(String attributeId) throws InvalidParameterException {
         FederationAttribute attribute = getAttributeById(attributeId);
         this.attributes.remove(attribute);
@@ -225,7 +227,6 @@ public class Federation {
         return authenticationPlugin.authenticate(credentials);
     }
 
-    // TODO test
     public Map<String, String> map(String serviceId, String userId, String cloudName) throws InvalidParameterException {
         FederationService service = getService(serviceId);
         FederationUser user = getUserById(userId);

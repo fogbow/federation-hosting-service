@@ -27,6 +27,7 @@ import cloud.fogbow.fhs.api.http.response.RequestResponse;
 import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
@@ -114,7 +115,6 @@ public class ApplicationFacade {
         return federationDescriptions;
     }
 
-    // TODO test
     public FederationInfo getFederationInfo(String userToken, String federationId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_FEDERATION_INFO));
@@ -123,7 +123,6 @@ public class ApplicationFacade {
                 federation.getServices().size());
     }
 
-    // TODO test
     public void deleteFederation(String userToken, String federationId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_FEDERATION));
@@ -159,7 +158,6 @@ public class ApplicationFacade {
         return memberIds;
     }
 
-    // TODO test
     public FederationMember getMemberInfo(String userToken, String federationId, String memberId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_MEMBER_INFO));
@@ -168,7 +166,6 @@ public class ApplicationFacade {
                 member.getEmail(), member.getDescription(), member.isEnabled(), member.getAttributes());
     }
 
-    // TODO test
     public void revokeMembership(String userToken, String federationId, String memberId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.REVOKE_MEMBERSHIP));
@@ -201,7 +198,6 @@ public class ApplicationFacade {
         return attributesDescriptions;
     }
 
-    // TODO test
     public void deleteFederationAttribute(String userToken, String federationId, String attributeId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_ATTRIBUTE));
@@ -257,7 +253,6 @@ public class ApplicationFacade {
                 service.getDiscoveryPolicy().getName(), service.getInvoker().getName());
     }
 
-    // TODO test
     public void updateService(String userToken, String federationId, String ownerId, String serviceId,
             Map<String, String> metadata, String discoveryPolicy, String accessPolicy) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
@@ -266,7 +261,6 @@ public class ApplicationFacade {
                 metadata, discoveryPolicy, accessPolicy);
     }
 
-    // TODO test
     public void deleteService(String userToken, String federationId, String ownerId, String serviceId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_SERVICE));
@@ -311,7 +305,6 @@ public class ApplicationFacade {
     ConfigurationErrorException, InternalServerErrorException, InvalidParameterException {
         FederationUser fhsOperator = getUserByName(operatorId);
         
-        // TODO test
         if (fhsOperator != null) {
             String identityPluginClassName = fhsOperator.getIdentityPluginClassName();
             Map<String, String> identityPluginProperties = fhsOperator.getIdentityPluginProperties(); 
@@ -320,14 +313,12 @@ public class ApplicationFacade {
             return authenticationPlugin.authenticate(credentials);
         }
         
-        // TODO add message
-        throw new InvalidParameterException();
+        throw new InvalidParameterException(String.format(Messages.Exception.INVALID_FHS_OPERATOR_ID, operatorId));
     }
 
-    // TODO test
-    public String federationAdminLogin(String operatorId, Map<String, String> credentials) throws InvalidParameterException, 
+    public String federationAdminLogin(String adminId, Map<String, String> credentials) throws InvalidParameterException, 
     UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
-        return this.federationHost.federationAdminLogin(operatorId, credentials);
+        return this.federationHost.federationAdminLogin(adminId, credentials);
     }
     
     private FederationUser getUserByName(String name) {

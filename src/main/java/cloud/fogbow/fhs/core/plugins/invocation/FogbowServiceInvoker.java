@@ -33,13 +33,18 @@ public class FogbowServiceInvoker extends HttpServiceInvoker {
     private String servicePublicKeyEndpoint;
     
     public FogbowServiceInvoker(Map<String, String> metadata, String localProviderId) throws ConfigurationErrorException {
-        this.localProviderId = localProviderId;
-        this.servicePublicKeyEndpoint = metadata.get(SERVICE_PUBLIC_KEY_ENDPOINT);
+        String servicePublicKeyEndpoint = metadata.get(SERVICE_PUBLIC_KEY_ENDPOINT);
         
-        // TODO test
-        if (this.servicePublicKeyEndpoint == null || this.servicePublicKeyEndpoint.isEmpty()) {
+        if (servicePublicKeyEndpoint == null || servicePublicKeyEndpoint.isEmpty()) {
             throw new ConfigurationErrorException(Messages.Exception.INVALID_SERVICE_PUBLIC_KEY_ENDPOINT);
         }
+        
+        if (localProviderId == null || localProviderId.isEmpty()) {
+            throw new ConfigurationErrorException(Messages.Exception.INVALID_LOCAL_PROVIDER_ID);
+        }
+        
+        this.servicePublicKeyEndpoint = servicePublicKeyEndpoint;
+        this.localProviderId = localProviderId;
     }
     
     public FogbowServiceInvoker(String serializedMetadata) 

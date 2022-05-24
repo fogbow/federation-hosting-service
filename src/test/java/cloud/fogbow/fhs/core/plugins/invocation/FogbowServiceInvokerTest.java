@@ -22,6 +22,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import cloud.fogbow.as.core.util.TokenProtector;
+import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.util.PublicKeysHolder;
@@ -53,6 +54,7 @@ public class FogbowServiceInvokerTest {
     private static final String FEDERATION_ID = "federation";
     private static final String SERVICE_PUBLIC_KEY_ENDPOINT = "http://0.0.0.0/service/publicKey";
     private static final String SERVICE_ID = "serviceId";
+    private static final String LOCAL_PROVIDER_ID = "providerId";
     
     private FogbowServiceInvoker serviceInvoker;
     private Map<String, String> metadata;
@@ -95,7 +97,30 @@ public class FogbowServiceInvokerTest {
         this.body.put(BODY_KEY_1, BODY_VALUE_1);
         this.body.put(BODY_KEY_2, BODY_VALUE_2);
         
-        this.serviceInvoker = new FogbowServiceInvoker(this.metadata, null);
+        this.serviceInvoker = new FogbowServiceInvoker(this.metadata, LOCAL_PROVIDER_ID);
+    }
+    
+    @Test(expected = ConfigurationErrorException.class)
+    public void testInstantiationFailsIfServicePublicKeyEndpointIsNull() throws ConfigurationErrorException {
+        new FogbowServiceInvoker(new HashMap<String, String>(), LOCAL_PROVIDER_ID);
+    }
+    
+    @Test(expected = ConfigurationErrorException.class)
+    public void testInstantiationFailsIfServicePublicKeyEndpointIsEmpty() throws ConfigurationErrorException {
+        HashMap<String, String> metadata = new HashMap<String, String>();
+        this.metadata.put(FogbowServiceInvoker.SERVICE_PUBLIC_KEY_ENDPOINT, "");
+        
+        new FogbowServiceInvoker(metadata, LOCAL_PROVIDER_ID);
+    }
+    
+    @Test(expected = ConfigurationErrorException.class)
+    public void testInstantiationFailsIfLocalProviderIsNull() throws ConfigurationErrorException {
+        new FogbowServiceInvoker(this.metadata, null);
+    }
+    
+    @Test(expected = ConfigurationErrorException.class)
+    public void testInstantiationFailsIfLocalProviderIsEmpty() throws ConfigurationErrorException {
+        new FogbowServiceInvoker(this.metadata, "");
     }
     
     @Test

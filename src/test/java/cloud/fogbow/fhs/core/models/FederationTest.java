@@ -18,6 +18,7 @@ import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
+import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
@@ -56,6 +57,9 @@ public class FederationTest {
     private static final String FEDERATION_USER_1_CREDENTIAL_VALUE = "federationUser1CredentialValue";
     private static final String FEDERATION_USER_2_CREDENTIAL_KEY = "federationUser2CredentialKey";
     private static final String FEDERATION_USER_2_CREDENTIAL_VALUE = "federationUser2CredentialValue";
+    private static final String CLOUD_NAME = "cloudName";
+    private static final String CREDENTIALS_KEY = "credentialsKey";
+    private static final String CREDENTIALS_VALUE = "credentialsValue";
     private List<FederationUser> federationMembers;
     private List<FederationService> federationServices;
     private List<FederationAttribute> federationAttributes;
@@ -70,6 +74,8 @@ public class FederationTest {
     private Map<String, String> federationUserCredentials2;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     private FederationAuthenticationPlugin authenticationPlugin;
+    private ServiceAccessPolicy accessPolicy;
+    private Map<String, String> credentials;
     
     @Before
     public void setUp() throws UnauthenticatedUserException, ConfigurationErrorException, InternalServerErrorException {
@@ -84,10 +90,17 @@ public class FederationTest {
         this.federationMembers.add(this.federationUser1);
         this.federationMembers.add(this.federationUser2);
         
+        this.credentials = new HashMap<String, String>();
+        this.credentials.put(CREDENTIALS_KEY, CREDENTIALS_VALUE);
+        
+        this.accessPolicy = Mockito.mock(ServiceAccessPolicy.class);
+        Mockito.when(this.accessPolicy.getCredentialsForAccess(federationUser1, CLOUD_NAME)).thenReturn(credentials);
+        
         this.federationService1 = Mockito.mock(FederationService.class);
         Mockito.when(this.federationService1.getServiceId()).thenReturn(FEDERATION_SERVICE_ID_1);
         Mockito.when(this.federationService1.isDiscoverableBy(federationUser1)).thenReturn(true);
         Mockito.when(this.federationService1.isDiscoverableBy(federationUser2)).thenReturn(false);
+        Mockito.when(this.federationService1.getAccessPolicy()).thenReturn(accessPolicy);
         this.federationService2 = Mockito.mock(FederationService.class);
         Mockito.when(this.federationService2.getServiceId()).thenReturn(FEDERATION_SERVICE_ID_2);
         Mockito.when(this.federationService2.isDiscoverableBy(federationUser1)).thenReturn(false);
@@ -147,6 +160,21 @@ public class FederationTest {
     }
     
     @Test
+    public void testRevokeMembership() throws InvalidParameterException {
+        assertEquals(2, this.federationMembers.size());
+        
+        this.federation.revokeMembership(FEDERATION_USER_ID_1);
+        
+        assertEquals(1, this.federationMembers.size());
+        assertTrue(this.federationMembers.contains(federationUser2));
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRevokeMembershipOfNonMember() throws InvalidParameterException {
+        this.federation.revokeMembership("unknownmemberid");
+    }
+    
+    @Test
     public void testGetUser() throws InvalidParameterException {
         FederationUser returnedFederationUser1 = this.federation.getUserByMemberId(FEDERATION_USER_ID_1);
         FederationUser returnedFederationUser2 = this.federation.getUserByMemberId(FEDERATION_USER_ID_2);
@@ -201,6 +229,21 @@ public class FederationTest {
     }
     
     @Test
+    public void testDeleteService() throws InvalidParameterException {
+        assertEquals(2, this.federationServices.size());
+        
+        this.federation.deleteService(FEDERATION_SERVICE_ID_1);
+        
+        assertEquals(1, this.federationServices.size());
+        assertTrue(this.federationServices.contains(federationService2));
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotDeleteNotRegisteredService() throws InvalidParameterException {
+        this.federation.deleteService("unknownserviceid");
+    }
+    
+    @Test
     public void testGetAuthorizedServices() throws InvalidParameterException {
         List<FederationService> authorizedServicesUser1 = this.federation.getAuthorizedServices(FEDERATION_USER_NAME_1);
         List<FederationService> authorizedServicesUser2 = this.federation.getAuthorizedServices(FEDERATION_USER_NAME_2);
@@ -239,6 +282,16 @@ public class FederationTest {
         assertEquals(1, attributesAfterCreation.size());
         assertEquals(ATTRIBUTE_NAME_1, attributesAfterCreation.get(0).getName());
         assertEquals(returnedAttributeId, attributesAfterCreation.get(0).getId());
+    }
+    
+    @Test
+    public void testDeleteAttribute() throws InvalidParameterException {
+        assertEquals(2, this.federationAttributes.size());
+        
+        this.federation.deleteAttribute(ATTRIBUTE_ID_1);
+        
+        assertEquals(1, this.federationAttributes.size());
+        assertTrue(this.federationAttributes.contains(this.federationAttribute2));
     }
     
     @Test
@@ -330,5 +383,25 @@ public class FederationTest {
     public void testLoginUserNotFound() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
         this.federation.login("notfederateduser", this.federationUserCredentials1);
+    }
+    
+    @Test
+    public void testMap() throws InvalidParameterException {
+        Map<String, String> returnedCredentials = this.federation.map(FEDERATION_SERVICE_ID_1, 
+                FEDERATION_USER_NAME_1, CLOUD_NAME);
+        
+        assertEquals(this.credentials, returnedCredentials);
+        
+        Mockito.verify(this.accessPolicy).getCredentialsForAccess(federationUser1, CLOUD_NAME);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotMapCredentialsForInvalidService() throws InvalidParameterException {
+        this.federation.map("invalidserviceid", FEDERATION_USER_NAME_1, CLOUD_NAME);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotMapCredentialsForInvalidMember() throws InvalidParameterException {
+        this.federation.map(FEDERATION_SERVICE_ID_1, "invaliduserid", CLOUD_NAME);
     }
 }

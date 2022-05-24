@@ -132,10 +132,9 @@ public class FederationHost {
         return federation;
     }
     
-    // TODO test
     public void deleteFederation(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         this.federationList.remove(federation);
     }
@@ -156,7 +155,7 @@ public class FederationHost {
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         return federation.getMemberList();
     }
@@ -168,7 +167,6 @@ public class FederationHost {
         return federation.getUserByMemberId(memberId);
     }
     
-    // TODO test
     public void revokeMembership(String requester, String federationId, String memberId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
@@ -185,7 +183,7 @@ public class FederationHost {
     public String createAttribute(String requester, String federationId, String attributeName)
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         return federation.createAttribute(attributeName);
     }
@@ -193,23 +191,23 @@ public class FederationHost {
     public List<FederationAttribute> getFederationAttributes(String requester, String federationId)
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         return federation.getAttributes();
     }
     
-    // TODO test
     public void deleteAttribute(String requester, String federationId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
+        checkIfRequesterIsFederationOwner(requester, federation);
         federation.deleteAttribute(attributeId);
     }
     
     public void grantAttribute(String requester, String federationId, String memberId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.grantAttribute(memberId, attributeId);
     }
@@ -217,7 +215,7 @@ public class FederationHost {
     public void revokeAttribute(String requester, String federationId, String memberId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.revokeAttribute(memberId, attributeId);
     }
@@ -270,7 +268,7 @@ public class FederationHost {
     }
     
     public FederationService getOwnedService(String requester, String federationId, String serviceId) throws UnauthorizedRequestException, InvalidParameterException {
-        Federation federation = lookUpFederationById(federationId);
+        Federation federation = getFederationOrFail(federationId);
         if (!federation.isServiceOwner(requester)) {
             throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
         }
@@ -286,7 +284,6 @@ public class FederationHost {
                 String.format(Messages.Exception.SERVICE_NOT_FOUND, serviceId, federationId));
     }
 
-    // TODO test
     public void updateService(String requester, String federationId, String ownerId, String serviceId,
             Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) throws InvalidParameterException, UnauthorizedRequestException {
         Federation federation = getFederationOrFail(federationId);
@@ -305,10 +302,9 @@ public class FederationHost {
         federationService.setDiscoveryPolicy(discoveryPolicy);
         federationService.setAccessPolicy(accessPolicy);
         federationService.setInvoker(invoker);
+        federationService.setMetadata(metadata);
     }
     
-    
-    // TODO test
     public void deleteService(String requester, String federationId, String owner, String serviceId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
