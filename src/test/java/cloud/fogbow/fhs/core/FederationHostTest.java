@@ -1,6 +1,7 @@
 package cloud.fogbow.fhs.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -49,12 +50,17 @@ public class FederationHostTest {
     private static final String ADMIN_DESCRIPTION_2 = "adminDescription2";
     private static final boolean ADMIN_ENABLED_1 = true;
     private static final boolean ADMIN_ENABLED_2 = true;
+    private static final String UPDATED_ADMIN_NAME_1 = "updatedAdminName1";
+    private static final String UPDATED_ADMIN_EMAIL_1 = "updatedAdminEmail1";
+    private static final String UPDATED_ADMIN_DESCRIPTION_1 = "updatedAdminDescription1";
+    private static final boolean UPDATED_ADMIN_ENABLED_1 = false;
     private static final String FEDERATION_ID_1 = "federationId1";
     private static final String FEDERATION_ID_2 = "federationId2";
     private static final String FEDERATION_ID_3 = "federationId3";
     private static final String FEDERATION_NAME_1 = "federation1";
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription1";
     private static final boolean FEDERATION_ENABLED_1 = true;
+    private static final boolean UPDATED_FEDERATION_ENABLED_1 = false;
     private static final String USER_ID_TO_GRANT_MEMBERSHIP = "userIdToGrantMembership";
     private static final String USER_EMAIL_TO_GRANT_MEMBERSHIP = "userEmailToGrantMembership";
     private static final String USER_DESCRIPTION_TO_GRANT_MEMBERSHIP = "userDescriptionToGrantMembership";
@@ -327,6 +333,86 @@ public class FederationHostTest {
         setUpFederationData();
         
         this.federationHost.getFederationAdmin(ADMIN_NAME_1);
+    }
+    
+    @Test
+    public void testUpdateFederationAdmin() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateFederationAdmin(ADMIN_ID_1, UPDATED_ADMIN_NAME_1, UPDATED_ADMIN_EMAIL_1, 
+                UPDATED_ADMIN_DESCRIPTION_1, UPDATED_ADMIN_ENABLED_1);
+        
+        assertEquals(UPDATED_ADMIN_NAME_1, this.admin1.getName());
+        assertEquals(UPDATED_ADMIN_EMAIL_1, this.admin1.getEmail());
+        assertEquals(UPDATED_ADMIN_DESCRIPTION_1, this.admin1.getDescription());
+        assertEquals(UPDATED_ADMIN_ENABLED_1, this.admin1.isEnabled());
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotUpdateInvalidFederationAdmin() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateFederationAdmin("invalidadminid", UPDATED_ADMIN_NAME_1, UPDATED_ADMIN_EMAIL_1, 
+                UPDATED_ADMIN_DESCRIPTION_1, UPDATED_ADMIN_ENABLED_1);
+    }
+    
+    @Test
+    public void testDeleteFederationAdmin() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederationAdmin(ADMIN_ID_1);
+        
+        Mockito.verify(this.adminList).remove(admin1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotDeleteInvalidFederationAdmin() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederationAdmin("invalidadminid");
+    }
+    
+    @Test
+    public void testGetFederationsInstancesOwnedByAnotherMember() throws FogbowException {
+        setUpFederationData();
+
+        List<Federation> returnedFederationList = this.federationHost.getFederationsInstancesOwnedByAnotherMember(ADMIN_NAME_1);
+        
+        assertEquals(2, returnedFederationList.size());
+        assertEquals(FEDERATION_ID_1, returnedFederationList.get(0).getId());
+        assertEquals(FEDERATION_ID_3, returnedFederationList.get(1).getId());
+    }
+    
+    @Test
+    public void testUpdateFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateFederation(FEDERATION_ID_1, UPDATED_FEDERATION_ENABLED_1);
+        
+        assertFalse(this.federation1.enabled());
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotUpdateInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateFederation("invalidfederationid", UPDATED_FEDERATION_ENABLED_1);
+    }
+    
+    @Test
+    public void testDeleteFederationInstance() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederationInstance(FEDERATION_ID_1);
+        
+        Mockito.verify(this.federationList).remove(federation1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotDeleteInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.deleteFederationInstance("invalidfederationid");
     }
     
     /*

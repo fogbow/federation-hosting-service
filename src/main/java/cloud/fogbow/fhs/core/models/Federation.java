@@ -114,6 +114,10 @@ public class Federation {
     public boolean enabled() {
         return enabled;
     }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public String getDescription() {
         return description;

@@ -93,4 +93,20 @@ public class FederationUser {
     public Map<String, String> getIdentityPluginProperties() {
         return this.identityPluginProperties;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

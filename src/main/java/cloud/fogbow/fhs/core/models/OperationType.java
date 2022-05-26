@@ -2,6 +2,12 @@ package cloud.fogbow.fhs.core.models;
 
 public enum OperationType {
     ADD_FED_ADMIN("addFedAdmin"), 
+    GET_FED_ADMINS("getFedAdmins"),
+    UPDATE_FED_ADMIN("updateFedAdmin"),
+    DELETE_FED_ADMIN("deleteFedAdmin"),
+    LIST_FEDERATION_INSTANCES("listFederationInstances"),
+    UPDATE_FEDERATION("updateFederation"),
+    DELETE_FEDERATION_INSTANCE("deleteFederationInstance"),
     CREATE_FEDERATION("createFederation"), 
     LIST_FEDERATIONS("listFederations"), 
     GET_FEDERATION_INFO("getFederationInfo"),

@@ -92,6 +92,50 @@ public class FederationHost {
         
         return admin;
     }
+
+    public List<FederationUser> getFederationAdmins() {
+        return this.federationAdminList;
+    }
+
+    public void updateFederationAdmin(String adminId, String name, String email, String description,
+            boolean enabled) throws InvalidParameterException {
+        FederationUser federationUser = getAdminByIdOrFail(adminId);
+        federationUser.setName(name);
+        federationUser.setEmail(email);
+        federationUser.setDescription(description);
+        federationUser.setEnabled(enabled);
+    }
+    
+    public void deleteFederationAdmin(String adminId) throws InvalidParameterException {
+        FederationUser federationUser = getAdminByIdOrFail(adminId);
+        federationAdminList.remove(federationUser);
+    }
+
+    public List<Federation> getFederations() {
+        return this.federationList;
+    }
+    
+    public List<Federation> getFederationsInstancesOwnedByAnotherMember(String userId) throws UnauthorizedRequestException {
+        List<Federation> ownedFederations = new ArrayList<Federation>();
+        
+        for (Federation federation : this.federationList) {
+            if (federation.getOwner().equals(userId)) {
+                ownedFederations.add(federation);
+            }
+        }
+        
+        return ownedFederations;
+    }
+
+    public void updateFederation(String federationId, boolean enabled) throws InvalidParameterException {
+        Federation federation = getFederationOrFail(federationId);
+        federation.setEnabled(enabled);
+    }
+    
+    public void deleteFederationInstance(String federationId) throws InvalidParameterException {
+        Federation federation = getFederationOrFail(federationId);
+        this.federationList.remove(federation);
+    }
     
     /*
      * 
@@ -435,7 +479,6 @@ public class FederationHost {
                 return admin;
             }
         }
-        
         return null;
     }
     

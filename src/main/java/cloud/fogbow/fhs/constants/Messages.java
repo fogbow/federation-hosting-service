@@ -36,7 +36,9 @@ public class Messages {
         public static final String CREATE_FEDERATION_ATTRIBUTE_RECEIVED = "Create federation attribute received.";
         public static final String CREATE_FEDERATION_RECEIVED = "Create federation received.";
         public static final String DELETE_FEDERATION_ATTRIBUTE_RECEIVED = "Delete federation attribute received.";
+        public static final String DELETE_FEDERATION_INSTANCE_RECEIVED = "Delete federation instance received.";
         public static final String DELETE_FEDERATION_RECEIVED = "Delte federation received.";
+        public static final String DELETE_FED_ADMIN_RECEIVED = "Delete fed admin received.";
         public static final String DELETE_SERVICE_RECEIVED = "Delete service received.";
         public static final String DISCOVER_SERVICES_RECEIVED = "Discover services received.";
         public static final String FEDERATION_ADMIN_LOGIN_RECEIVED = "Federation admin login received.";
@@ -57,6 +59,8 @@ public class Messages {
         public static final String INVOKE_PATCH_REQUEST_RECEIVED = "Invoke patch request received.";
         public static final String INVOKE_POST_REQUEST_RECEIVED = "Invoke post request received.";
         public static final String INVOKE_PUT_REQUEST_RECEIVED = "Invoke put request received.";
+        public static final String LIST_FEDERATION_INSTANCES_RECEIVED = "List federation instances received.";
+        public static final String LIST_FED_ADMINS_RECEIVED = "List fed admins received.";
         public static final String LIST_MEMBERS_RECEIVED = "List members received.";
         public static final String LOGIN_RECEIVED = "Login received.";
         public static final String LOGOUT_RECEIVED = "Logout received.";
@@ -65,6 +69,8 @@ public class Messages {
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";
         public static final String REVOKE_MEMBERSHIP_RECEIVED = "Revoke membership received.";
+        public static final String UPDATE_FEDERATION_RECEIVED = "Update federation received.";
+        public static final String UPDATE_FED_ADMIN_RECEIVED = "Update fed admin received.";
         public static final String UPDATE_SERVICE_RECEIVED = "Update service received.";
     }
 }

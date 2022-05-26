@@ -21,7 +21,10 @@ import cloud.fogbow.fhs.core.models.OperationType;
 
 public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOperation>{
     public static final List<OperationType> OPERATOR_ONLY_OPERATIONS = 
-            Arrays.asList(OperationType.ADD_FED_ADMIN);
+            Arrays.asList(OperationType.ADD_FED_ADMIN, OperationType.GET_FED_ADMINS, 
+                    OperationType.UPDATE_FED_ADMIN, OperationType.DELETE_FED_ADMIN, 
+                    OperationType.LIST_FEDERATION_INSTANCES, OperationType.UPDATE_FEDERATION, 
+                    OperationType.DELETE_FEDERATION_INSTANCE);
     public static final List<OperationType> OTHER_SERVICES_ADMIN_ONLY_OPERATIONS = 
             Arrays.asList(OperationType.MAP);
     private List<String> fhsOperatorUserIds;

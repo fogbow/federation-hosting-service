@@ -18,9 +18,11 @@ import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
 import cloud.fogbow.common.util.CryptoUtil;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
 import cloud.fogbow.fhs.api.http.response.AttributeDescription;
+import cloud.fogbow.fhs.api.http.response.FedAdminInfo;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
 import cloud.fogbow.fhs.api.http.response.FederationId;
 import cloud.fogbow.fhs.api.http.response.FederationInfo;
+import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.api.http.response.FederationMember;
 import cloud.fogbow.fhs.api.http.response.MemberId;
 import cloud.fogbow.fhs.api.http.response.RequestResponse;
@@ -84,6 +86,68 @@ public class ApplicationFacade {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.ADD_FED_ADMIN));
         return this.federationHost.addFederationAdmin(adminName, adminEmail, adminDescription, enabled, authenticationProperties);
+    }
+
+    public List<FedAdminInfo> getFederationAdmins(String userToken) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_FED_ADMINS));
+        
+        List<FederationUser> federationAdmins = this.federationHost.getFederationAdmins();
+        List<FedAdminInfo> adminsInfo = new ArrayList<FedAdminInfo>();
+        
+        for (FederationUser admin : federationAdmins) {
+            String adminName = admin.getName();
+            List<Federation> federations = this.federationHost.getFederationsInstancesOwnedByAnotherMember(adminName);
+            List<String> federationsIds = new ArrayList<String>();
+            
+            for (Federation federation : federations) {
+                federationsIds.add(federation.getId());
+            }
+            
+            adminsInfo.add(new FedAdminInfo(admin.getMemberId(), admin.getName(), admin.getEmail(), admin.getDescription(), 
+                    admin.isEnabled(), federationsIds));
+        }
+        
+        return adminsInfo;
+    }
+
+    public void updateFederationAdmin(String userToken, String adminId, String name, String email,
+            String description, boolean enabled) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.UPDATE_FED_ADMIN));
+        this.federationHost.updateFederationAdmin(adminId, name, email, description, enabled);
+    }
+
+    public void deleteFederationAdmin(String userToken, String adminId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_FED_ADMIN));
+        this.federationHost.deleteFederationAdmin(adminId);
+    }
+
+    public List<FederationInstance> listFederationInstances(String userToken) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.LIST_FEDERATION_INSTANCES));
+        List<Federation> federations = this.federationHost.getFederations();
+        List<FederationInstance> federationInstances = new ArrayList<FederationInstance>();
+        
+        for (Federation federation : federations) {
+            federationInstances.add(new FederationInstance(federation.getId(), federation.getName(), federation.getDescription(), 
+                    federation.enabled(), federation.getOwner()));
+        }
+        
+        return federationInstances;
+    }
+    
+    public void updateFederation(String userToken, String federationId, boolean enabled) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.UPDATE_FEDERATION));
+        this.federationHost.updateFederation(federationId, enabled);
+    }
+
+    public void deleteFederationInstance(String userToken, String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.DELETE_FEDERATION_INSTANCE));
+        this.federationHost.deleteFederationInstance(federationId);
     }
     
     /*
