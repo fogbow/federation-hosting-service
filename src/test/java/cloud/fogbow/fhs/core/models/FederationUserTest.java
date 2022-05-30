@@ -27,7 +27,7 @@ public class FederationUserTest {
     public void testAddAttribute() throws InvalidParameterException {
         federationUser = new FederationUser(USER_ID, USER_NAME, USER_EMAIL, FEDERATION_ID,
                 USER_DESCRIPTION, USER_ENABLED, new ArrayList<String>(), 
-                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         
         assertTrue(federationUser.getAttributes().isEmpty());
         
@@ -41,7 +41,7 @@ public class FederationUserTest {
     public void testCannotAddAttributeAlreadyAdded() throws InvalidParameterException {
         federationUser = new FederationUser(USER_ID, USER_NAME, FEDERATION_ID, USER_EMAIL, 
                 USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1), 
-                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         
         federationUser.addAttribute(ATTRIBUTE_ID_1);
     }
@@ -50,7 +50,7 @@ public class FederationUserTest {
     public void testRemoveAttribute() throws InvalidParameterException {
         federationUser = new FederationUser(USER_ID, USER_NAME, FEDERATION_ID, USER_EMAIL, 
                 USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1), 
-                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         
         federationUser.removeAttribute(ATTRIBUTE_ID_1);
         
@@ -61,7 +61,7 @@ public class FederationUserTest {
     public void testCannotRemoveNotFoundAttribute() throws InvalidParameterException {
         federationUser = new FederationUser(USER_ID, USER_NAME, FEDERATION_ID, USER_EMAIL,
                 USER_DESCRIPTION, USER_ENABLED, TestUtils.getListWithElements(ATTRIBUTE_ID_1), 
-                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>());
+                IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         
         federationUser.removeAttribute(ATTRIBUTE_ID_2);
     }

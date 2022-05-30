@@ -5,6 +5,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
@@ -13,6 +27,8 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
+@Entity
+@Table(name = "federation_table")
 public class Federation {
     public static final String MEMBER_ATTRIBUTE_NAME = "member";
     public static final String SERVICE_OWNER_ATTRIBUTE_NAME = "serviceOwner";
@@ -21,16 +37,59 @@ public class Federation {
     private static FederationAttribute SERVICE_OWNER_ATTRIBUTE = 
             new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME, SERVICE_OWNER_ATTRIBUTE_NAME);
     
+    @Column(name = "federation_id")
+    @Id
     private String id;
+    
+    @Column(name = "federation_owner")
     private String owner;
+    
+    @Column(name = "federation_name")
     private String name;
+    
+    @Column(name = "federation_description")
     private String description;
+    
+    @Column(name = "federation_enabled")
     private boolean enabled;
+    
+    @Column(name = "federation_members")
+    @OneToMany(cascade={CascadeType.ALL})
+    @ElementCollection(fetch = FetchType.EAGER)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationUser> members;
+    
+    @Column(name = "federation_services")
+    @OneToMany(cascade={CascadeType.ALL})
+    @ElementCollection(fetch = FetchType.EAGER)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationService> services;
+    
+    @Column(name = "federation_attributes")
+    @OneToMany(cascade={CascadeType.ALL})
+    @ElementCollection(fetch = FetchType.EAGER)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationAttribute> attributes;
+    
+    @Column(name = "federation_metadata")
+    @ElementCollection
     private Map<String, String> metadata;
+    
+    @Transient
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
+    
+    @Transient
+    private FederationServiceFactory federationServiceFactory;
+    
+    @PostLoad
+    private void setUp() {
+        this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
+        this.federationServiceFactory = new FederationServiceFactory();
+    }
+    
+    public Federation() {
+        
+    }
     
     public Federation(String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled) {
@@ -41,7 +100,8 @@ public class Federation {
             String description, boolean enabled) {
         this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
                 new ArrayList<FederationService>(), new ArrayList<FederationAttribute>(), 
-                new FederationAuthenticationPluginInstantiator());
+                new FederationAuthenticationPluginInstantiator(),
+                new FederationServiceFactory());
         this.attributes.add(MEMBER_ATTRIBUTE);
         this.attributes.add(SERVICE_OWNER_ATTRIBUTE);
     }
@@ -50,7 +110,8 @@ public class Federation {
             String description, boolean enabled, 
             List<FederationUser> members, List<FederationService> services, 
             List<FederationAttribute> attributes, 
-            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator) {
+            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator, 
+            FederationServiceFactory federationServiceFactory) {
         this.id = id;
         this.owner = owner;
         this.name = name;
@@ -61,10 +122,12 @@ public class Federation {
         this.services = services;
         this.attributes = attributes;
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
+        this.federationServiceFactory = federationServiceFactory;
     }
 
     public FederationUser addUser(String userId, String email, String description, Map<String, String> authenticationProperties) throws InvalidParameterException {
-        FederationUser newMember = new FederationUser(userId, this.id, email, description, true, authenticationProperties);
+        FederationUser newMember = new FederationUser(userId, this.id, email, description, true, 
+                authenticationProperties, false, false);
         newMember.addAttribute(MEMBER_ATTRIBUTE_NAME);
         this.members.add(newMember);
         return newMember;
@@ -127,8 +190,12 @@ public class Federation {
         return members;
     }
 
-    public void registerService(FederationService service) {
+    public String registerService(String ownerId, String endpoint, String discoveryPolicyClassName, 
+            String accessPolicyClassName, Map<String, String> metadata) {
+        FederationService service = this.federationServiceFactory.createService(ownerId, endpoint, discoveryPolicyClassName, 
+                accessPolicyClassName, this.id, metadata);
         this.services.add(service);
+        return service.getServiceId();
     }
 
     public List<FederationService> getServices() {

@@ -12,6 +12,7 @@ import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.Messages;
+import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
@@ -39,23 +40,27 @@ public class FederationHost {
     private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
     private AccessPolicyInstantiator accessPolicyInstantiator;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
+    private DatabaseManager databaseManager;
     
     public FederationHost(List<FederationUser> federationAdminList, 
             List<Federation> federationList, ServiceInvokerInstantiator serviceInvokerInstantiator,
             DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
             AccessPolicyInstantiator accessPolicyInstantiator, JsonUtils jsonUtils, 
-            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator) {
+            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator, 
+            DatabaseManager databaseManager) {
         this.federationAdminList = federationAdminList;
         this.federationList = federationList;
         this.serviceInvokerInstantiator = serviceInvokerInstantiator;
         this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
         this.accessPolicyInstantiator = accessPolicyInstantiator;
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
+        this.databaseManager = databaseManager;
     }
     
-    public FederationHost() {
-        this.federationAdminList = new ArrayList<FederationUser>();
-        this.federationList = new ArrayList<Federation>();
+    public FederationHost(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
+        this.federationAdminList = this.databaseManager.getFederationAdmins();
+        this.federationList = this.databaseManager.getFederations();
         this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
         this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
         this.accessPolicyInstantiator = new AccessPolicyInstantiator();
@@ -78,8 +83,10 @@ public class FederationHost {
             throw new InvalidParameterException(Messages.Exception.ADMIN_ALREADY_EXISTS);
         }
         
-        FederationUser newAdmin = new FederationUser(adminName, "", adminEmail, adminDescription, enabled, authenticationProperties);
+        FederationUser newAdmin = new FederationUser(adminName, "", adminEmail, adminDescription, enabled, authenticationProperties, false, true);
         federationAdminList.add(newAdmin);
+        this.databaseManager.saveFederationUser(newAdmin);
+        
         return newAdmin.getMemberId();
     }
     
@@ -104,11 +111,14 @@ public class FederationHost {
         federationUser.setEmail(email);
         federationUser.setDescription(description);
         federationUser.setEnabled(enabled);
+        
+        this.databaseManager.saveFederationUser(federationUser);
     }
     
     public void deleteFederationAdmin(String adminId) throws InvalidParameterException {
         FederationUser federationUser = getAdminByIdOrFail(adminId);
         federationAdminList.remove(federationUser);
+        this.databaseManager.removeFederationUser(federationUser);
     }
 
     public List<Federation> getFederations() {
@@ -130,11 +140,13 @@ public class FederationHost {
     public void updateFederation(String federationId, boolean enabled) throws InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         federation.setEnabled(enabled);
+        this.databaseManager.saveFederation(federation);
     }
     
     public void deleteFederationInstance(String federationId) throws InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         this.federationList.remove(federation);
+        this.databaseManager.saveFederation(federation);
     }
     
     /*
@@ -152,8 +164,11 @@ public class FederationHost {
             throw new InvalidParameterException(Messages.Exception.FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY);
         }
         
+        // TODO should use a factory
         Federation federation = new Federation(requester, federationName, metadata, description, enabled);
         federationList.add(federation);
+        this.databaseManager.saveFederation(federation);
+        
         return federation;
     }
     
@@ -181,6 +196,7 @@ public class FederationHost {
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         this.federationList.remove(federation);
+        this.databaseManager.removeFederation(federation);
     }
     
     /*
@@ -194,7 +210,9 @@ public class FederationHost {
         checkIfRequesterIsFedAdmin(requester);
         Federation federationToAdd = getFederationOrFail(federationId); 
         checkIfRequesterIsFederationOwner(requester, federationToAdd);
-        return federationToAdd.addUser(userId, email, description, authenticationProperties);
+        FederationUser newMember = federationToAdd.addUser(userId, email, description, authenticationProperties);
+        this.databaseManager.saveFederation(federationToAdd);
+        return newMember;
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
@@ -216,6 +234,7 @@ public class FederationHost {
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.revokeMembership(memberId);
+        this.databaseManager.saveFederation(federation);
     }
     
     /*
@@ -226,10 +245,14 @@ public class FederationHost {
     
     public String createAttribute(String requester, String federationId, String attributeName)
             throws UnauthorizedRequestException, InvalidParameterException {
+        // TODO move to Federation
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
+        // TODO move to Federation
         checkIfRequesterIsFederationOwner(requester, federation);
-        return federation.createAttribute(attributeName);
+        String newAttributeId = federation.createAttribute(attributeName);
+        this.databaseManager.saveFederation(federation);
+        return newAttributeId;
     }
 
     public List<FederationAttribute> getFederationAttributes(String requester, String federationId)
@@ -246,6 +269,7 @@ public class FederationHost {
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.deleteAttribute(attributeId);
+        this.databaseManager.saveFederation(federation);
     }
     
     public void grantAttribute(String requester, String federationId, String memberId, String attributeId) 
@@ -254,6 +278,7 @@ public class FederationHost {
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.grantAttribute(memberId, attributeId);
+        this.databaseManager.saveFederation(federation);
     }
     
     public void revokeAttribute(String requester, String federationId, String memberId, String attributeId) 
@@ -262,6 +287,7 @@ public class FederationHost {
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.revokeAttribute(memberId, attributeId);
+        this.databaseManager.saveFederation(federation);
     }
     
     /*
@@ -273,6 +299,7 @@ public class FederationHost {
     public String registerService(String requester, String federationId, String endpoint, Map<String, String> metadata, 
             String discoveryPolicyClassName, String accessPolicyClassName) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
+        // TODO move to Federation
         if (!federation.isServiceOwner(requester)) {
             throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
         }
@@ -281,17 +308,11 @@ public class FederationHost {
             throw new InvalidParameterException(
                     Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
         }
-        
-        ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
-        ServiceAccessPolicy accessPolicy = this.accessPolicyInstantiator.getAccessPolicy(accessPolicyClassName, metadata);
-        
-        String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
-        ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
-        
-        FederationService service = new FederationService(requester, endpoint, discoveryPolicy, accessPolicy, invoker, metadata);
-        federation.registerService(service);
-        
-        return service.getServiceId();
+
+        String serviceId = federation.registerService(requester, endpoint, discoveryPolicyClassName, 
+                accessPolicyClassName, metadata);
+        this.databaseManager.saveFederation(federation);
+        return serviceId;
     }
 
     public List<String> getOwnedServices(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
@@ -347,6 +368,8 @@ public class FederationHost {
         federationService.setAccessPolicy(accessPolicy);
         federationService.setInvoker(invoker);
         federationService.setMetadata(metadata);
+        
+        this.databaseManager.saveFederation(federation);
     }
     
     public void deleteService(String requester, String federationId, String owner, String serviceId) 
@@ -357,6 +380,8 @@ public class FederationHost {
         }
         
         federation.deleteService(serviceId);
+        
+        this.databaseManager.saveFederation(federation);
     }
     
     public List<FederationService> getAuthorizedServices(String requester, String federationId) throws InvalidParameterException {

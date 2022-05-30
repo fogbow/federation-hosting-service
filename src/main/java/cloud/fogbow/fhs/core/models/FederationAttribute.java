@@ -2,9 +2,25 @@ package cloud.fogbow.fhs.core.models;
 
 import java.util.UUID;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "federation_attribute_table")
 public class FederationAttribute {
+    
+    @Column(name = "federation_attribute_id")
+    @Id
     private String id;
+    
+    @Column(name = "federation_attribute_name")
     private String name;
+    
+    public FederationAttribute() {
+        
+    }
     
     public FederationAttribute(String id, String name) {
         this.id = id;

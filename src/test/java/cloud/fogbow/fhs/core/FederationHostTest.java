@@ -23,6 +23,7 @@ import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
+import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
@@ -139,24 +140,29 @@ public class FederationHostTest {
     private Map<String, String> adminCredentials1;
     private Map<String, String> regularUserCredentials1;
     private Map<String, String> updatedServiceMetadata;
+    private DatabaseManager databaseManager;
     
     private void setUpFederationData() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
+        this.databaseManager = Mockito.mock(DatabaseManager.class);
+        Mockito.when(this.databaseManager.getFederationAdmins()).thenReturn(new ArrayList<FederationUser>());
+        Mockito.when(this.databaseManager.getFederations()).thenReturn(new ArrayList<Federation>());
+        
         this.updatedServiceMetadata = new HashMap<String, String>();
         this.updatedServiceMetadata.put(FederationHost.INVOKER_CLASS_NAME_METADATA_KEY, SERVICE_INVOKER_CLASS_NAME_1);
         
         this.invoker = Mockito.mock(ServiceInvoker.class);
         
         this.admin1 = new FederationUser(ADMIN_ID_1, ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, 
-                ADMIN_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
+                ADMIN_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES, false, true);
         this.admin2 = new FederationUser(ADMIN_ID_2, ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, 
-                ADMIN_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES);
+                ADMIN_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES, false, true);
         this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, FEDERATION_ID_1, REGULAR_USER_EMAIL_1, 
                 REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, 
-                USER_AUTHORIZATION_PROPERTIES);
+                USER_AUTHORIZATION_PROPERTIES, false, false);
         this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, FEDERATION_ID_1, REGULAR_USER_EMAIL_2, 
                 REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, 
-                USER_AUTHORIZATION_PROPERTIES);
+                USER_AUTHORIZATION_PROPERTIES, false, false);
 
         this.discoveryPolicy1 = Mockito.mock(ServiceDiscoveryPolicy.class);
         Mockito.when(discoveryPolicy1.isDiscoverableBy(user1)).thenReturn(true);
@@ -271,12 +277,17 @@ public class FederationHostTest {
         Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);
         
         this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, 
-                discoveryPolicyInstantiator, accessPolicyInstantiator, jsonUtils, authenticationPluginInstantiator);
+                discoveryPolicyInstantiator, accessPolicyInstantiator, jsonUtils, authenticationPluginInstantiator, 
+                databaseManager);
     }
     
     @Before
     public void setUp() {
-        this.federationHost = new FederationHost();
+        this.databaseManager = Mockito.mock(DatabaseManager.class);
+        Mockito.when(this.databaseManager.getFederationAdmins()).thenReturn(new ArrayList<FederationUser>());
+        Mockito.when(this.databaseManager.getFederations()).thenReturn(new ArrayList<Federation>());
+        
+        this.federationHost = new FederationHost(databaseManager);
     }
     
     /*
@@ -792,7 +803,8 @@ public class FederationHostTest {
         this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, SERVICE_ENDPOINT_1, SERVICE_METADATA_1, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
         
-        Mockito.verify(this.federation1).registerService(Mockito.any(FederationService.class));
+        Mockito.verify(this.federation1).registerService(SERVICE_OWNER_NAME_1, SERVICE_ENDPOINT_1,
+                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1);
     }
     
     @Test(expected = InvalidParameterException.class)

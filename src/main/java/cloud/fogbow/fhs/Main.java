@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import cloud.fogbow.fhs.core.ApplicationFacade;
 import cloud.fogbow.fhs.core.AuthorizationPluginInstantiator;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
+import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -32,6 +34,9 @@ import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlug
 public class Main implements ApplicationRunner {
     public static final String PROPERTY_NAME_OPERATOR_ID_SEPARATOR = "_";
 
+    @Autowired
+    private DatabaseManager databaseManager;
+    
     @Override
     public void run(ApplicationArguments args) throws Exception {
         String publicKeyFilePath = PropertiesHolder.getInstance().getProperty(FogbowConstants.PUBLIC_KEY_FILE_PATH);
@@ -41,7 +46,7 @@ public class Main implements ApplicationRunner {
         
         String className = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.AUTHORIZATION_PLUGIN_CLASS_KEY);
         AuthorizationPlugin<FhsOperation> authorizationPlugin = AuthorizationPluginInstantiator.getAuthorizationPlugin(className);
-        FederationHost federationHost = new FederationHost();
+        FederationHost federationHost = new FederationHost(databaseManager);
         List<FederationUser> fhsOperators = loadFhsOperatorsOrFail();
         FederationAuthenticationPluginInstantiator authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
         
@@ -91,7 +96,7 @@ public class Main implements ApplicationRunner {
             }
         }
 
-        return new FederationUser(fhsOperatorUserId, "", "", "", true, fhsOperatorAuthenticationProperties);
+        return new FederationUser(fhsOperatorUserId, "", "", "", true, fhsOperatorAuthenticationProperties, true, false);
     }
     
     private String normalizeKeyProperties(String fhsOperatorUserId, String keyPropertiesStr) {
