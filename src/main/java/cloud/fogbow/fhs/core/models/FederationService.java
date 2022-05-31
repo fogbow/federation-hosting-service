@@ -23,31 +23,47 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
-// TODO test
 @Entity
 @Table(name = "federation_service_table")
 public class FederationService {
+    private static final String SERVICE_ID_COLUMN_NAME = "service_id";
+    private static final String SERVICE_OWNER_ID_COLUMN_NAME = "service_owner_id";
+    private static final String SERVICE_ENDPOINT_COLUMN_NAME = "service_endpoint";
+    private static final String DISCOVERY_POLICY_CLASS_NAME_COLUMN_NAME = "discovery_policy_class_name";
+    private static final String ACCESS_POLICY_CLASS_NAME_COLUMN_NAME = "access_policy_class_name";
+    private static final String INVOKER_CLASS_NAME_COLUMN_NAME = "invoker_class_name";
+    private static final String FEDERATION_ID_COLUMN_NAME = "federation_id";
+    private static final String METADATA_COLUMN_NAME = "metadata";
+    
+    // TODO documentation
     public static final String INVOKER_CLASS_NAME_METADATA_KEY = "invokerClassName";
     public static final String CREDENTIALS_METADATA_KEY = "credentials";
     
-    @Column(name = "service_id")
+    @Column(name = SERVICE_ID_COLUMN_NAME)
     @Id
     private String serviceId;
     
-    @Column(name = "service_owner_id")
+    @Column(name = SERVICE_OWNER_ID_COLUMN_NAME)
     private String ownerId;
     
-    @Column(name = "service_endpoint")
+    @Column(name = SERVICE_ENDPOINT_COLUMN_NAME)
     private String endpoint;
 
-    @Column(name = "discovery_policy_class_name")
+    @Column(name = DISCOVERY_POLICY_CLASS_NAME_COLUMN_NAME)
     private String discoveryPolicyClassName;
     
-    @Column(name = "access_policy_class_name")
+    @Column(name = ACCESS_POLICY_CLASS_NAME_COLUMN_NAME)
     private String accessPolicyClassName;
     
-    @Column(name = "federation_id")
+    @Column(name = INVOKER_CLASS_NAME_COLUMN_NAME)
+    private String invokerClassName;
+    
+    @Column(name = FEDERATION_ID_COLUMN_NAME)
     private String federationId;
+    
+    @Column(name = METADATA_COLUMN_NAME, columnDefinition="text", length=10485760)
+    @ElementCollection
+    private Map<String, String> metadata;
     
     @Transient
     private ServiceDiscoveryPolicy discoveryPolicy;
@@ -58,17 +74,17 @@ public class FederationService {
     @Transient
     private ServiceInvoker invoker;
     
-    @Column(name = "metadata", columnDefinition="text", length=10485760)
-    @ElementCollection
-    private Map<String, String> metadata;
-    
     @PostLoad
     private void startUp() {
-        this.discoveryPolicy = new DiscoveryPolicyInstantiator().getDiscoveryPolicy(discoveryPolicyClassName);
-        this.accessPolicy = new AccessPolicyInstantiator().getAccessPolicy(accessPolicyClassName, metadata);
-        
-        String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
-        this.invoker = new ServiceInvokerInstantiator().getInvoker(invokerClassName, metadata, federationId);
+        setUpServiceLifeCyclePlugins(new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
+                new ServiceInvokerInstantiator());
+    }
+    
+    private void setUpServiceLifeCyclePlugins(DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
+            AccessPolicyInstantiator accessPolicyInstantiator, ServiceInvokerInstantiator invokerInstantiator) {
+        this.discoveryPolicy = discoveryPolicyInstantiator.getDiscoveryPolicy(this.discoveryPolicyClassName);
+        this.accessPolicy = accessPolicyInstantiator.getAccessPolicy(this.accessPolicyClassName, this.metadata);
+        this.invoker = invokerInstantiator.getInvoker(this.invokerClassName, this.metadata, this.federationId);
     }
     
     public FederationService() {
@@ -76,26 +92,26 @@ public class FederationService {
     }
     
     public FederationService(String serviceId, String ownerId, String endpoint, String discoveryPolicyClassName, 
-            String accessPolicyClassName, String federationId, Map<String, String> metadata) {
+            String accessPolicyClassName, String federationId, Map<String, String> metadata, 
+            DiscoveryPolicyInstantiator discoveryPolicyInstantiator, AccessPolicyInstantiator accessPolicyInstantiator, 
+            ServiceInvokerInstantiator invokerInstantiator) {
         this.serviceId = serviceId;
         this.ownerId = ownerId;
         this.endpoint = endpoint;
         this.metadata = metadata;
-
+        this.federationId = federationId;
         this.discoveryPolicyClassName = discoveryPolicyClassName;
-        this.discoveryPolicy = new DiscoveryPolicyInstantiator().getDiscoveryPolicy(discoveryPolicyClassName);
-        
         this.accessPolicyClassName = accessPolicyClassName;
-        this.accessPolicy = new AccessPolicyInstantiator().getAccessPolicy(accessPolicyClassName, metadata);
+        this.invokerClassName = this.metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
         
-        String invokerClassName = this.metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
-        this.invoker = new ServiceInvokerInstantiator().getInvoker(invokerClassName, this.metadata, federationId);
+        setUpServiceLifeCyclePlugins(discoveryPolicyInstantiator, accessPolicyInstantiator, invokerInstantiator);
     }
     
     public FederationService(String ownerId, String endpoint, String discoveryPolicyClassName, 
             String accessPolicyClassName, String federationId, Map<String, String> metadata) {
         this(UUID.randomUUID().toString(), ownerId, endpoint, discoveryPolicyClassName, accessPolicyClassName, 
-                federationId, metadata);
+                federationId, metadata, new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
+                new ServiceInvokerInstantiator());
     }
 
     public String getOwnerId() {

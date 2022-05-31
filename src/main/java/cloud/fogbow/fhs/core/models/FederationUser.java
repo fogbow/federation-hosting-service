@@ -18,59 +18,60 @@ import org.hibernate.annotations.LazyCollectionOption;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.constants.Messages;
 
-// FIXME constant
 @Entity
 @Table(name = "federation_user_table")
 public class FederationUser {
+    private static final String MEMBER_ID_COLUMN_NAME = "member_id";
+    private static final String MEMBER_NAME_COLUMN_NAME = "member_name";
+    private static final String FEDERATION_ID_COLUMN_NAME = "federation_id";
+    private static final String MEMBER_EMAIL_COLUMN_NAME = "member_email";
+    private static final String MEMBER_DESCRIPTION_COLUMN_NAME = "member_description";
+    private static final String MEMBER_ENABLED_COLUMN_NAME = "member_enabled";
+    private static final String MEMBER_ATTRIBUTES_COLUMN_NAME = "member_attributes";
+    private static final String IDENTITY_PLUGIN_CLASS_NAME_COLUMN_NAME = "identity_plugin_class_name";
+    private static final String IDENTITY_PLUGIN_PROPERTIES_COLUMN_NAME = "identity_plugin_properties";
+    private static final String IS_OPERATOR_COLUMN_NAME = "is_operator";
+    private static final String IS_ADMIN_COLUMN_NAME = "is_admin";
+
+    // TODO documentation
     public static final String IDENTITY_PLUGIN_CLASS_NAME_KEY = "identityPluginClassName";
     
-    // FIXME constant
-    @Column(name = "member_id")
+    @Column(name = MEMBER_ID_COLUMN_NAME)
     @Id
     private String id;
     
-    // FIXME constant
-    @Column(name = "member_name")
+    @Column(name = MEMBER_NAME_COLUMN_NAME)
     private String name;
     
-    // FIXME constant
-    @Column(name = "federation_id")
+    @Column(name = FEDERATION_ID_COLUMN_NAME)
     private String federationId;
     
-    // FIXME constant
-    @Column(name = "member_email")
+    @Column(name = MEMBER_EMAIL_COLUMN_NAME)
     private String email;
     
-    // FIXME constant
-    @Column(name = "member_description")
+    @Column(name = MEMBER_DESCRIPTION_COLUMN_NAME)
     private String description;
     
-    // FIXME constant
-    @Column(name = "member_enabled")
+    @Column(name = MEMBER_ENABLED_COLUMN_NAME)
     private boolean enabled;
     
-    // FIXME constant
-    @Column(name = "member_attributes")
+    @Column(name = MEMBER_ATTRIBUTES_COLUMN_NAME)
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> attributes;
     
-    // FIXME constant
-    @Column(name = "identity_plugin_class_name")
+    @Column(name = IDENTITY_PLUGIN_CLASS_NAME_COLUMN_NAME)
     private String identityPluginClassName;
     
-    // FIXME constant
-    @Column(name = "identity_plugin_properties")
+    @Column(name = IDENTITY_PLUGIN_PROPERTIES_COLUMN_NAME)
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Map<String, String> identityPluginProperties;
     
-    // FIXME constant
-    @Column(name = "is_operator")
+    @Column(name = IS_OPERATOR_COLUMN_NAME)
     private boolean isOperator;
     
-    // FIXME constant
-    @Column(name = "is_admin")
+    @Column(name = IS_ADMIN_COLUMN_NAME)
     private boolean isAdmin;
     
     public FederationUser() {

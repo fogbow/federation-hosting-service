@@ -27,10 +27,20 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
-// FIXME constant
 @Entity
 @Table(name = "federation_table")
 public class Federation {
+    private static final String FEDERATION_ID_COLUMN_NAME = "federation_id";
+    private static final String FEDERATION_OWNER_COLUMN_NAME = "federation_owner";
+    private static final String FEDERATION_NAME_COLUMN_NAME = "federation_name";
+    private static final String FEDERATION_DESCRIPTION_COLUMN_NAME = "federation_description";
+    private static final String FEDERATION_ENABLED_COLUMN_NAME = "federation_enabled";
+    private static final String FEDERATION_MEMBERS_COLUMN_NAME = "federation_members";
+    private static final String FEDERATION_SERVICES_COLUMN_NAME = "federation_services";
+    private static final String FEDERATION_ATTRIBUTES_COLUMN_NAME = "federation_attributes";
+    private static final String FEDERATION_METADATA_COLUMN_NAME = "federation_metadata";
+
+    // TODO documentation
     public static final String MEMBER_ATTRIBUTE_NAME = "member";
     public static final String SERVICE_OWNER_ATTRIBUTE_NAME = "serviceOwner";
     private static final FederationAttribute MEMBER_ATTRIBUTE = 
@@ -38,50 +48,41 @@ public class Federation {
     private static FederationAttribute SERVICE_OWNER_ATTRIBUTE = 
             new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME, SERVICE_OWNER_ATTRIBUTE_NAME);
     
-    // FIXME constant
-    @Column(name = "federation_id")
+    @Column(name = FEDERATION_ID_COLUMN_NAME)
     @Id
     private String id;
     
-    // FIXME constant
-    @Column(name = "federation_owner")
+    @Column(name = FEDERATION_OWNER_COLUMN_NAME)
     private String owner;
     
-    // FIXME constant
-    @Column(name = "federation_name")
+    @Column(name = FEDERATION_NAME_COLUMN_NAME)
     private String name;
     
-    // FIXME constant
-    @Column(name = "federation_description")
+    @Column(name = FEDERATION_DESCRIPTION_COLUMN_NAME)
     private String description;
     
-    // FIXME constant
-    @Column(name = "federation_enabled")
+    @Column(name = FEDERATION_ENABLED_COLUMN_NAME)
     private boolean enabled;
     
-    // FIXME constant
-    @Column(name = "federation_members")
+    @Column(name = FEDERATION_MEMBERS_COLUMN_NAME)
     @OneToMany(cascade={CascadeType.ALL})
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationUser> members;
     
-    // FIXME constant
-    @Column(name = "federation_services")
+    @Column(name = FEDERATION_SERVICES_COLUMN_NAME)
     @OneToMany(cascade={CascadeType.ALL})
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationService> services;
     
-    // FIXME constant
-    @Column(name = "federation_attributes")
+    @Column(name = FEDERATION_ATTRIBUTES_COLUMN_NAME)
     @OneToMany(cascade={CascadeType.ALL})
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationAttribute> attributes;
     
-    // FIXME constant
-    @Column(name = "federation_metadata")
+    @Column(name = FEDERATION_METADATA_COLUMN_NAME)
     @ElementCollection
     private Map<String, String> metadata;
     
@@ -112,8 +113,6 @@ public class Federation {
                 new ArrayList<FederationService>(), new ArrayList<FederationAttribute>(), 
                 new FederationAuthenticationPluginInstantiator(),
                 new FederationServiceFactory());
-        this.attributes.add(MEMBER_ATTRIBUTE);
-        this.attributes.add(SERVICE_OWNER_ATTRIBUTE);
     }
     
     public Federation(String id, String owner, String name, Map<String, String> metadata, 
@@ -248,7 +247,10 @@ public class Federation {
     }
 
     public List<FederationAttribute> getAttributes() {
-        return this.attributes;
+        List<FederationAttribute> attributes = new ArrayList<FederationAttribute>(this.attributes);
+        attributes.add(0, SERVICE_OWNER_ATTRIBUTE);
+        attributes.add(0, MEMBER_ATTRIBUTE);
+        return attributes;
     }
 
     // TODO should check if the attribute to be removed is not 'Member' of 'ServiceOwner'
@@ -281,6 +283,14 @@ public class Federation {
     }
     
     private FederationAttribute getAttributeById(String attributeId) {
+        if (Federation.MEMBER_ATTRIBUTE_NAME.equals(attributeId)) {
+            return Federation.MEMBER_ATTRIBUTE;
+        }
+        
+        if (Federation.SERVICE_OWNER_ATTRIBUTE_NAME.equals(attributeId)) {
+            return Federation.SERVICE_OWNER_ATTRIBUTE;
+        }
+        
         for (FederationAttribute attribute : this.attributes) {
             if (attribute.getId().equals(attributeId)) {
                 return attribute;

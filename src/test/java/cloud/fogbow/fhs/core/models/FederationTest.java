@@ -288,7 +288,11 @@ public class FederationTest {
         
         List<FederationAttribute> attributesBeforeCreation = this.federation.getAttributes();
         
-        assertTrue(attributesBeforeCreation.isEmpty());
+        assertEquals(2, attributesBeforeCreation.size());
+        assertEquals(Federation.MEMBER_ATTRIBUTE_NAME, attributesBeforeCreation.get(0).getName());
+        assertEquals(Federation.MEMBER_ATTRIBUTE_NAME, attributesBeforeCreation.get(0).getId());
+        assertEquals(Federation.SERVICE_OWNER_ATTRIBUTE_NAME, attributesBeforeCreation.get(1).getName());
+        assertEquals(Federation.SERVICE_OWNER_ATTRIBUTE_NAME, attributesBeforeCreation.get(1).getId());
         
         String returnedAttributeId = this.federation.createAttribute(ATTRIBUTE_NAME_1);
         
@@ -296,9 +300,13 @@ public class FederationTest {
         
         List<FederationAttribute> attributesAfterCreation = this.federation.getAttributes();
         
-        assertEquals(1, attributesAfterCreation.size());
-        assertEquals(ATTRIBUTE_NAME_1, attributesAfterCreation.get(0).getName());
-        assertEquals(returnedAttributeId, attributesAfterCreation.get(0).getId());
+        assertEquals(3, attributesAfterCreation.size());
+        assertEquals(Federation.MEMBER_ATTRIBUTE_NAME, attributesBeforeCreation.get(0).getName());
+        assertEquals(Federation.MEMBER_ATTRIBUTE_NAME, attributesBeforeCreation.get(0).getId());
+        assertEquals(Federation.SERVICE_OWNER_ATTRIBUTE_NAME, attributesBeforeCreation.get(1).getName());
+        assertEquals(Federation.SERVICE_OWNER_ATTRIBUTE_NAME, attributesBeforeCreation.get(1).getId());
+        assertEquals(ATTRIBUTE_NAME_1, attributesAfterCreation.get(2).getName());
+        assertEquals(returnedAttributeId, attributesAfterCreation.get(2).getId());
     }
     
     @Test
