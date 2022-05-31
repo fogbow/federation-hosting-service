@@ -7,14 +7,17 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+// FIXME constant
 @Entity
 @Table(name = "federation_attribute_table")
 public class FederationAttribute {
     
+    // FIXME constant
     @Column(name = "federation_attribute_id")
     @Id
     private String id;
     
+    // FIXME constant
     @Column(name = "federation_attribute_name")
     private String name;
     

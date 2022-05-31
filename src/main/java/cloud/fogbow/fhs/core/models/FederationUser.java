@@ -18,46 +18,58 @@ import org.hibernate.annotations.LazyCollectionOption;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.constants.Messages;
 
+// FIXME constant
 @Entity
 @Table(name = "federation_user_table")
 public class FederationUser {
     public static final String IDENTITY_PLUGIN_CLASS_NAME_KEY = "identityPluginClassName";
     
+    // FIXME constant
     @Column(name = "member_id")
     @Id
     private String id;
     
+    // FIXME constant
     @Column(name = "member_name")
     private String name;
     
+    // FIXME constant
     @Column(name = "federation_id")
     private String federationId;
     
+    // FIXME constant
     @Column(name = "member_email")
     private String email;
     
+    // FIXME constant
     @Column(name = "member_description")
     private String description;
     
+    // FIXME constant
     @Column(name = "member_enabled")
     private boolean enabled;
     
+    // FIXME constant
     @Column(name = "member_attributes")
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> attributes;
     
+    // FIXME constant
     @Column(name = "identity_plugin_class_name")
     private String identityPluginClassName;
     
+    // FIXME constant
     @Column(name = "identity_plugin_properties")
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Map<String, String> identityPluginProperties;
     
+    // FIXME constant
     @Column(name = "is_operator")
     private boolean isOperator;
     
+    // FIXME constant
     @Column(name = "is_admin")
     private boolean isAdmin;
     

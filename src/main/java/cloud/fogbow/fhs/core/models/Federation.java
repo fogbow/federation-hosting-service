@@ -27,6 +27,7 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 
+// FIXME constant
 @Entity
 @Table(name = "federation_table")
 public class Federation {
@@ -37,40 +38,49 @@ public class Federation {
     private static FederationAttribute SERVICE_OWNER_ATTRIBUTE = 
             new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME, SERVICE_OWNER_ATTRIBUTE_NAME);
     
+    // FIXME constant
     @Column(name = "federation_id")
     @Id
     private String id;
     
+    // FIXME constant
     @Column(name = "federation_owner")
     private String owner;
     
+    // FIXME constant
     @Column(name = "federation_name")
     private String name;
     
+    // FIXME constant
     @Column(name = "federation_description")
     private String description;
     
+    // FIXME constant
     @Column(name = "federation_enabled")
     private boolean enabled;
     
+    // FIXME constant
     @Column(name = "federation_members")
     @OneToMany(cascade={CascadeType.ALL})
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationUser> members;
     
+    // FIXME constant
     @Column(name = "federation_services")
     @OneToMany(cascade={CascadeType.ALL})
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationService> services;
     
+    // FIXME constant
     @Column(name = "federation_attributes")
     @OneToMany(cascade={CascadeType.ALL})
     @ElementCollection(fetch = FetchType.EAGER)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationAttribute> attributes;
     
+    // FIXME constant
     @Column(name = "federation_metadata")
     @ElementCollection
     private Map<String, String> metadata;

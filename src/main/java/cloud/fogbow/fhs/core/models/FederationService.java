@@ -23,6 +23,7 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
+// TODO test
 @Entity
 @Table(name = "federation_service_table")
 public class FederationService {
