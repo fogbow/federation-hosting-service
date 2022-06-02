@@ -58,6 +58,14 @@ public class FederationHost {
     }
     
     public FederationHost(DatabaseManager databaseManager) {
+        prepareFederationHost(databaseManager);
+    }
+    
+    public void reload(DatabaseManager databaseManager) {
+        prepareFederationHost(databaseManager);
+    }
+    
+    private void prepareFederationHost(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
         this.federationAdminList = this.databaseManager.getFederationAdmins();
         this.federationList = this.databaseManager.getFederations();

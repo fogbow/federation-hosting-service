@@ -8,6 +8,7 @@ public enum OperationType {
     LIST_FEDERATION_INSTANCES("listFederationInstances"),
     UPDATE_FEDERATION("updateFederation"),
     DELETE_FEDERATION_INSTANCE("deleteFederationInstance"),
+    RELOAD_CONFIGURATION("reloadConfiguration"),
     CREATE_FEDERATION("createFederation"), 
     LIST_FEDERATIONS("listFederations"), 
     GET_FEDERATION_INFO("getFederationInfo"),

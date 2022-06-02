@@ -67,6 +67,7 @@ public class Messages {
         public static final String MAP_RECEIVED = "Map received.";
         public static final String OPERATOR_LOGIN_RECEIVED = "Operator login received.";
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
+        public static final String RELOAD_CONFIGURATION_RECEIVED = "Reload configuration received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";
         public static final String REVOKE_MEMBERSHIP_RECEIVED = "Revoke membership received.";
         public static final String UPDATE_FEDERATION_RECEIVED = "Update federation received.";

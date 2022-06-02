@@ -26,6 +26,7 @@ import cloud.fogbow.fhs.api.parameters.OperatorLoginData;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
+import io.swagger.annotations.ApiParam;
 
 // TODO documentation
 @CrossOrigin
@@ -150,5 +151,12 @@ public class FhsOperator {
         }
     }
     
-    
+    @RequestMapping(value = "/reload", method = RequestMethod.POST)
+    public ResponseEntity<Boolean> reload(
+            @ApiParam(value = cloud.fogbow.common.constants.ApiDocumentation.Token.SYSTEM_USER_TOKEN)
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
+        LOGGER.info(Messages.Log.RELOAD_CONFIGURATION_RECEIVED);
+        ApplicationFacade.getInstance().reload(systemUserToken);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
