@@ -83,78 +83,116 @@ public class FederationHost {
     
     public String addFederationAdmin(String adminName, String adminEmail, 
             String adminDescription, boolean enabled, Map<String, String> authenticationProperties) throws InvalidParameterException {
-        if (adminName == null || adminName.isEmpty()) {
-            throw new InvalidParameterException(Messages.Exception.ADMIN_NAME_CANNOT_BE_NULL_OR_EMPTY);
+        synchronized(this.federationAdminList) {
+            if (adminName == null || adminName.isEmpty()) {
+                throw new InvalidParameterException(Messages.Exception.ADMIN_NAME_CANNOT_BE_NULL_OR_EMPTY);
+            }
+            
+            if (lookUpAdminByName(adminName) != null) {
+                throw new InvalidParameterException(Messages.Exception.ADMIN_ALREADY_EXISTS);
+            }
+            
+            FederationUser newAdmin = new FederationUser(adminName, "", adminEmail, adminDescription, enabled, authenticationProperties, false, true);
+            federationAdminList.add(newAdmin);
+            this.databaseManager.saveFederationUser(newAdmin);
+            
+            return newAdmin.getMemberId();
         }
-        
-        if (lookUpAdminByName(adminName) != null) {
-            throw new InvalidParameterException(Messages.Exception.ADMIN_ALREADY_EXISTS);
-        }
-        
-        FederationUser newAdmin = new FederationUser(adminName, "", adminEmail, adminDescription, enabled, authenticationProperties, false, true);
-        federationAdminList.add(newAdmin);
-        this.databaseManager.saveFederationUser(newAdmin);
-        
-        return newAdmin.getMemberId();
     }
     
     public FederationUser getFederationAdmin(String adminId) throws InvalidParameterException {
-        FederationUser admin = lookUpAdminById(adminId);
+        synchronized(this.federationAdminList) {
+            FederationUser admin = lookUpAdminById(adminId);
             
-        if (admin == null) {
-            throw new InvalidParameterException();
+            if (admin == null) {
+                throw new InvalidParameterException();
+            }
+            
+            return admin;
         }
-        
-        return admin;
     }
 
     public List<FederationUser> getFederationAdmins() {
+        // FIXME should return a copy of the list
         return this.federationAdminList;
     }
 
     public void updateFederationAdmin(String adminId, String name, String email, String description,
             boolean enabled) throws InvalidParameterException {
         FederationUser federationUser = getAdminByIdOrFail(adminId);
-        federationUser.setName(name);
-        federationUser.setEmail(email);
-        federationUser.setDescription(description);
-        federationUser.setEnabled(enabled);
-        
-        this.databaseManager.saveFederationUser(federationUser);
+
+        synchronized (federationUser) {
+            // This line is used to make sure the user was not deleted while
+            // getting the monitor
+            getAdminByIdOrFail(adminId);
+
+            federationUser.setName(name);
+            federationUser.setEmail(email);
+            federationUser.setDescription(description);
+            federationUser.setEnabled(enabled);
+
+            this.databaseManager.saveFederationUser(federationUser);
+        }
     }
     
     public void deleteFederationAdmin(String adminId) throws InvalidParameterException {
-        FederationUser federationUser = getAdminByIdOrFail(adminId);
-        federationAdminList.remove(federationUser);
-        this.databaseManager.removeFederationUser(federationUser);
+        synchronized(this.federationAdminList) {
+            FederationUser federationUser = getAdminByIdOrFail(adminId);
+            
+            synchronized(federationUser) {
+                // This line is used to make sure the user was not deleted while
+                // getting the monitor
+                getAdminByIdOrFail(adminId);
+                federationAdminList.remove(federationUser);
+                this.databaseManager.removeFederationUser(federationUser);
+            }
+        }
     }
 
     public List<Federation> getFederations() {
+        // FIXME should return a copy of the list
         return this.federationList;
     }
     
     public List<Federation> getFederationsInstancesOwnedByAnotherMember(String userId) throws UnauthorizedRequestException {
-        List<Federation> ownedFederations = new ArrayList<Federation>();
-        
-        for (Federation federation : this.federationList) {
-            if (federation.getOwner().equals(userId)) {
-                ownedFederations.add(federation);
+        synchronized(this.federationList) {
+            List<Federation> ownedFederations = new ArrayList<Federation>();
+            
+            for (Federation federation : this.federationList) {
+                if (federation.getOwner().equals(userId)) {
+                    ownedFederations.add(federation);
+                }
             }
+            
+            return ownedFederations;
         }
-        
-        return ownedFederations;
     }
 
     public void updateFederation(String federationId, boolean enabled) throws InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
-        federation.setEnabled(enabled);
-        this.databaseManager.saveFederation(federation);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            
+            federation.setEnabled(enabled);
+            this.databaseManager.saveFederation(federation);
+        }
     }
     
     public void deleteFederationInstance(String federationId) throws InvalidParameterException {
-        Federation federation = getFederationOrFail(federationId);
-        this.federationList.remove(federation);
-        this.databaseManager.saveFederation(federation);
+        synchronized(this.federationList) {
+            Federation federation = getFederationOrFail(federationId);
+            
+            synchronized(federation) {
+                // This line is used to make sure the federation was not deleted while
+                // getting the monitor
+                getFederationOrFail(federationId);
+                this.federationList.remove(federation);
+                this.databaseManager.saveFederation(federation);
+            }
+        }
     }
     
     /*
@@ -166,45 +204,59 @@ public class FederationHost {
     public Federation createFederation(String requester, String federationName, Map<String, String> metadata, 
             String description, boolean enabled) 
             throws UnauthorizedRequestException, InvalidParameterException {
-        checkIfRequesterIsFedAdmin(requester);
-        
-        if (federationName == null || federationName.isEmpty()) {
-            throw new InvalidParameterException(Messages.Exception.FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY);
+        synchronized(this.federationList) {
+            checkIfRequesterIsFedAdmin(requester);
+            
+            if (federationName == null || federationName.isEmpty()) {
+                throw new InvalidParameterException(Messages.Exception.FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY);
+            }
+            
+            // TODO should use a factory
+            Federation federation = new Federation(requester, federationName, metadata, description, enabled);
+            federationList.add(federation);
+            this.databaseManager.saveFederation(federation);
+            
+            return federation;
         }
-        
-        // TODO should use a factory
-        Federation federation = new Federation(requester, federationName, metadata, description, enabled);
-        federationList.add(federation);
-        this.databaseManager.saveFederation(federation);
-        
-        return federation;
     }
     
     public List<Federation> getFederationsOwnedByUser(String requester) throws UnauthorizedRequestException {
-        checkIfRequesterIsFedAdmin(requester);
-        List<Federation> ownedFederations = new ArrayList<Federation>();
-        
-        for (Federation federation : this.federationList) {
-            if (federation.getOwner().equals(requester)) {
-                ownedFederations.add(federation);
+        synchronized(this.federationList) {
+            checkIfRequesterIsFedAdmin(requester);
+            List<Federation> ownedFederations = new ArrayList<Federation>();
+            
+            for (Federation federation : this.federationList) {
+                if (federation.getOwner().equals(requester)) {
+                    ownedFederations.add(federation);
+                }
             }
+            
+            return ownedFederations;            
         }
-        
-        return ownedFederations;
     }
 
     public Federation getFederation(String requester, String federationId) throws InvalidParameterException, UnauthorizedRequestException {
-        checkIfRequesterIsFedAdmin(requester);
-        Federation federation = getFederationOrFail(federationId); 
-        return federation;
+        synchronized(this.federationList) {
+            checkIfRequesterIsFedAdmin(requester);
+            Federation federation = getFederationOrFail(federationId);
+            return federation;
+        }
     }
     
     public void deleteFederation(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
-        checkIfRequesterIsFedAdmin(requester);
-        Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        this.federationList.remove(federation);
-        this.databaseManager.removeFederation(federation);
+        synchronized(this.federationList) {
+            checkIfRequesterIsFedAdmin(requester);
+            Federation federation = getFederationOrFail(federationId);
+            
+            synchronized(federation) {
+                // This line is used to make sure the federation was not deleted while
+                // getting the monitor
+                getFederationOrFail(federationId);
+                checkIfRequesterIsFederationOwner(requester, federation);
+                this.federationList.remove(federation);
+                this.databaseManager.removeFederation(federation);
+            }
+        }
     }
     
     /*
@@ -216,33 +268,57 @@ public class FederationHost {
     public FederationUser grantMembership(String requester, String federationId, String userId, String email, String description, 
             Map<String, String> authenticationProperties) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
-        Federation federationToAdd = getFederationOrFail(federationId); 
-        checkIfRequesterIsFederationOwner(requester, federationToAdd);
-        FederationUser newMember = federationToAdd.addUser(userId, email, description, authenticationProperties);
-        this.databaseManager.saveFederation(federationToAdd);
-        return newMember;
+        Federation federationToAdd = getFederationOrFail(federationId);
+        
+        synchronized(federationToAdd) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federationToAdd);
+            FederationUser newMember = federationToAdd.addUser(userId, email, description, authenticationProperties);
+            this.databaseManager.saveFederation(federationToAdd);
+            return newMember;
+        }
     }
     
     public List<FederationUser> getFederationMembers(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        return federation.getMemberList();
+        
+        synchronized(federation)  {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            return federation.getMemberList();
+        }
     }
     
     public FederationUser getFederationMemberInfo(String requester, String federationId, String memberId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        return federation.getUserByMemberId(memberId);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            return federation.getUserByMemberId(memberId);
+        }
     }
     
     public void revokeMembership(String requester, String federationId, String memberId) throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        federation.revokeMembership(memberId);
-        this.databaseManager.saveFederation(federation);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            federation.revokeMembership(memberId);
+            this.databaseManager.saveFederation(federation);
+        }
     }
     
     /*
@@ -256,46 +332,76 @@ public class FederationHost {
         // TODO move to Federation
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        // TODO move to Federation
-        checkIfRequesterIsFederationOwner(requester, federation);
-        String newAttributeId = federation.createAttribute(attributeName);
-        this.databaseManager.saveFederation(federation);
-        return newAttributeId;
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            // TODO move to Federation
+            checkIfRequesterIsFederationOwner(requester, federation);
+            String newAttributeId = federation.createAttribute(attributeName);
+            this.databaseManager.saveFederation(federation);
+            return newAttributeId;
+        }
     }
 
     public List<FederationAttribute> getFederationAttributes(String requester, String federationId)
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        return federation.getAttributes();
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            return federation.getAttributes();
+        }
     }
     
     public void deleteAttribute(String requester, String federationId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        federation.deleteAttribute(attributeId);
-        this.databaseManager.saveFederation(federation);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            federation.deleteAttribute(attributeId);
+            this.databaseManager.saveFederation(federation);
+        }
     }
     
     public void grantAttribute(String requester, String federationId, String memberId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        federation.grantAttribute(memberId, attributeId);
-        this.databaseManager.saveFederation(federation);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            federation.grantAttribute(memberId, attributeId);
+            this.databaseManager.saveFederation(federation);
+        }
     }
     
     public void revokeAttribute(String requester, String federationId, String memberId, String attributeId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
-        checkIfRequesterIsFederationOwner(requester, federation);
-        federation.revokeAttribute(memberId, attributeId);
-        this.databaseManager.saveFederation(federation);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            checkIfRequesterIsFederationOwner(requester, federation);
+            federation.revokeAttribute(memberId, attributeId);
+            this.databaseManager.saveFederation(federation);
+        }
     }
     
     /*
@@ -307,89 +413,124 @@ public class FederationHost {
     public String registerService(String requester, String federationId, String endpoint, Map<String, String> metadata, 
             String discoveryPolicyClassName, String accessPolicyClassName) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
-        // TODO move to Federation
-        if (!federation.isServiceOwner(requester)) {
-            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
-        }
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            
+            // TODO move to Federation
+            if (!federation.isServiceOwner(requester)) {
+                throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
+            }
 
-        if (endpoint == null || endpoint.isEmpty()) {
-            throw new InvalidParameterException(
-                    Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
-        }
+            if (endpoint == null || endpoint.isEmpty()) {
+                throw new InvalidParameterException(
+                        Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
+            }
 
-        String serviceId = federation.registerService(requester, endpoint, discoveryPolicyClassName, 
-                accessPolicyClassName, metadata);
-        this.databaseManager.saveFederation(federation);
-        return serviceId;
+            String serviceId = federation.registerService(requester, endpoint, discoveryPolicyClassName, 
+                    accessPolicyClassName, metadata);
+            this.databaseManager.saveFederation(federation);
+            return serviceId;
+        }
     }
 
     public List<String> getOwnedServices(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
-        if (!federation.isServiceOwner(requester)) {
-            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
-        }
         
-        List<String> ownedServicesIds = new ArrayList<String>();
-
-        for (FederationService service : federation.getServices()) {
-            if (service.getOwnerId().equals(requester)) {
-                ownedServicesIds.add(service.getServiceId());
-            }
-        }
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
             
-        return ownedServicesIds;
+            if (!federation.isServiceOwner(requester)) {
+                throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
+            }
+            
+            List<String> ownedServicesIds = new ArrayList<String>();
+            
+            for (FederationService service : federation.getServices()) {
+                if (service.getOwnerId().equals(requester)) {
+                    ownedServicesIds.add(service.getServiceId());
+                }
+            }
+            
+            return ownedServicesIds;
+        }
     }
     
     public FederationService getOwnedService(String requester, String federationId, String serviceId) throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
-        if (!federation.isServiceOwner(requester)) {
-            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
-        }
         
-        for (FederationService service : federation.getServices()) {
-            if (service.getOwnerId().equals(requester) &&
-                    service.getServiceId().equals(serviceId)) {
-                return service;
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            
+            if (!federation.isServiceOwner(requester)) {
+                throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
             }
+            
+            for (FederationService service : federation.getServices()) {
+                if (service.getOwnerId().equals(requester) &&
+                        service.getServiceId().equals(serviceId)) {
+                    return service;
+                }
+            }
+            
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.SERVICE_NOT_FOUND, serviceId, federationId));            
         }
-
-        throw new InvalidParameterException(
-                String.format(Messages.Exception.SERVICE_NOT_FOUND, serviceId, federationId));
     }
 
     public void updateService(String requester, String federationId, String ownerId, String serviceId,
             Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) throws InvalidParameterException, UnauthorizedRequestException {
         Federation federation = getFederationOrFail(federationId);
-        if (!federation.isServiceOwner(requester)) {
-            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            
+            if (!federation.isServiceOwner(requester)) {
+                throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
+            }
+            
+            FederationService federationService = federation.getService(serviceId);
+            
+            ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
+            ServiceAccessPolicy accessPolicy = this.accessPolicyInstantiator.getAccessPolicy(accessPolicyClassName, metadata);
+            
+            String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
+            ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
+            
+            federationService.setDiscoveryPolicy(discoveryPolicy);
+            federationService.setAccessPolicy(accessPolicy);
+            federationService.setInvoker(invoker);
+            federationService.setMetadata(metadata);
+            
+            this.databaseManager.saveFederation(federation);
         }
-        
-        FederationService federationService = federation.getService(serviceId);
-        
-        ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
-        ServiceAccessPolicy accessPolicy = this.accessPolicyInstantiator.getAccessPolicy(accessPolicyClassName, metadata);
-        
-        String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
-        ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
-        
-        federationService.setDiscoveryPolicy(discoveryPolicy);
-        federationService.setAccessPolicy(accessPolicy);
-        federationService.setInvoker(invoker);
-        federationService.setMetadata(metadata);
-        
-        this.databaseManager.saveFederation(federation);
     }
     
     public void deleteService(String requester, String federationId, String owner, String serviceId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
-        if (!federation.isServiceOwner(requester)) {
-            throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
+        
+        synchronized(federation) {
+            // This line is used to make sure the federation was not deleted while
+            // getting the monitor
+            getFederationOrFail(federationId);
+            
+            if (!federation.isServiceOwner(requester)) {
+                throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
+            }
+            
+            federation.deleteService(serviceId);
+            
+            this.databaseManager.saveFederation(federation);
         }
-        
-        federation.deleteService(serviceId);
-        
-        this.databaseManager.saveFederation(federation);
     }
     
     public List<FederationService> getAuthorizedServices(String requester, String federationId) throws InvalidParameterException {

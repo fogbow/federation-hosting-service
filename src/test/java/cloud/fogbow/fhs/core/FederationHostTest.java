@@ -241,7 +241,7 @@ public class FederationHostTest {
         List<FederationService> authorizedServices = Arrays.asList(this.service1, this.service2);
         
         this.federation1 = Mockito.mock(Federation.class);
-        Mockito.when(federation1.getId()).thenReturn(FEDERATION_ID_1);
+        Mockito.when(federation1.getId()).thenReturn(FEDERATION_ID_1, FEDERATION_ID_1);
         Mockito.when(federation1.getUserById(REGULAR_USER_NAME_1)).thenReturn(user1);
         Mockito.when(federation1.getUserByMemberId(REGULAR_USER_ID_1)).thenReturn(user1);
         Mockito.when(federation1.getOwner()).thenReturn(ADMIN_NAME_1);
@@ -270,8 +270,8 @@ public class FederationHostTest {
         Mockito.when(federation3.getId()).thenReturn(FEDERATION_ID_3);
         Mockito.when(federation3.getOwner()).thenReturn(ADMIN_NAME_1);
         
-        this.adminList = TestUtils.getMockedList(admin1, admin2);
-        this.federationList = TestUtils.getMockedList(federation1, federation2, federation3);
+        this.adminList = TestUtils.getMockedList(2, admin1, admin2);
+        this.federationList = TestUtils.getMockedList(2, federation1, federation2, federation3);
         
         this.jsonUtils = Mockito.mock(JsonUtils.class);
         Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);

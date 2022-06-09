@@ -9,9 +9,9 @@ import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
 public class TestUtils {
-    public static <T> List<T> getMockedList(T ... elements) {
-        Iterator<T> iterator = Mockito.mock(Iterator.class);
+    public static <T> List<T> getMockedList(int loops, T ... elements) {
         List<Boolean> hasNextAnswer = new ArrayList<Boolean>();
+        List<Iterator<T>> iterators = new ArrayList<Iterator<T>>();
         
         for (T element : elements) {
             hasNextAnswer.add(true);
@@ -19,11 +19,16 @@ public class TestUtils {
         
         hasNextAnswer.add(false);
         
-        Mockito.when(iterator.hasNext()).thenAnswer(AdditionalAnswers.returnsElementsOf(hasNextAnswer));
-        Mockito.when(iterator.next()).then(AdditionalAnswers.returnsElementsOf(Arrays.asList(elements)));
+        for (int i = 0; i < loops; i++) {
+            Iterator<T> iterator = Mockito.mock(Iterator.class);
+            
+            Mockito.when(iterator.hasNext()).thenAnswer(AdditionalAnswers.returnsElementsOf(hasNextAnswer));
+            Mockito.when(iterator.next()).then(AdditionalAnswers.returnsElementsOf(Arrays.asList(elements)));
+            iterators.add(iterator);
+        }
         
         List<T> list = Mockito.mock(ArrayList.class);
-        Mockito.when(list.iterator()).thenReturn(iterator);
+        Mockito.when(list.iterator()).thenAnswer(AdditionalAnswers.returnsElementsOf(iterators));
         
         return list;
     }
