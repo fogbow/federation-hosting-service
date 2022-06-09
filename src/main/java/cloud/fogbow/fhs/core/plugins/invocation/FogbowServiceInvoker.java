@@ -35,6 +35,7 @@ public class FogbowServiceInvoker extends HttpServiceInvoker {
     public FogbowServiceInvoker(Map<String, String> metadata, String localProviderId) throws ConfigurationErrorException {
         String servicePublicKeyEndpoint = metadata.get(SERVICE_PUBLIC_KEY_ENDPOINT);
         
+        // TODO test
         if (servicePublicKeyEndpoint == null || servicePublicKeyEndpoint.isEmpty()) {
             throw new ConfigurationErrorException(Messages.Exception.INVALID_SERVICE_PUBLIC_KEY_ENDPOINT);
         }

@@ -20,6 +20,7 @@ import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
 
 public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOperation>{
+    // TODO add reload operation
     public static final List<OperationType> OPERATOR_ONLY_OPERATIONS = 
             Arrays.asList(OperationType.ADD_FED_ADMIN, OperationType.GET_FED_ADMINS, 
                     OperationType.UPDATE_FED_ADMIN, OperationType.DELETE_FED_ADMIN, 
@@ -98,11 +99,11 @@ public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOp
     
     @Override
     public void setPolicy(String policy) throws ConfigurationErrorException {
-        // TODO implement
+        
     }
 
     @Override
     public void updatePolicy(String policy) throws ConfigurationErrorException {
-        // TODO implement
+        
     }
 }

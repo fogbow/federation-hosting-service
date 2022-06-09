@@ -282,6 +282,7 @@ public class Federation {
         }
     }
     
+    // TODO test
     private FederationAttribute getAttributeById(String attributeId) {
         if (Federation.MEMBER_ATTRIBUTE_NAME.equals(attributeId)) {
             return Federation.MEMBER_ATTRIBUTE;
