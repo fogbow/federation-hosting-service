@@ -192,6 +192,7 @@ public class FederationService {
                 && Objects.equals(ownerId, other.ownerId) && Objects.equals(serviceId, other.serviceId);
     }
 
+    // TODO test
     public void update(Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) {
         String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
         

@@ -336,6 +336,7 @@ public class Federation {
         return service.getAccessPolicy().getCredentialsForAccess(user, cloudName);
     }
     
+    // TODO test
     public ServiceResponse invoke(String requester, String federationId, String serviceId, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         FederationService service = getService(serviceId);
