@@ -204,7 +204,7 @@ public class FederationTest {
     }
     
     @Test
-    public void testRegisterAndGetServices() {
+    public void testRegisterAndGetServices() throws InvalidParameterException {
         this.federationServices = new ArrayList<FederationService>();
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 

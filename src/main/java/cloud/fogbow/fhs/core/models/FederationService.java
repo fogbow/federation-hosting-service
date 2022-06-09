@@ -15,6 +15,8 @@ import javax.persistence.Transient;
 
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
@@ -94,7 +96,12 @@ public class FederationService {
     public FederationService(String serviceId, String ownerId, String endpoint, String discoveryPolicyClassName, 
             String accessPolicyClassName, String federationId, Map<String, String> metadata, 
             DiscoveryPolicyInstantiator discoveryPolicyInstantiator, AccessPolicyInstantiator accessPolicyInstantiator, 
-            ServiceInvokerInstantiator invokerInstantiator) {
+            ServiceInvokerInstantiator invokerInstantiator) throws InvalidParameterException {
+        if (endpoint == null || endpoint.isEmpty()) {
+            throw new InvalidParameterException(
+                    Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
+        }
+        
         this.serviceId = serviceId;
         this.ownerId = ownerId;
         this.endpoint = endpoint;
@@ -108,7 +115,7 @@ public class FederationService {
     }
     
     public FederationService(String ownerId, String endpoint, String discoveryPolicyClassName, 
-            String accessPolicyClassName, String federationId, Map<String, String> metadata) {
+            String accessPolicyClassName, String federationId, Map<String, String> metadata) throws InvalidParameterException {
         this(UUID.randomUUID().toString(), ownerId, endpoint, discoveryPolicyClassName, accessPolicyClassName, 
                 federationId, metadata, new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
                 new ServiceInvokerInstantiator());
@@ -183,5 +190,17 @@ public class FederationService {
         FederationService other = (FederationService) obj;
         return Objects.equals(endpoint, other.endpoint) && Objects.equals(metadata, other.metadata)
                 && Objects.equals(ownerId, other.ownerId) && Objects.equals(serviceId, other.serviceId);
+    }
+
+    public void update(Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) {
+        String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
+        
+        this.discoveryPolicyClassName = discoveryPolicyClassName;
+        this.accessPolicyClassName = accessPolicyClassName;
+        this.invokerClassName = invokerClassName;
+        this.metadata = metadata;
+        
+        setUpServiceLifeCyclePlugins(new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
+                new ServiceInvokerInstantiator());
     }
 }

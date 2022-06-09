@@ -28,6 +28,7 @@ public class TestUtils {
         }
         
         List<T> list = Mockito.mock(ArrayList.class);
+        Mockito.when(list.toArray()).thenReturn(elements);
         Mockito.when(list.iterator()).thenAnswer(AdditionalAnswers.returnsElementsOf(iterators));
         
         return list;

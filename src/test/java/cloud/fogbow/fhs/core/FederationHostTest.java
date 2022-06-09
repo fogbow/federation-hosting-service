@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -26,17 +25,15 @@ import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
+import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
-import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
-import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
-import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
@@ -128,9 +125,6 @@ public class FederationHostTest {
     private FederationService service3;
     private ServiceInvoker invoker;
     private ServiceDiscoveryPolicy discoveryPolicy1;
-    private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
-    private ServiceInvokerInstantiator serviceInvokerInstantiator;
-    private AccessPolicyInstantiator accessPolicyInstantiator;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     private FederationAuthenticationPlugin authenticationPlugin;
     private JsonUtils jsonUtils;
@@ -140,6 +134,7 @@ public class FederationHostTest {
     private Map<String, String> adminCredentials1;
     private Map<String, String> regularUserCredentials1;
     private Map<String, String> updatedServiceMetadata;
+    private FederationFactory federationFactory;
     private DatabaseManager databaseManager;
     
     private void setUpFederationData() throws InvalidParameterException, UnauthenticatedUserException, 
@@ -171,17 +166,6 @@ public class FederationHostTest {
         this.accessPolicy = Mockito.mock(ServiceAccessPolicy.class);
         Mockito.when(this.accessPolicy.isAllowedToPerform(user1, new ServiceOperation(HttpMethod.GET))).thenReturn(true);
         Mockito.when(this.accessPolicy.isAllowedToPerform(user2, new ServiceOperation(HttpMethod.GET))).thenReturn(false);
-        
-        this.discoveryPolicyInstantiator = Mockito.mock(DiscoveryPolicyInstantiator.class);
-        Mockito.when(this.discoveryPolicyInstantiator.getDiscoveryPolicy(SERVICE_DISCOVERY_POLICY_CLASS_NAME_1)).thenReturn(discoveryPolicy1);
-        
-        this.serviceInvokerInstantiator = Mockito.mock(ServiceInvokerInstantiator.class);
-        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1, FEDERATION_ID_1)).thenReturn(invoker);
-        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, updatedServiceMetadata, FEDERATION_ID_1)).thenReturn(invoker);
-        
-        this.accessPolicyInstantiator = Mockito.mock(AccessPolicyInstantiator.class);
-        Mockito.when(this.accessPolicyInstantiator.getAccessPolicy(ACCESS_POLICY_CLASS_NAME, SERVICE_METADATA_1)).thenReturn(this.accessPolicy);
-        Mockito.when(this.accessPolicyInstantiator.getAccessPolicy(ACCESS_POLICY_CLASS_NAME, updatedServiceMetadata)).thenReturn(this.accessPolicy);
         
         this.adminCredentials1 = new HashMap<String, String>();
         this.adminCredentials1.put(ADMIN_CREDENTIAL_KEY_1, ADMIN_CREDENTIAL_VALUE_1);
@@ -245,6 +229,8 @@ public class FederationHostTest {
         Mockito.when(federation1.getUserById(REGULAR_USER_NAME_1)).thenReturn(user1);
         Mockito.when(federation1.getUserByMemberId(REGULAR_USER_ID_1)).thenReturn(user1);
         Mockito.when(federation1.getOwner()).thenReturn(ADMIN_NAME_1);
+        Mockito.when(federation1.isFederationOwner(ADMIN_NAME_1)).thenReturn(true);
+        Mockito.when(federation1.isFederationOwner(ADMIN_NAME_2)).thenReturn(false);
         Mockito.when(federation1.getService(SERVICE_ID_1)).thenReturn(service1);
         Mockito.when(federation1.getService(SERVICE_ID_2)).thenReturn(service2);
         Mockito.when(federation1.getService(SERVICE_ID_3)).thenReturn(service3);
@@ -276,9 +262,12 @@ public class FederationHostTest {
         this.jsonUtils = Mockito.mock(JsonUtils.class);
         Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);
         
-        this.federationHost = new FederationHost(adminList, federationList, serviceInvokerInstantiator, 
-                discoveryPolicyInstantiator, accessPolicyInstantiator, jsonUtils, authenticationPluginInstantiator, 
-                databaseManager);
+        this.federationFactory = Mockito.mock(FederationFactory.class);
+        Mockito.when(this.federationFactory.createFederationFactory(ADMIN_NAME_1, FEDERATION_NAME_1, 
+                federationMetadata, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1)).thenReturn(federation1);
+        
+        this.federationHost = new FederationHost(adminList, federationList, jsonUtils, authenticationPluginInstantiator, 
+                this.federationFactory, databaseManager);
     }
     
     @Before
@@ -347,6 +336,17 @@ public class FederationHostTest {
     }
     
     @Test
+    public void testGetFederationAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        List<FederationUser> admins = this.federationHost.getFederationAdmins();
+        
+        assertEquals(2, admins.size());
+        assertEquals(this.admin1, admins.get(0));
+        assertEquals(this.admin2, admins.get(1));
+    }
+    
+    @Test
     public void testUpdateFederationAdmin() throws FogbowException {
         setUpFederationData();
         
@@ -381,6 +381,18 @@ public class FederationHostTest {
         setUpFederationData();
         
         this.federationHost.deleteFederationAdmin("invalidadminid");
+    }
+    
+    @Test
+    public void testGetFederations() throws FogbowException {
+        setUpFederationData();
+        
+        List<Federation> federations = this.federationHost.getFederations();
+        
+        assertEquals(3, federations.size());
+        assertEquals(federation1, federations.get(0));
+        assertEquals(federation2, federations.get(1));
+        assertEquals(federation3, federations.get(2));
     }
     
     @Test
@@ -436,15 +448,12 @@ public class FederationHostTest {
     public void testCreateFederation() throws FogbowException {
         setUpFederationData();
 
-        Federation federation = this.federationHost.createFederation(ADMIN_NAME_1, FEDERATION_NAME_1, 
+        Federation returnedFederation = this.federationHost.createFederation(ADMIN_NAME_1, FEDERATION_NAME_1, 
                 federationMetadata, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
         
-        assertEquals(ADMIN_NAME_1, federation.getOwner());
-        assertEquals(FEDERATION_NAME_1, federation.getName());
-        assertEquals(FEDERATION_DESCRIPTION_1, federation.getDescription());
-        assertEquals(FEDERATION_ENABLED_1, federation.enabled());
+        assertEquals(federation1, returnedFederation);
         
-        Mockito.verify(federationList, Mockito.times(1)).add(Mockito.any(Federation.class));
+        Mockito.verify(federationList, Mockito.times(1)).add(federation1);
     }
     
     @Test(expected = UnauthorizedRequestException.class)
@@ -823,22 +832,6 @@ public class FederationHostTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
-    @Test(expected = InvalidParameterException.class)
-    public void testCannotRegisterServiceWithNullEndpoint() throws FogbowException {
-        setUpFederationData();
-
-        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, null, SERVICE_METADATA_1, 
-                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
-    }
-    
-    @Test(expected = InvalidParameterException.class)
-    public void testCannotRegisterServiceWithEmptyEndpoint() throws FogbowException {
-        setUpFederationData();
-
-        this.federationHost.registerService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, "", SERVICE_METADATA_1, 
-                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
-    }
-    
     @Test
     public void testGetOwnedServices() throws FogbowException {
         setUpFederationData();
@@ -911,12 +904,7 @@ public class FederationHostTest {
                 SERVICE_ID_1, updatedServiceMetadata, SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, 
                 ACCESS_POLICY_CLASS_NAME);
         
-        Mockito.when(this.serviceInvokerInstantiator.getInvoker(SERVICE_INVOKER_CLASS_NAME_1, updatedServiceMetadata, FEDERATION_ID_1)).thenReturn(invoker);
-        
-        Mockito.verify(this.service1).setDiscoveryPolicy(discoveryPolicy1);
-        Mockito.verify(this.service1).setAccessPolicy(accessPolicy);
-        Mockito.verify(this.service1).setInvoker(invoker);
-        Mockito.verify(this.service1).setMetadata(updatedServiceMetadata);
+        Mockito.verify(this.service1).update(updatedServiceMetadata, SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, ACCESS_POLICY_CLASS_NAME);
     }
     
     @Test(expected = InvalidParameterException.class)
@@ -1001,24 +989,9 @@ public class FederationHostTest {
         this.federationHost.invokeService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET, 
                 new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, Object>());
         
-        Mockito.verify(service1).invoke(user1, HttpMethod.GET, new ArrayList<String>(), 
-                new HashMap<String, String>(), new HashMap<String, Object>());
-    }
-    
-    @Test
-    public void testInvokeServiceUserIsNotAuthorizedToInvoke() throws FogbowException {
-        setUpFederationData();
-
-        try {
-            this.federationHost.invokeService(REGULAR_USER_NAME_2, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET,
-                    new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, Object>());
-            Assert.fail("Expected UnauthorizedRequestException.");
-        } catch (UnauthorizedRequestException e) {
-            
-        }
-        
-        Mockito.verify(service1, Mockito.never()).
-            invoke(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(this.federation1).invoke(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1, 
+                HttpMethod.GET, new ArrayList<String>(), new HashMap<String, String>(), 
+                new HashMap<String, Object>());
     }
     
     /*

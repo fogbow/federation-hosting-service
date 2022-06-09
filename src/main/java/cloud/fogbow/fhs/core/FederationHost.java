@@ -15,18 +15,12 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
+import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
-import cloud.fogbow.fhs.core.models.ServiceOperation;
-import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
-import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
-import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
-import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
-import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
-import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
@@ -36,24 +30,18 @@ public class FederationHost {
     
     private List<FederationUser> federationAdminList;
     private List<Federation> federationList;
-    private ServiceInvokerInstantiator serviceInvokerInstantiator;
-    private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
-    private AccessPolicyInstantiator accessPolicyInstantiator;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
+    private FederationFactory federationFactory;
     private DatabaseManager databaseManager;
     
     public FederationHost(List<FederationUser> federationAdminList, 
-            List<Federation> federationList, ServiceInvokerInstantiator serviceInvokerInstantiator,
-            DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
-            AccessPolicyInstantiator accessPolicyInstantiator, JsonUtils jsonUtils, 
+            List<Federation> federationList, JsonUtils jsonUtils, 
             FederationAuthenticationPluginInstantiator authenticationPluginInstantiator, 
-            DatabaseManager databaseManager) {
+            FederationFactory federationFactory, DatabaseManager databaseManager) {
         this.federationAdminList = federationAdminList;
         this.federationList = federationList;
-        this.serviceInvokerInstantiator = serviceInvokerInstantiator;
-        this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
-        this.accessPolicyInstantiator = accessPolicyInstantiator;
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
+        this.federationFactory = federationFactory;
         this.databaseManager = databaseManager;
     }
     
@@ -69,10 +57,8 @@ public class FederationHost {
         this.databaseManager = databaseManager;
         this.federationAdminList = this.databaseManager.getFederationAdmins();
         this.federationList = this.databaseManager.getFederations();
-        this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
-        this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
-        this.accessPolicyInstantiator = new AccessPolicyInstantiator();
         this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
+        this.federationFactory = new FederationFactory();
     }
     
     /*
@@ -113,8 +99,7 @@ public class FederationHost {
     }
 
     public List<FederationUser> getFederationAdmins() {
-        // FIXME should return a copy of the list
-        return this.federationAdminList;
+        return new ArrayList<FederationUser>(this.federationAdminList);
     }
 
     public void updateFederationAdmin(String adminId, String name, String email, String description,
@@ -150,8 +135,7 @@ public class FederationHost {
     }
 
     public List<Federation> getFederations() {
-        // FIXME should return a copy of the list
-        return this.federationList;
+        return new ArrayList<Federation>(this.federationList);
     }
     
     public List<Federation> getFederationsInstancesOwnedByAnotherMember(String userId) throws UnauthorizedRequestException {
@@ -211,8 +195,8 @@ public class FederationHost {
                 throw new InvalidParameterException(Messages.Exception.FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY);
             }
             
-            // TODO should use a factory
-            Federation federation = new Federation(requester, federationName, metadata, description, enabled);
+            Federation federation = this.federationFactory.createFederationFactory(requester, federationName, 
+                    metadata, description, enabled);
             federationList.add(federation);
             this.databaseManager.saveFederation(federation);
             
@@ -329,7 +313,6 @@ public class FederationHost {
     
     public String createAttribute(String requester, String federationId, String attributeName)
             throws UnauthorizedRequestException, InvalidParameterException {
-        // TODO move to Federation
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
         
@@ -337,7 +320,6 @@ public class FederationHost {
             // This line is used to make sure the federation was not deleted while
             // getting the monitor
             getFederationOrFail(federationId);
-            // TODO move to Federation
             checkIfRequesterIsFederationOwner(requester, federation);
             String newAttributeId = federation.createAttribute(attributeName);
             this.databaseManager.saveFederation(federation);
@@ -419,14 +401,8 @@ public class FederationHost {
             // getting the monitor
             getFederationOrFail(federationId);
             
-            // TODO move to Federation
             if (!federation.isServiceOwner(requester)) {
                 throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_SERVICE_OWNER);
-            }
-
-            if (endpoint == null || endpoint.isEmpty()) {
-                throw new InvalidParameterException(
-                        Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
             }
 
             String serviceId = federation.registerService(requester, endpoint, discoveryPolicyClassName, 
@@ -498,18 +474,7 @@ public class FederationHost {
             }
             
             FederationService federationService = federation.getService(serviceId);
-            
-            ServiceDiscoveryPolicy discoveryPolicy = this.discoveryPolicyInstantiator.getDiscoveryPolicy(discoveryPolicyClassName);
-            ServiceAccessPolicy accessPolicy = this.accessPolicyInstantiator.getAccessPolicy(accessPolicyClassName, metadata);
-            
-            String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
-            ServiceInvoker invoker = this.serviceInvokerInstantiator.getInvoker(invokerClassName, metadata, federationId);
-            
-            federationService.setDiscoveryPolicy(discoveryPolicy);
-            federationService.setAccessPolicy(accessPolicy);
-            federationService.setInvoker(invoker);
-            federationService.setMetadata(metadata);
-            
+            federationService.update(metadata, discoveryPolicyClassName, accessPolicyClassName);
             this.databaseManager.saveFederation(federation);
         }
     }
@@ -541,17 +506,7 @@ public class FederationHost {
     public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         Federation federation = lookUpFederationById(federationId);
-        // TODO move to Federation
-        FederationService service = federation.getService(serviceId);
-        ServiceAccessPolicy accessPolicy = service.getAccessPolicy();
-        FederationUser federationUser = federation.getUserById(requester);
-        ServiceOperation operation = new ServiceOperation(method);
-        
-        if (accessPolicy.isAllowedToPerform(federationUser, operation)) {
-            return service.invoke(federationUser, method, path, headers, body);
-        }
-        
-        throw new UnauthorizedRequestException(Messages.Exception.USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE);
+        return federation.invoke(requester, federationId, serviceId, method, path, headers, body);
     }
     
     /*
@@ -669,9 +624,7 @@ public class FederationHost {
     
     private void checkIfRequesterIsFederationOwner(String requester, Federation federation) 
             throws InvalidParameterException, UnauthorizedRequestException {
-        // FIXME should check for other fed admins 
-        // in the federation
-        if (!federation.getOwner().equals(requester)) {
+        if (!federation.isFederationOwner(requester)) {
             throw new UnauthorizedRequestException(
                     String.format(Messages.Exception.REQUESTER_DOES_NOT_OWN_FEDERATION, requester, federation.getId()));
         }

@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
+import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.core.plugins.access.AccessPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
@@ -37,7 +38,7 @@ public class FederationServiceTest {
     }
     
     @Test
-    public void testConstructorSetsUpLifeCyclePluginsCorrectly() throws ConfigurationErrorException {
+    public void testConstructorSetsUpLifeCyclePluginsCorrectly() throws ConfigurationErrorException, InvalidParameterException {
         new FederationService(SERVICE_ID, OWNER_ID, SERVICE_ENDPOINT,
                 DISCOVERY_POLICY_CLASS_NAME, ACCESS_POLICY_CLASS_NAME, FEDERATION_ID, metadata, 
                 discoveryPolicyInstantiator, accessPolicyInstantiator, invokerInstantiator);

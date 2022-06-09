@@ -20,12 +20,11 @@ import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
 
 public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOperation>{
-    // TODO add reload operation
     public static final List<OperationType> OPERATOR_ONLY_OPERATIONS = 
             Arrays.asList(OperationType.ADD_FED_ADMIN, OperationType.GET_FED_ADMINS, 
                     OperationType.UPDATE_FED_ADMIN, OperationType.DELETE_FED_ADMIN, 
                     OperationType.LIST_FEDERATION_INSTANCES, OperationType.UPDATE_FEDERATION, 
-                    OperationType.DELETE_FEDERATION_INSTANCE);
+                    OperationType.DELETE_FEDERATION_INSTANCE, OperationType.RELOAD_CONFIGURATION);
     public static final List<OperationType> OTHER_SERVICES_ADMIN_ONLY_OPERATIONS = 
             Arrays.asList(OperationType.MAP);
     private List<String> fhsOperatorUserIds;

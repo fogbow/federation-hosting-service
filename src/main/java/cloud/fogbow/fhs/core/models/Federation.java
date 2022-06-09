@@ -19,13 +19,18 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
+import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
+import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.Messages;
+import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
+import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
 @Entity
 @Table(name = "federation_table")
@@ -175,6 +180,12 @@ public class Federation {
         return owner;
     }
     
+    public boolean isFederationOwner(String requester) {
+        // FIXME should check for other fed admins 
+        // in the federation
+        return this.owner.equals(requester);
+    }
+    
     public String getName() {
         return name;
     }
@@ -200,7 +211,7 @@ public class Federation {
     }
 
     public String registerService(String ownerId, String endpoint, String discoveryPolicyClassName, 
-            String accessPolicyClassName, Map<String, String> metadata) {
+            String accessPolicyClassName, Map<String, String> metadata) throws InvalidParameterException {
         FederationService service = this.federationServiceFactory.createService(ownerId, endpoint, discoveryPolicyClassName, 
                 accessPolicyClassName, this.id, metadata);
         this.services.add(service);
@@ -323,5 +334,19 @@ public class Federation {
         FederationService service = getService(serviceId);
         FederationUser user = getUserById(userId);
         return service.getAccessPolicy().getCredentialsForAccess(user, cloudName);
+    }
+    
+    public ServiceResponse invoke(String requester, String federationId, String serviceId, HttpMethod method, 
+            List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
+        FederationService service = getService(serviceId);
+        ServiceAccessPolicy accessPolicy = service.getAccessPolicy();
+        FederationUser federationUser = getUserById(requester);
+        ServiceOperation operation = new ServiceOperation(method);
+        
+        if (accessPolicy.isAllowedToPerform(federationUser, operation)) {
+            return service.invoke(federationUser, method, path, headers, body);
+        }
+        
+        throw new UnauthorizedRequestException(Messages.Exception.USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE);
     }
 }
