@@ -16,6 +16,8 @@ import cloud.fogbow.fhs.core.AuthorizationPluginInstantiator;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.CommunicationMechanismInstantiator;
+import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -41,6 +43,10 @@ public class Main implements ApplicationRunner {
         List<FederationUser> fhsOperators = ApplicationFacade.loadFhsOperatorsOrFail();
         FederationAuthenticationPluginInstantiator authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
         SynchronizationManager synchronizationManager = new SynchronizationManager();
+        String communicationMechanismClassName = 
+                PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.COMMUNICATION_MECHANISM_CLASS_NAME);
+        FhsCommunicationMechanism fhsCommunicationMechanism = 
+                CommunicationMechanismInstantiator.getCommunicationMechanism(communicationMechanismClassName);
         
         ApplicationFacade applicationFacade = ApplicationFacade.getInstance();
         
@@ -50,5 +56,6 @@ public class Main implements ApplicationRunner {
         applicationFacade.setAuthenticationPluginInstantiator(authenticationPluginInstantiator);
         applicationFacade.setDatabaseManager(databaseManager);
         applicationFacade.setSynchronizationManager(synchronizationManager);
+        applicationFacade.setFhsCommunicationMechanism(fhsCommunicationMechanism);
     }
 }

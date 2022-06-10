@@ -33,6 +33,8 @@ public class Messages {
     public static class Log {
         public static final String ADD_FEDERATION_ADMIN_RECEIVED = "Add federation admin received.";
         public static final String CANNOT_FIND_SERVICE = "Cannot find service %s.";
+        public static final String CANNOT_INITIALIZE_PACKAGE_SENDER = "Cannot initialize package sender.";
+        public static final String CONNECTING_UP_PACKET_SENDER = "Connecting XMPP packet sender.";
         public static final String CREATE_FEDERATION_ATTRIBUTE_RECEIVED = "Create federation attribute received.";
         public static final String CREATE_FEDERATION_RECEIVED = "Create federation received.";
         public static final String DELETE_FEDERATION_ATTRIBUTE_RECEIVED = "Delete federation attribute received.";
@@ -65,7 +67,10 @@ public class Messages {
         public static final String LOGIN_RECEIVED = "Login received.";
         public static final String LOGOUT_RECEIVED = "Logout received.";
         public static final String MAP_RECEIVED = "Map received.";
+        public static final String NO_PACKET_SENDER = "PacketSender was not initialized. Trying again.";
+        public static final String NO_REMOTE_COMMUNICATION_CONFIGURED = "No remote communication configured.";
         public static final String OPERATOR_LOGIN_RECEIVED = "Operator login received.";
+        public static final String PACKET_SENDER_INITIALIZED = "XMPP packet sender initialized.";
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
         public static final String RELOAD_CONFIGURATION_RECEIVED = "Reload configuration received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";
@@ -73,5 +78,6 @@ public class Messages {
         public static final String UPDATE_FEDERATION_RECEIVED = "Update federation received.";
         public static final String UPDATE_FED_ADMIN_RECEIVED = "Update fed admin received.";
         public static final String UPDATE_SERVICE_RECEIVED = "Update service received.";
+        public static final String XMPP_HANDLERS_SET = "XMPP handlers set.";
     }
 }

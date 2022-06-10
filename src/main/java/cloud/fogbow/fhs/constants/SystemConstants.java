@@ -6,5 +6,8 @@ public class SystemConstants {
     public static final String FHS_CONF_FILE_NAME = "fhs.conf";
     public static final String OPERATOR_IDS_SEPARATOR = ",";
     public static final String OTHER_SERVICES_ADMIN_IDS_SEPARATOR = ",";
-
+    public static final String JID_SERVICE_NAME = "";
+    public static final String JID_CONNECTOR = "";
+    public static final String XMPP_SERVER_NAME_PREFIX = "ras-";
+    public static final String XMPP_IS_ENABLED = "true";
 }

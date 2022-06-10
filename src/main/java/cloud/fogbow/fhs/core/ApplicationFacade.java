@@ -37,6 +37,7 @@ import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
@@ -59,6 +60,7 @@ public class ApplicationFacade {
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;  
     private DatabaseManager databaseManager;
     private SynchronizationManager synchronizationManager;
+    private FhsCommunicationMechanism fhsCommunicationMechanism;
     
     public static ApplicationFacade getInstance() {
         synchronized (ApplicationFacade.class) {
@@ -136,6 +138,10 @@ public class ApplicationFacade {
 
     public void setSynchronizationManager(SynchronizationManager synchronizationManager) {
         this.synchronizationManager = synchronizationManager;
+    }
+    
+    public void setFhsCommunicationMechanism(FhsCommunicationMechanism fhsCommunicationMechanism) {
+        this.fhsCommunicationMechanism = fhsCommunicationMechanism;
     }
     
     /*
