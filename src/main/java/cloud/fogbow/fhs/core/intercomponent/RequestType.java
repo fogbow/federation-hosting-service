@@ -1,7 +1,8 @@
 package cloud.fogbow.fhs.core.intercomponent;
 
 public enum RequestType {
-    NOTIFY_UPDATE("notifyUpdate");
+    NOTIFY_UPDATE("notifyUpdate"),
+    GET_ALL_FEDERATIONS("getAllFederations");
 
     private String typeName;
     

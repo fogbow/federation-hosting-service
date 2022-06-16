@@ -11,6 +11,7 @@ import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
+import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.models.Federation;
@@ -30,6 +31,7 @@ public class FederationHost {
     
     private List<FederationUser> federationAdminList;
     private List<Federation> federationList;
+    private List<FederationInstance> remoteFederations;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     private FederationFactory federationFactory;
     private DatabaseManager databaseManager;
@@ -60,7 +62,11 @@ public class FederationHost {
         this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
         this.federationFactory = new FederationFactory();
     }
-    
+
+    public void setRemoteFederationsList(List<FederationInstance> remoteFederations) {
+        this.remoteFederations = remoteFederations;
+    }
+            
     /*
      * 
      * FHSOperator

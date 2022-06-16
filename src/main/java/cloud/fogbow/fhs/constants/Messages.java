@@ -25,6 +25,7 @@ public class Messages {
         public static final String SERVICE_NOT_FOUND = "Service %s not found in federation %s.";
         public static final String SERVICE_OWNER_CANNOT_BE_NULL_OR_EMPTY = "Service owner cannot be null or empty.";
         public static final String UNABLE_TO_FIND_CLASS_S = "Unable to find class %s.";
+        public static final String UNABLE_TO_RETRIEVE_RESPONSE_FROM_PROVIDER_S = "Unable to retrieve response from provider: %s.";
         public static final String USER_ALREADY_HAS_ATTRIBUTE = "User %s already has attribute %s.";
         public static final String USER_DOES_NOT_HAVE_ATTRIBUTE = "User %s does not have attribute %s.";
         public static final String USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE = "User is not authorized to perform operation on service.";
@@ -71,10 +72,14 @@ public class Messages {
         public static final String NO_REMOTE_COMMUNICATION_CONFIGURED = "No remote communication configured.";
         public static final String OPERATOR_LOGIN_RECEIVED = "Operator login received.";
         public static final String PACKET_SENDER_INITIALIZED = "XMPP packet sender initialized.";
+        public static final String RECEIVING_REMOTE_REQUEST_S = "Received remote request for request: %s.";
         public static final String REGISTER_SERVICE_RECEIVED = "Register service received.";
         public static final String RELOAD_CONFIGURATION_RECEIVED = "Reload configuration received.";
         public static final String REVOKE_FEDERATION_ATTRIBUTE_RECEIVED = "Revoke federation attribute received.";
         public static final String REVOKE_MEMBERSHIP_RECEIVED = "Revoke membership received.";
+        public static final String SENDING_MSG_S = "Sending remote request for request: %s.";
+        public static final String SUCCESS = "Successfully executed operation.";
+        public static final String UNEXPECTED_ERROR_WITH_MESSAGE_S = "Unexpected exception error: %s.";
         public static final String UPDATE_FEDERATION_RECEIVED = "Update federation received.";
         public static final String UPDATE_FED_ADMIN_RECEIVED = "Update fed admin received.";
         public static final String UPDATE_SERVICE_RECEIVED = "Update service received.";

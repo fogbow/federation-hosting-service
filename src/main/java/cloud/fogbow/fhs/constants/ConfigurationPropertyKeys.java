@@ -26,4 +26,5 @@ public class ConfigurationPropertyKeys {
     public static final String XMPP_TIMEOUT_KEY = "xmpp_timeout";
     
     public static final String COMMUNICATION_MECHANISM_CLASS_NAME = "communication_mechanism_class_name";
+    public static final String SYNCHRONIZATION_MECHANISM_CLASS_NAME = "synchronization_mechanism_class_name";
 }

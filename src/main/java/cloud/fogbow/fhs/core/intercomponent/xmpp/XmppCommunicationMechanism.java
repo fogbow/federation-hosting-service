@@ -3,9 +3,11 @@ package cloud.fogbow.fhs.core.intercomponent.xmpp;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.jamppa.component.XMPPComponent;
 import org.xmpp.component.ComponentException;
 
+import com.google.gson.Gson;
+
+import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyDefaults;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
@@ -13,19 +15,22 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
-import cloud.fogbow.fhs.core.intercomponent.RemoteRequest;
+import cloud.fogbow.fhs.core.intercomponent.RemoteRequestSpecification;
+import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.RemoteGetAllFederationsRequest;
 
-public class XMPPCommunicationMechanism implements FhsCommunicationMechanism {
-    private final static Logger LOGGER = Logger.getLogger(XMPPCommunicationMechanism.class);
-    private static XmppComponentManager packetSender;
+// TODO test
+public class XmppCommunicationMechanism implements FhsCommunicationMechanism {
+    private final static Logger LOGGER = Logger.getLogger(XmppCommunicationMechanism.class);
     
-    public XMPPCommunicationMechanism() throws InternalServerErrorException {
+    private XmppComponentManager packetSender;
+    
+    public XmppCommunicationMechanism() throws InternalServerErrorException {
         Integer attempts = Integer.valueOf(
                 PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.XMPP_STARTUP_ATTEMPTS));
         
         for (int i = 0; i < attempts; i++) {
             try {
-                setup();
+                setupPacketSender();
                 LOGGER.info(Messages.Log.PACKET_SENDER_INITIALIZED);
                 break;
             } catch (IllegalStateException e1) {
@@ -41,52 +46,53 @@ public class XMPPCommunicationMechanism implements FhsCommunicationMechanism {
                 }
             }
         }
-        
     }
 
-    public void setup() {
+    private void setupPacketSender() {
+        String xmppServerIp = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.XMPP_SERVER_IP_KEY);
+        
+        if (xmppServerIp != null && !xmppServerIp.isEmpty()) {
+            XmppComponentManager xmppComponentManager = createPacketSender(xmppServerIp);
+            tryToConnect(xmppComponentManager);
+            this.packetSender = xmppComponentManager;
+        } else {
+            LOGGER.info(Messages.Log.NO_REMOTE_COMMUNICATION_CONFIGURED);
+        }
+    }
+
+    private XmppComponentManager createPacketSender(String xmppServerIp) {
         String jidServiceName = SystemConstants.JID_SERVICE_NAME;
         String jidConnector = SystemConstants.JID_CONNECTOR;
         String jidPrefix = SystemConstants.XMPP_SERVER_NAME_PREFIX;
         String providerId = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.PROVIDER_ID_KEY);
         String xmppPassword = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.XMPP_PASSWORD_KEY);
-        String xmppServerIp = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.XMPP_SERVER_IP_KEY);
         int xmppServerPort = Integer.parseInt(PropertiesHolder.getInstance().
                 getProperty(ConfigurationPropertyKeys.XMPP_C2C_PORT_KEY, ConfigurationPropertyDefaults.XMPP_CSC_PORT));
         long xmppTimeout =
                 Long.parseLong(PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.XMPP_TIMEOUT_KEY,
                         ConfigurationPropertyDefaults.XMPP_TIMEOUT));
-        System.out.println(jidServiceName + jidConnector +
-                jidPrefix + providerId);
-        XmppComponentManager xmppComponentManager = new XmppComponentManager(jidServiceName + jidConnector +
+        return new XmppComponentManager(jidServiceName + jidConnector +
                 jidPrefix + providerId, xmppPassword, xmppServerIp, xmppServerPort, xmppTimeout);
-        if (xmppServerIp != null && !xmppServerIp.isEmpty()) {
-            try {
-                LOGGER.info(Messages.Log.CONNECTING_UP_PACKET_SENDER);
-                xmppComponentManager.connect();
-            } catch (ComponentException e) {
-                throw new IllegalStateException();
-            }
-            XMPPCommunicationMechanism.packetSender = xmppComponentManager;
-        } else {
-            LOGGER.info(Messages.Log.NO_REMOTE_COMMUNICATION_CONFIGURED);
-        }
     }
     
-    public static class XmppComponentManager extends XMPPComponent {
-        private static Logger LOGGER = Logger.getLogger(XmppComponentManager.class);
-
-        public XmppComponentManager(String jid, String password, String xmppServerIp, int xmppServerPort, long timeout) {
-            super(jid, password, xmppServerIp, xmppServerPort, timeout);
-            // instantiate set handlers here
-            // instantiate get handlers here
-            LOGGER.info(Messages.Log.XMPP_HANDLERS_SET);
+    private void tryToConnect(XmppComponentManager xmppComponentManager) {
+        try {
+            LOGGER.info(Messages.Log.CONNECTING_UP_PACKET_SENDER);
+            xmppComponentManager.connect();
+        } catch (ComponentException e) {
+            throw new IllegalStateException();
         }
     }
 
     @Override
-    public String sendRequest(RemoteRequest request) {
-        // TODO Auto-generated method stub
-        return null;
+    public String sendRequest(RemoteRequestSpecification request) throws FogbowException {
+        switch(request.getRequestType()) {
+            case GET_ALL_FEDERATIONS: 
+                return new Gson().toJson(new RemoteGetAllFederationsRequest(packetSender, request.getRemoteHost()).send());
+            case NOTIFY_UPDATE:
+                return null;
+            default:
+                return null;
+        }
     }
 }

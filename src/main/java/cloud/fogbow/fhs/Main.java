@@ -18,6 +18,9 @@ import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.intercomponent.CommunicationMechanismInstantiator;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
+import cloud.fogbow.fhs.core.intercomponent.RemoteFacade;
+import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
+import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanismInstantiator;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -47,6 +50,12 @@ public class Main implements ApplicationRunner {
                 PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.COMMUNICATION_MECHANISM_CLASS_NAME);
         FhsCommunicationMechanism fhsCommunicationMechanism = 
                 CommunicationMechanismInstantiator.getCommunicationMechanism(communicationMechanismClassName);
+        String synchronizationMechanismClassName = 
+                PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.SYNCHRONIZATION_MECHANISM_CLASS_NAME);
+        SynchronizationMechanism synchronizationMechanism = SynchronizationMechanismInstantiator.getSynchronizationMechanism(
+                synchronizationMechanismClassName, federationHost, fhsCommunicationMechanism);
+        
+        synchronizationMechanism.onStartUp();
         
         ApplicationFacade applicationFacade = ApplicationFacade.getInstance();
         
@@ -57,5 +66,9 @@ public class Main implements ApplicationRunner {
         applicationFacade.setDatabaseManager(databaseManager);
         applicationFacade.setSynchronizationManager(synchronizationManager);
         applicationFacade.setFhsCommunicationMechanism(fhsCommunicationMechanism);
+        
+        RemoteFacade remoteFacade = RemoteFacade.getInstance();
+        
+        remoteFacade.setFederationHost(federationHost);
     }
 }
