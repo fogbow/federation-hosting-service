@@ -318,6 +318,29 @@ public class ApplicationFacade {
             synchronizationManager.finishOperation();
         }
     }
+    
+    public List<FederationDescription> getRemoteFederationList(String userToken) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_REMOTE_FEDERATION_LIST));
+        
+        synchronizationManager.startOperation();
+        
+        try {
+            List<FederationInstance> federationInstances = this.federationHost.getRemoteFederationList(requestUser.getId());
+            List<FederationDescription> federationDescriptions = new ArrayList<FederationDescription>();
+            for (FederationInstance federationInstance : federationInstances) {
+                String id = federationInstance.getFedId();
+                String name = federationInstance.getFedName();
+                String description = federationInstance.getDescription();
+                
+                federationDescriptions.add(new FederationDescription(id, name, description));
+            }
+            
+            return federationDescriptions;    
+        } finally {
+            synchronizationManager.finishOperation();
+        }
+    }
 
     /*
      * 

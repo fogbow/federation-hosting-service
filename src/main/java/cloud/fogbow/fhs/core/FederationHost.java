@@ -248,6 +248,11 @@ public class FederationHost {
             }
         }
     }
+
+    public List<FederationInstance> getRemoteFederationList(String requester) throws UnauthorizedRequestException {
+        checkIfRequesterIsFedAdmin(requester);
+        return new ArrayList<FederationInstance>(this.remoteFederations);
+    }
     
     /*
      * 

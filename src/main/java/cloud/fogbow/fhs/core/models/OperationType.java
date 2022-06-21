@@ -13,6 +13,7 @@ public enum OperationType {
     LIST_FEDERATIONS("listFederations"), 
     GET_FEDERATION_INFO("getFederationInfo"),
     DELETE_FEDERATION("deleteFederation"),
+    GET_REMOTE_FEDERATION_LIST("getRemoteFederationList"),
     GRANT_MEMBERSHIP("grantMembership"), 
     LIST_MEMBERS("listFederationMembers"), 
     GET_MEMBER_INFO("getMemberInfo"),

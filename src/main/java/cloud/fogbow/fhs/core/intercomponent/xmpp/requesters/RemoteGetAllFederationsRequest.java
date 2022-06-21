@@ -1,5 +1,6 @@
 package cloud.fogbow.fhs.core.intercomponent.xmpp.requesters;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -7,6 +8,7 @@ import org.dom4j.Element;
 import org.xmpp.packet.IQ;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
@@ -52,11 +54,10 @@ public class RemoteGetAllFederationsRequest implements RemoteRequest<List<Federa
         Element queryElement = response.getElement().element(IqElement.QUERY.toString());
         String listStr = queryElement.element(IqElement.FEDERATION_LIST.toString()).getText();
 
-        String instanceClassName = queryElement.element(IqElement.FEDERATION_LIST_CLASS_NAME.toString()).getText();
-
         List<FederationInstance> rulesList;
         try {
-            rulesList = (List<FederationInstance>) new Gson().fromJson(listStr, Class.forName(instanceClassName));
+            Type listType = new TypeToken<List<FederationInstance>>(){}.getType();
+            rulesList = new Gson().fromJson(listStr, listType);
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }

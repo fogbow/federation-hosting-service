@@ -92,4 +92,17 @@ public class Federation {
             throw e;
         }
     }
+    
+    @RequestMapping(value = "/Query", method = RequestMethod.GET)
+    public ResponseEntity<List<FederationDescription>> getRemoteFederationList(
+            @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
+        try {
+            LOGGER.info(Messages.Log.GET_REMOTE_FEDERATION_LIST);
+            List<FederationDescription> remoteFederationList = ApplicationFacade.getInstance().getRemoteFederationList(systemUserToken);
+            return new ResponseEntity<>(remoteFederationList, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.debug(String.format(Messages.Log.GENERIC_EXCEPTION_S, e.getMessage()), e);
+            throw e;
+        }
+    }
 }

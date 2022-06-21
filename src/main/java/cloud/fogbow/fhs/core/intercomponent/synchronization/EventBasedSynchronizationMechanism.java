@@ -1,20 +1,15 @@
 package cloud.fogbow.fhs.core.intercomponent.synchronization;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
 
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
-import cloud.fogbow.fhs.core.intercomponent.RemoteRequestSpecification;
-import cloud.fogbow.fhs.core.intercomponent.RequestType;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 
@@ -30,10 +25,11 @@ public class EventBasedSynchronizationMechanism implements SynchronizationMechan
         this.federationHost = federationHost;
         
         this.remoteFedHosts = new ArrayList<String>();
+        // FIXME constant
         String allowedFhsIdsListString = PropertiesHolder.getInstance().getProperty("allowed_fhs_ids");
         
-        // TODO validate list string
         if (allowedFhsIdsListString != null && !allowedFhsIdsListString.isEmpty()) {
+            // FIXME constant
             for (String allowedFhsId :  allowedFhsIdsListString.split(",")) {
                 this.remoteFedHosts.add(allowedFhsId);
             }
@@ -47,14 +43,12 @@ public class EventBasedSynchronizationMechanism implements SynchronizationMechan
         
         for (String remoteFedHost : remoteFedHosts) {
             try {
-                RemoteRequestSpecification spec = new RemoteRequestSpecification(
-                        RequestType.GET_ALL_FEDERATIONS, new HashMap<String, Object>(), remoteFedHost);
-                String response = this.communicationMechanism.sendRequest(spec);
-                List<FederationInstance> remoteFederations = (List<FederationInstance>) new Gson().fromJson(response, List.class);
+                // FIXME should update the remote hosts with local federation data
+                List<FederationInstance> remoteFederations = this.communicationMechanism.getRemoteFederations(remoteFedHost);
                 remoteFedInstances.addAll(remoteFederations);
             } catch (FogbowException e) {
                 // FIXME constant
-                LOGGER.info(String.format("Provider %s unavailable.", remoteFedHost));
+                LOGGER.info(String.format("Provider %s unavailable. Message: %s", remoteFedHost, e.getMessage()));
             }
         }
         

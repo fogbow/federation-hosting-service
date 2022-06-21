@@ -1,21 +1,20 @@
 package cloud.fogbow.fhs.core.intercomponent.xmpp;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.xmpp.component.ComponentException;
 
-import com.google.gson.Gson;
-
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
+import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyDefaults;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
-import cloud.fogbow.fhs.core.intercomponent.RemoteRequestSpecification;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.RemoteGetAllFederationsRequest;
 
 // TODO test
@@ -85,14 +84,7 @@ public class XmppCommunicationMechanism implements FhsCommunicationMechanism {
     }
 
     @Override
-    public String sendRequest(RemoteRequestSpecification request) throws FogbowException {
-        switch(request.getRequestType()) {
-            case GET_ALL_FEDERATIONS: 
-                return new Gson().toJson(new RemoteGetAllFederationsRequest(packetSender, request.getRemoteHost()).send());
-            case NOTIFY_UPDATE:
-                return null;
-            default:
-                return null;
-        }
+    public List<FederationInstance> getRemoteFederations(String hostId) throws FogbowException {
+        return new RemoteGetAllFederationsRequest(packetSender, hostId).send();
     }
 }

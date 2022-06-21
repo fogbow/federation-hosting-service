@@ -51,6 +51,7 @@ public class Messages {
         public static final String GET_FEDERATIONS_RECEIVED = "Get federations received.";
         public static final String GET_MEMBER_INFO_RECEIVED = "Get member info received.";
         public static final String GET_PUBLIC_KEY = "Get public key received.";
+        public static final String GET_REMOTE_FEDERATION_LIST = "Get remote federation list.";
         public static final String GET_SERVICE_RECEIVED = "Get service received.";
         public static final String GET_SERVICES_RECEIVED = "Get services received.";
         public static final String GRANT_FEDERATION_ATTRIBUTE_RECEIVED = "Grant federation attribute received.";
