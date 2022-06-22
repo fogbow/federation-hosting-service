@@ -20,6 +20,7 @@ import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.JoinRequest;
+import cloud.fogbow.fhs.core.models.RemoteFederation;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
@@ -31,7 +32,7 @@ public class FederationHost {
     
     private List<FederationUser> federationAdminList;
     private List<Federation> federationList;
-    private List<FederationInstance> remoteFederations;
+    private List<RemoteFederation> remoteFederations;
     private FederationAuthenticationPluginInstantiator authenticationPluginInstantiator;
     private FederationFactory federationFactory;
     private DatabaseManager databaseManager;
@@ -63,7 +64,7 @@ public class FederationHost {
         this.federationFactory = new FederationFactory();
     }
 
-    public void setRemoteFederationsList(List<FederationInstance> remoteFederations) {
+    public void setRemoteFederationsList(List<RemoteFederation> remoteFederations) {
         this.remoteFederations = remoteFederations;
     }
             
@@ -249,9 +250,9 @@ public class FederationHost {
         }
     }
 
-    public List<FederationInstance> getRemoteFederationList(String requester) throws UnauthorizedRequestException {
+    public List<RemoteFederation> getRemoteFederationList(String requester) throws UnauthorizedRequestException {
         checkIfRequesterIsFedAdmin(requester);
-        return new ArrayList<FederationInstance>(this.remoteFederations);
+        return new ArrayList<RemoteFederation>(this.remoteFederations);
     }
     
     /*
@@ -558,6 +559,11 @@ public class FederationHost {
      * Remote federations
      * 
      */
+    
+    public void updateRemoteFederationList(String fhsId, List<RemoteFederation> fhsRemoteFederations) {
+        this.remoteFederations.removeAll(fhsRemoteFederations);
+        this.remoteFederations.addAll(fhsRemoteFederations);
+    }
     
     public void requestToJoinFederation(String federationId, String fhsUrl, String memberId) {
         // TODO implement

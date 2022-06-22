@@ -44,6 +44,7 @@ import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
+import cloud.fogbow.fhs.core.models.RemoteFederation;
 import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -326,9 +327,9 @@ public class ApplicationFacade {
         synchronizationManager.startOperation();
         
         try {
-            List<FederationInstance> federationInstances = this.federationHost.getRemoteFederationList(requestUser.getId());
+            List<RemoteFederation> federationInstances = this.federationHost.getRemoteFederationList(requestUser.getId());
             List<FederationDescription> federationDescriptions = new ArrayList<FederationDescription>();
-            for (FederationInstance federationInstance : federationInstances) {
+            for (RemoteFederation federationInstance : federationInstances) {
                 String id = federationInstance.getFedId();
                 String name = federationInstance.getFedName();
                 String description = federationInstance.getDescription();

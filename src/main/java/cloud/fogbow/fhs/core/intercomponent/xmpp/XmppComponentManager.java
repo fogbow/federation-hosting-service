@@ -5,6 +5,7 @@ import org.jamppa.component.XMPPComponent;
 
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.handlers.RemoteGetAllFederationsHandler;
+import cloud.fogbow.fhs.core.intercomponent.xmpp.handlers.RemoteSyncFederationsHandler;
 
 public class XmppComponentManager extends XMPPComponent {
     private static Logger LOGGER = Logger.getLogger(XmppComponentManager.class);
@@ -14,6 +15,7 @@ public class XmppComponentManager extends XMPPComponent {
         // instantiate set handlers here
         // instantiate get handlers here
         addGetHandler(new RemoteGetAllFederationsHandler());
+        addGetHandler(new RemoteSyncFederationsHandler());
         LOGGER.info(Messages.Log.XMPP_HANDLERS_SET);
     }
 }

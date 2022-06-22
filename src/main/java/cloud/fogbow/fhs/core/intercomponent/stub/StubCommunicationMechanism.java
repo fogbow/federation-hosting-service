@@ -13,4 +13,11 @@ public class StubCommunicationMechanism implements FhsCommunicationMechanism {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public List<FederationInstance> syncFederations(String remoteFedHost, List<FederationInstance> localFederations)
+            throws FogbowException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

@@ -8,6 +8,7 @@ import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.RemoteFederation;
 
 // TODO test
 public class RemoteFacade {
@@ -54,6 +55,20 @@ public class RemoteFacade {
         } else {
             // TODO add message
             throw new UnauthorizedRequestException();
+        }
+    }
+
+    public void updateRemoteFederationList(String fhsId, List<FederationInstance> remoteFederationInstances) {
+        if (this.allowedFhsIds.contains(fhsId)) {
+            List<RemoteFederation> remoteFederations = new ArrayList<RemoteFederation>();
+            
+            for (FederationInstance federationInstance : remoteFederationInstances) {
+                remoteFederations.add(new RemoteFederation(federationInstance.getFedId(),
+                        federationInstance.getFedName(), federationInstance.getDescription(),
+                        federationInstance.isEnabled(), federationInstance.getOwningFedAdminId(), fhsId));
+            }
+            
+            this.federationHost.updateRemoteFederationList(fhsId, remoteFederations);
         }
     }
 }
