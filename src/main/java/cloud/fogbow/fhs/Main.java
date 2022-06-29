@@ -42,14 +42,14 @@ public class Main implements ApplicationRunner {
         
         String className = PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.AUTHORIZATION_PLUGIN_CLASS_KEY);
         AuthorizationPlugin<FhsOperation> authorizationPlugin = AuthorizationPluginInstantiator.getAuthorizationPlugin(className);
-        FederationHost federationHost = new FederationHost(databaseManager);
-        List<FederationUser> fhsOperators = ApplicationFacade.loadFhsOperatorsOrFail();
-        FederationAuthenticationPluginInstantiator authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
-        SynchronizationManager synchronizationManager = new SynchronizationManager();
         String communicationMechanismClassName = 
                 PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.COMMUNICATION_MECHANISM_CLASS_NAME);
         FhsCommunicationMechanism fhsCommunicationMechanism = 
                 CommunicationMechanismInstantiator.getCommunicationMechanism(communicationMechanismClassName);
+        FederationHost federationHost = new FederationHost(databaseManager, fhsCommunicationMechanism);
+        List<FederationUser> fhsOperators = ApplicationFacade.loadFhsOperatorsOrFail();
+        FederationAuthenticationPluginInstantiator authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
+        SynchronizationManager synchronizationManager = new SynchronizationManager();
         String synchronizationMechanismClassName = 
                 PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.SYNCHRONIZATION_MECHANISM_CLASS_NAME);
         SynchronizationMechanism synchronizationMechanism = SynchronizationMechanismInstantiator.getSynchronizationMechanism(

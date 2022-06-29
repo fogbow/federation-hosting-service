@@ -21,6 +21,7 @@ import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
 import cloud.fogbow.common.util.CryptoUtil;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
+import cloud.fogbow.fhs.api.http.response.AllowedRemoteJoin;
 import cloud.fogbow.fhs.api.http.response.AttributeDescription;
 import cloud.fogbow.fhs.api.http.response.FedAdminInfo;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
@@ -45,6 +46,7 @@ import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
+import cloud.fogbow.fhs.core.models.RemoteFederationUser;
 import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -109,7 +111,8 @@ public class ApplicationFacade {
             }
         }
 
-        return new FederationUser(fhsOperatorUserId, "", "", "", true, fhsOperatorAuthenticationProperties, true, false);
+        return new FederationUser(fhsOperatorUserId, "", "", PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.PROVIDER_ID_KEY), 
+                "", true, fhsOperatorAuthenticationProperties, true, false);
     }
     
     private static String normalizeKeyProperties(String fhsOperatorUserId, String keyPropertiesStr) {
@@ -233,7 +236,7 @@ public class ApplicationFacade {
             
             FhsPublicKeysHolder.reset();
             
-            this.federationHost.reload(databaseManager);
+            this.federationHost.reload(databaseManager, fhsCommunicationMechanism);
             
             String publicKeyFilePath = PropertiesHolder.getInstance().getProperty(FogbowConstants.PUBLIC_KEY_FILE_PATH);
             String privateKeyFilePath = PropertiesHolder.getInstance().getProperty(FogbowConstants.PRIVATE_KEY_FILE_PATH);
@@ -338,6 +341,72 @@ public class ApplicationFacade {
             }
             
             return federationDescriptions;    
+        } finally {
+            synchronizationManager.finishOperation();
+        }
+    }
+
+    public void joinRemoteFederation(String userToken, String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.JOIN_REMOTE_FEDERATION));
+        
+        synchronizationManager.startOperation();
+        
+        try {
+            this.federationHost.requestToJoinRemoteFederation(requestUser.getId(), federationId);
+        } finally {
+            synchronizationManager.finishOperation();
+        }
+    }
+    
+    public List<AllowedRemoteJoin> getRemoteUsersAllowedAdmins(String userToken) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_REMOTE_USERS_ALLOWED_ADMINS));
+        
+        synchronizationManager.startOperation();
+        
+        try {
+            List<AllowedRemoteJoin> allowedRemoteJoins = new ArrayList<AllowedRemoteJoin>();
+            List<Federation> federations = federationHost.getFederationsOwnedByUser(requestUser.getId());
+            
+            for (Federation federation : federations) {
+                List<RemoteFederationUser> allowedRemoteJoinsForFederation = federation.getAllowedRemoteJoins();
+                
+                for (RemoteFederationUser allowedRemoteJoin : allowedRemoteJoinsForFederation) {
+                    allowedRemoteJoins.add(new AllowedRemoteJoin(federation.getId(), federation.getName(), 
+                            allowedRemoteJoin.getFedAdminId(), allowedRemoteJoin.getFhsId()));
+                }
+            }
+            
+            return allowedRemoteJoins;
+        } finally {
+            synchronizationManager.finishOperation();
+        }
+    }
+    
+    public void addRemoteUserToAllowedAdmins(String userToken, String remoteFedAdminId, String fhsId,
+            String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.ADD_REMOTE_USER_TO_ALLOWED_ADMINS));
+        
+        synchronizationManager.startOperation();
+        
+        try {
+            this.federationHost.addUserToAllowedAdmins(requestUser.getId(), remoteFedAdminId, fhsId, federationId);
+        } finally {
+            synchronizationManager.finishOperation();
+        }
+    }
+    
+    public void removeRemoteUserFromAllowedAdmins(String userToken, String remoteFedAdminId, String fhsId,
+            String federationId) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.REMOVE_REMOTE_USER_FROM_ALLOWED_ADMINS));
+        
+        synchronizationManager.startOperation();
+        
+        try {
+            this.federationHost.removeUserFromAllowedAdmins(requestUser.getId(), remoteFedAdminId, fhsId, federationId);
         } finally {
             synchronizationManager.finishOperation();
         }

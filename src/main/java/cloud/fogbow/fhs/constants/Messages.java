@@ -49,6 +49,7 @@ public class Messages {
         public static final String GET_FEDERATION_ATTRIBUTES_RECEIVED = "Get federation attributes received.";
         public static final String GET_FEDERATION_INFO_RECEIVED = "Get federation info received.";
         public static final String GET_FEDERATIONS_RECEIVED = "Get federations received.";
+        public static final String GET_JOIN_REQUESTS_RECEIVED = "Get join requests received.";
         public static final String GET_MEMBER_INFO_RECEIVED = "Get member info received.";
         public static final String GET_PUBLIC_KEY = "Get public key received.";
         public static final String GET_REMOTE_FEDERATION_LIST = "Get remote federation list.";
@@ -63,6 +64,9 @@ public class Messages {
         public static final String INVOKE_PATCH_REQUEST_RECEIVED = "Invoke patch request received.";
         public static final String INVOKE_POST_REQUEST_RECEIVED = "Invoke post request received.";
         public static final String INVOKE_PUT_REQUEST_RECEIVED = "Invoke put request received.";
+        public static final String JOIN_DENY_RECEIVED = "Join deny received.";
+        public static final String JOIN_GRANT_RECEIVED = "Join grant received.";
+        public static final String JOIN_REMOTE_FEDERATION_RECEIVED = "Join remote federation received.";
         public static final String LIST_FEDERATION_INSTANCES_RECEIVED = "List federation instances received.";
         public static final String LIST_FED_ADMINS_RECEIVED = "List fed admins received.";
         public static final String LIST_MEMBERS_RECEIVED = "List members received.";

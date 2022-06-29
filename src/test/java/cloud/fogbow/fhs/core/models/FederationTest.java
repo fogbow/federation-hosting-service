@@ -24,6 +24,7 @@ import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlug
 
 // TODO documentation
 public class FederationTest {
+    private static final String FHS_ID_1 = "fhsId1";
     private static final String FEDERATION_ID_1 = "federationId1";
     private static final String FEDERATION_OWNER_1 = "federationOwner1";
     private static final String FEDERATION_NAME_1 = "federationName1";
@@ -65,6 +66,7 @@ public class FederationTest {
     private static final String SERVICE_ACCESS_POLICY_CLASS_NAME = "accessPolicyClassName";
     private static final String SERVICE_ENDPOINT = "serviceEndpoint";
     private List<FederationUser> federationMembers;
+    private List<RemoteFederationUser> allowedAdmins;
     private List<FederationService> federationServices;
     private List<FederationAttribute> federationAttributes;
     private Federation federation;
@@ -82,16 +84,17 @@ public class FederationTest {
     private Map<String, String> credentials;
     private Map<String, String> serviceMetadata;
     private FederationServiceFactory federationServiceFactory;
+    private List<FederationUser> remoteAdmins;
     
     @Before
     public void setUp() throws Exception {
         serviceMetadata = new HashMap<String, String>();
         
         this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
-                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
+                FHS_ID_1, FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
                 new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         this.federationUser2 = new FederationUser(FEDERATION_USER_ID_2, FEDERATION_USER_NAME_2, FEDERATION_ID_1,
-                FEDERATION_USER_EMAIL_2, FEDERATION_USER_DESCRIPTION_2, FEDERATION_USER_ENABLED_2, 
+                FHS_ID_1, FEDERATION_USER_EMAIL_2, FEDERATION_USER_DESCRIPTION_2, FEDERATION_USER_ENABLED_2, 
                 new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         
         this.federationMembers = new ArrayList<FederationUser>();
@@ -144,8 +147,8 @@ public class FederationTest {
                 FEDERATION_METADATA_1)).thenReturn(federationService1);
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
                 this.federationServiceFactory);
     }
@@ -156,9 +159,9 @@ public class FederationTest {
         this.federationServices = new ArrayList<FederationService>();
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
-                this.federationAttributes, this.authenticationPluginInstantiator, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, 
+                this.federationServices, this.federationAttributes, this.authenticationPluginInstantiator, 
                 this.federationServiceFactory);
         
         List<FederationUser> federationUserListBefore = this.federation.getMemberList();
@@ -208,8 +211,8 @@ public class FederationTest {
         this.federationServices = new ArrayList<FederationService>();
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator,
                 this.federationServiceFactory);
         
@@ -236,8 +239,8 @@ public class FederationTest {
     @Test(expected = InvalidParameterException.class)
     public void testGetNotRegisteredService() throws InvalidParameterException {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
                 this.federationServiceFactory);
         
@@ -281,8 +284,8 @@ public class FederationTest {
         this.federationAttributes = new ArrayList<FederationAttribute>();
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
                 this.federationServiceFactory);
         
@@ -344,7 +347,7 @@ public class FederationTest {
         federationUser1Attributes.add(ATTRIBUTE_ID_1);
         
         this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
-                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
+                FHS_ID_1, FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
                 federationUser1Attributes, IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), false, false);
         
         this.federationMembers = new ArrayList<FederationUser>();
@@ -352,8 +355,8 @@ public class FederationTest {
         this.federationMembers.add(this.federationUser2);
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
                 this.federationServiceFactory);
         
@@ -379,7 +382,7 @@ public class FederationTest {
         federationUser1Attributes.add(Federation.SERVICE_OWNER_ATTRIBUTE_NAME);
         
         this.federationUser1 = new FederationUser(FEDERATION_USER_ID_1, FEDERATION_USER_NAME_1, FEDERATION_ID_1,
-                FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
+                FHS_ID_1, FEDERATION_USER_EMAIL_1, FEDERATION_USER_DESCRIPTION_1, FEDERATION_USER_ENABLED_1, 
                 federationUser1Attributes, IDENTITY_PLUGIN_CLASS_NAME, new HashMap<String, String>(), 
                 false, false);
         
@@ -388,8 +391,8 @@ public class FederationTest {
         this.federationMembers.add(this.federationUser2);
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
-                FEDERATION_NAME_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
-                FEDERATION_ENABLED, this.federationMembers, this.federationServices, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
                 this.federationServiceFactory);
         

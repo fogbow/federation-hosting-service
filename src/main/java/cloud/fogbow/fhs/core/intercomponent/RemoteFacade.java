@@ -3,11 +3,13 @@ package cloud.fogbow.fhs.core.intercomponent;
 import java.util.ArrayList;
 import java.util.List;
 
+import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 
 // TODO test
@@ -70,5 +72,14 @@ public class RemoteFacade {
             
             this.federationHost.updateRemoteFederationList(fhsId, remoteFederations);
         }
+    }
+
+    public Federation joinFederation(String fhsId, FederationUser requester, String federationId) throws FogbowException {
+        if (this.allowedFhsIds.contains(fhsId)) {
+            return this.federationHost.joinRemoteFederation(requester, fhsId, federationId);
+        }
+        
+        // TODO constant
+        throw new UnauthorizedRequestException("fhs is not authorized.");
     }
 }

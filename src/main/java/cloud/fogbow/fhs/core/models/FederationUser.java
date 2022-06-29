@@ -46,6 +46,9 @@ public class FederationUser {
     @Column(name = FEDERATION_ID_COLUMN_NAME)
     private String federationId;
     
+    // TODO add column name
+    private String fhsId;
+    
     @Column(name = MEMBER_EMAIL_COLUMN_NAME)
     private String email;
     
@@ -78,7 +81,7 @@ public class FederationUser {
         
     }
     
-    public FederationUser(String id, String name, String federationId, String email, String description, boolean enabled,
+    public FederationUser(String id, String name, String federationId, String fhsId, String email, String description, boolean enabled,
             List<String> attributes, String identityPluginClassName, Map<String, String> identityPluginProperties, 
             boolean isOperator, boolean isAdmin) {
         this.id = id;
@@ -94,9 +97,9 @@ public class FederationUser {
         this.isAdmin = isAdmin;
     }
     
-    public FederationUser(String name, String federationId, String email, String description, 
+    public FederationUser(String name, String federationId, String fhsId, String email, String description, 
             boolean enabled, Map<String, String> authenticationProperties, boolean isOperator, boolean isAdmin) {
-        this(UUID.randomUUID().toString(), name, federationId, email, description, enabled, new ArrayList<String>(),
+        this(UUID.randomUUID().toString(), name, federationId, fhsId, email, description, enabled, new ArrayList<String>(),
                 authenticationProperties.get(IDENTITY_PLUGIN_CLASS_NAME_KEY), authenticationProperties, isOperator, isAdmin);
     }
 
@@ -184,5 +187,13 @@ public class FederationUser {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getFhsId() {
+        return fhsId;
+    }
+
+    public void setFhsId(String fhsId) {
+        this.fhsId = fhsId;
     }
 }

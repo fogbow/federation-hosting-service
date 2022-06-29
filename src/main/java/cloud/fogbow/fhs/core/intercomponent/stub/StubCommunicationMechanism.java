@@ -5,6 +5,8 @@ import java.util.List;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
+import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.FederationUser;
 
 public class StubCommunicationMechanism implements FhsCommunicationMechanism {
 
@@ -17,6 +19,12 @@ public class StubCommunicationMechanism implements FhsCommunicationMechanism {
     @Override
     public List<FederationInstance> syncFederations(String remoteFedHost, List<FederationInstance> localFederations)
             throws FogbowException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Federation joinRemoteFederation(FederationUser requester, String federationId, String ownerFhsId) throws FogbowException {
         // TODO Auto-generated method stub
         return null;
     }

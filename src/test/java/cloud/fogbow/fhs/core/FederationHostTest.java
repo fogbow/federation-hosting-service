@@ -13,7 +13,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
@@ -22,7 +27,9 @@ import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
+import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationFactory;
@@ -37,6 +44,8 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ PropertiesHolder.class })
 public class FederationHostTest {
     private static final String ADMIN_ID_1 = "adminId1";
     private static final String ADMIN_ID_2 = "adminId2";
@@ -106,6 +115,8 @@ public class FederationHostTest {
     private static final String REGULAR_USER_CREDENTIAL_KEY_2 = "regularUserCredentialKey2";
     private static final String REGULAR_USER_CREDENTIAL_VALUE_1 = "regularUserCredentialValue1";
     private static final String REGULAR_USER_CREDENTIAL_VALUE_2 = "regularUserCredentialValue2";
+    private static final String FHS_ID_1 = "fhsId1";
+    private static final String PROVIDER_ID = "providerId";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -136,6 +147,8 @@ public class FederationHostTest {
     private Map<String, String> updatedServiceMetadata;
     private FederationFactory federationFactory;
     private DatabaseManager databaseManager;
+    private PropertiesHolder propertiesHolder;
+    private FhsCommunicationMechanism communicationMechanism;
     
     private void setUpFederationData() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
@@ -148,14 +161,14 @@ public class FederationHostTest {
         
         this.invoker = Mockito.mock(ServiceInvoker.class);
         
-        this.admin1 = new FederationUser(ADMIN_ID_1, ADMIN_NAME_1, FEDERATION_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, 
+        this.admin1 = new FederationUser(ADMIN_ID_1, ADMIN_NAME_1, FEDERATION_ID_1, FHS_ID_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, 
                 ADMIN_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES, false, true);
-        this.admin2 = new FederationUser(ADMIN_ID_2, ADMIN_NAME_2, FEDERATION_ID_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, 
+        this.admin2 = new FederationUser(ADMIN_ID_2, ADMIN_NAME_2, FEDERATION_ID_1, FHS_ID_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, 
                 ADMIN_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, USER_AUTHORIZATION_PROPERTIES, false, true);
-        this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, FEDERATION_ID_1, REGULAR_USER_EMAIL_1, 
+        this.user1 = new FederationUser(REGULAR_USER_ID_1, REGULAR_USER_NAME_1, FEDERATION_ID_1, FHS_ID_1, REGULAR_USER_EMAIL_1, 
                 REGULAR_USER_DESCRIPTION_1, REGULAR_USER_ENABLED_1, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, 
                 USER_AUTHORIZATION_PROPERTIES, false, false);
-        this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, FEDERATION_ID_1, REGULAR_USER_EMAIL_2, 
+        this.user2 = new FederationUser(REGULAR_USER_ID_2, REGULAR_USER_NAME_2, FEDERATION_ID_1, FHS_ID_1, REGULAR_USER_EMAIL_2, 
                 REGULAR_USER_DESCRIPTION_2, REGULAR_USER_ENABLED_2, new ArrayList<String>(), IDENTITY_PLUGIN_CLASS_NAME, 
                 USER_AUTHORIZATION_PROPERTIES, false, false);
 
@@ -267,16 +280,22 @@ public class FederationHostTest {
                 federationMetadata, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1)).thenReturn(federation1);
         
         this.federationHost = new FederationHost(adminList, federationList, jsonUtils, authenticationPluginInstantiator, 
-                this.federationFactory, databaseManager);
+                this.federationFactory, databaseManager, communicationMechanism);
     }
     
     @Before
     public void setUp() {
+        this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
+        Mockito.when(propertiesHolder.getProperty(ConfigurationPropertyKeys.PROVIDER_ID_KEY)).thenReturn(PROVIDER_ID);
+        
+        PowerMockito.mockStatic(PropertiesHolder.class);
+        BDDMockito.given(PropertiesHolder.getInstance()).willReturn(propertiesHolder);
+        
         this.databaseManager = Mockito.mock(DatabaseManager.class);
         Mockito.when(this.databaseManager.getFederationAdmins()).thenReturn(new ArrayList<FederationUser>());
         Mockito.when(this.databaseManager.getFederations()).thenReturn(new ArrayList<Federation>());
         
-        this.federationHost = new FederationHost(databaseManager);
+        this.federationHost = new FederationHost(databaseManager, communicationMechanism);
     }
     
     /*

@@ -16,9 +16,14 @@ import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.log4j.Logger;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import cloud.fogbow.as.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
@@ -27,6 +32,7 @@ import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.Messages;
+import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -35,6 +41,9 @@ import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 @Entity
 @Table(name = "federation_table")
 public class Federation {
+    @Transient
+    private final Logger LOGGER = Logger.getLogger(Federation.class);
+    
     private static final String FEDERATION_ID_COLUMN_NAME = "federation_id";
     private static final String FEDERATION_OWNER_COLUMN_NAME = "federation_owner";
     private static final String FEDERATION_NAME_COLUMN_NAME = "federation_name";
@@ -43,7 +52,9 @@ public class Federation {
     private static final String FEDERATION_MEMBERS_COLUMN_NAME = "federation_members";
     private static final String FEDERATION_SERVICES_COLUMN_NAME = "federation_services";
     private static final String FEDERATION_ATTRIBUTES_COLUMN_NAME = "federation_attributes";
-    private static final String FEDERATION_METADATA_COLUMN_NAME = "federation_metadata";
+    private static final String FEDERATION_ALLOWED_REMOTE_FED_ADMINS_COLUMN_NAME = "federation_allowed_remote_fed_admins";
+    private static final String FEDERATION_METADATA_COLUMN_NAME_COLUMN_NAME = "federation_metadata";
+    private static final String FEDERATION_REMOTE_ADMINS_COLUMN_NAME = "federation_remote_admins";
 
     // TODO documentation
     public static final String MEMBER_ATTRIBUTE_NAME = "member";
@@ -62,6 +73,9 @@ public class Federation {
     
     @Column(name = FEDERATION_NAME_COLUMN_NAME)
     private String name;
+    
+    // TODO add column name
+    private String fhsId;
     
     @Column(name = FEDERATION_DESCRIPTION_COLUMN_NAME)
     private String description;
@@ -87,7 +101,19 @@ public class Federation {
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<FederationAttribute> attributes;
     
-    @Column(name = FEDERATION_METADATA_COLUMN_NAME)
+    @Column(name = FEDERATION_ALLOWED_REMOTE_FED_ADMINS_COLUMN_NAME)
+    @OneToMany(cascade={CascadeType.ALL})
+    @ElementCollection(fetch = FetchType.EAGER)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<RemoteFederationUser> allowedFedAdmins;
+    
+    @Column(name = FEDERATION_REMOTE_ADMINS_COLUMN_NAME)
+    @OneToMany(cascade={CascadeType.ALL})
+    @ElementCollection(fetch = FetchType.EAGER)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<FederationUser> remoteAdmins;
+
+    @Column(name = FEDERATION_METADATA_COLUMN_NAME_COLUMN_NAME)
     @ElementCollection
     private Map<String, String> metadata;
     
@@ -109,29 +135,34 @@ public class Federation {
     
     public Federation(String owner, String name, Map<String, String> metadata, 
             String description, boolean enabled) {
-        this(UUID.randomUUID().toString(), owner, name, metadata, description, enabled);
+        this(UUID.randomUUID().toString(), owner, name, 
+                PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.PROVIDER_ID_KEY),
+                metadata, description, enabled);
     }
     
-    public Federation(String id, String owner, String name, Map<String, String> metadata, 
+    public Federation(String id, String owner, String name, String fhsId, Map<String, String> metadata, 
             String description, boolean enabled) {
-        this(id, owner, name, metadata, description, enabled, new ArrayList<FederationUser>(), 
-                new ArrayList<FederationService>(), new ArrayList<FederationAttribute>(), 
-                new FederationAuthenticationPluginInstantiator(),
+        this(id, owner, name, fhsId, metadata, description, enabled, new ArrayList<FederationUser>(), 
+                new ArrayList<RemoteFederationUser>(), new ArrayList<FederationUser>(), new ArrayList<FederationService>(), 
+                new ArrayList<FederationAttribute>(), new FederationAuthenticationPluginInstantiator(),
                 new FederationServiceFactory());
     }
     
-    public Federation(String id, String owner, String name, Map<String, String> metadata, 
-            String description, boolean enabled, 
-            List<FederationUser> members, List<FederationService> services, 
-            List<FederationAttribute> attributes, 
-            FederationAuthenticationPluginInstantiator authenticationPluginInstantiator, 
+    public Federation(String id, String owner, String name, String fhsId, 
+            Map<String, String> metadata, String description, boolean enabled, 
+            List<FederationUser> members, List<RemoteFederationUser> allowedFedAdmins, 
+            List<FederationUser> remoteAdmins, List<FederationService> services, 
+            List<FederationAttribute> attributes, FederationAuthenticationPluginInstantiator authenticationPluginInstantiator, 
             FederationServiceFactory federationServiceFactory) {
         this.id = id;
         this.owner = owner;
         this.name = name;
+        this.fhsId = fhsId;
         this.metadata = metadata;
         this.description = description;
         this.enabled = enabled;
+        this.allowedFedAdmins = allowedFedAdmins;
+        this.remoteAdmins = remoteAdmins;
         this.members = members;
         this.services = services;
         this.attributes = attributes;
@@ -140,7 +171,7 @@ public class Federation {
     }
 
     public FederationUser addUser(String userId, String email, String description, Map<String, String> authenticationProperties) throws InvalidParameterException {
-        FederationUser newMember = new FederationUser(userId, this.id, email, description, true, 
+        FederationUser newMember = new FederationUser(userId, this.id, this.fhsId, email, description, true, 
                 authenticationProperties, false, false);
         newMember.addAttribute(MEMBER_ATTRIBUTE_NAME);
         this.members.add(newMember);
@@ -206,6 +237,14 @@ public class Federation {
         return description;
     }
 
+    public String getFhsId() {
+        return fhsId;
+    }
+    
+    public List<FederationUser> getRemoteAdmins() {
+        return remoteAdmins;
+    }
+    
     public List<FederationUser> getMemberList() {
         return members;
     }
@@ -349,5 +388,85 @@ public class Federation {
         }
         
         throw new UnauthorizedRequestException(Messages.Exception.USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE);
+    }
+
+    // TODO test
+    // TODO validation
+    public void addRemoteUserAsAllowedFedAdmin(String fedAdminId, String fhsId) {
+        this.allowedFedAdmins.add(new RemoteFederationUser(fedAdminId, fhsId));
+    }
+
+    // TODO test
+    // TODO validation
+    public void removeRemoteUserFromAllowedAdmins(String fedAdminId, String fhsId) {
+        this.allowedFedAdmins.remove(new RemoteFederationUser(fedAdminId, fhsId));
+    }
+
+    public List<RemoteFederationUser> getAllowedRemoteJoins() {
+        return new ArrayList<RemoteFederationUser>(this.allowedFedAdmins);
+    }
+
+    // TODO test
+    // TODO validation
+    public void addRemoteAdmin(FederationUser requester, String fhsId) {
+        if (this.allowedFedAdmins.contains(new RemoteFederationUser(requester.getName(), fhsId))) {
+            this.remoteAdmins.add(requester);
+        }
+    }
+    
+    public static String toJson(Federation federation) {
+        Gson gson = new Gson();
+        
+        String federationEnabledStr = gson.toJson(federation.enabled());
+        String federationMembersStr = gson.toJson(federation.getMemberList());
+        String federationServicesStr = gson.toJson(federation.getServices());
+        String federationAttributesStr = gson.toJson(federation.attributes);
+        String federationAllowedRemoteJoinsStr = gson.toJson(federation.getAllowedRemoteJoins());
+        String federationRemoteAdminsStr = gson.toJson(federation.getRemoteAdmins());
+        String federationMetadataStr = gson.toJson(federation.getMetadata());
+        
+        // TODO constant
+        return String.join("#", federation.getId(), federation.getOwner(), federation.getName(), 
+                federation.getFhsId(), federation.getDescription(), federationEnabledStr, federationMembersStr, 
+                federationServicesStr, federationAttributesStr, federationAllowedRemoteJoinsStr,
+                federationRemoteAdminsStr, federationMetadataStr);
+    }
+    
+    public static Federation fromJson(String json) {
+        // TODO constant
+        String[] fields = json.split("#");
+        Gson gson = new Gson();
+        
+        String federationId = fields[0];
+        String federationOwner = fields[1];
+        String federationName = fields[2];
+        String federationFhs = fields[3];
+        String federationDescription = fields[4];
+        String federationEnabledStr = fields[5];
+        String federationMembersStr = fields[6];
+        String federationServicesStr = fields[7];
+        String federationAttributesStr = fields[8];
+        String federationAllowedRemoteJoinsStr = fields[9];
+        String federationRemoteAdminsStr = fields[10];
+        String federationMetadataStr = fields[11];
+        
+        Boolean federationEnabled = gson.fromJson(federationEnabledStr, Boolean.class);
+        List<FederationUser> federationMembers = gson.fromJson(federationMembersStr, 
+                new TypeToken<List<FederationUser>>(){}.getType());
+        List<FederationService> federationServices = gson.fromJson(federationServicesStr, 
+                new TypeToken<List<FederationService>>(){}.getType());
+        List<FederationAttribute> federationAttributes = gson.fromJson(federationAttributesStr, 
+                new TypeToken<List<FederationAttribute>>(){}.getType());
+        List<RemoteFederationUser> federationAllowedRemoteJoins = gson.fromJson(federationAllowedRemoteJoinsStr, 
+                new TypeToken<List<RemoteFederationUser>>(){}.getType());
+        List<FederationUser> federationRemoteAdmins = gson.fromJson(federationRemoteAdminsStr, 
+                new TypeToken<List<FederationUser>>(){}.getType());
+        Map<String, String> federationMetadata = gson.fromJson(federationMetadataStr, 
+                new TypeToken<Map<String, String>>(){}.getType());
+        
+        return new Federation(federationId, federationOwner, federationName, federationFhs, 
+                federationMetadata, federationDescription, federationEnabled, federationMembers, 
+                federationAllowedRemoteJoins, federationRemoteAdmins, federationServices, federationAttributes,
+                new FederationAuthenticationPluginInstantiator(), new FederationServiceFactory());
     }
 }
