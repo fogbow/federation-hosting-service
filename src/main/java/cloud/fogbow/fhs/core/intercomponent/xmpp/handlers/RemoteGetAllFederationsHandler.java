@@ -7,8 +7,6 @@ import org.dom4j.Element;
 import org.jamppa.component.handler.AbstractQueryHandler;
 import org.xmpp.packet.IQ;
 
-import com.google.gson.Gson;
-
 import cloud.fogbow.common.util.IntercomponentUtil;
 import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.constants.Messages;
@@ -17,15 +15,23 @@ import cloud.fogbow.fhs.core.intercomponent.RemoteFacade;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.IqElement;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.RemoteMethod;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppExceptionToErrorConditionTranslator;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO test
 public class RemoteGetAllFederationsHandler extends AbstractQueryHandler {
     private static final Logger LOGGER = Logger.getLogger(RemoteGetAllFederationsHandler.class);
     
     private static final String REMOTE_GET_ALL_FEDERATIONS = RemoteMethod.REMOTE_GET_ALL_FEDERATIONS.toString();
             
+    private JsonUtils jsonUtils;
+    
     public RemoteGetAllFederationsHandler() {
         super(RemoteMethod.REMOTE_GET_ALL_FEDERATIONS.toString());
+        this.jsonUtils = new JsonUtils();
+    }
+    
+    public RemoteGetAllFederationsHandler(JsonUtils jsonUtils) {
+        super(RemoteMethod.REMOTE_GET_ALL_FEDERATIONS.toString());
+        this.jsonUtils = jsonUtils;
     }
 
     @Override
@@ -46,11 +52,10 @@ public class RemoteGetAllFederationsHandler extends AbstractQueryHandler {
 
     private void updateResponse(IQ response, List<FederationInstance> federationInstances) {
         Element queryEl = response.getElement().addElement(IqElement.QUERY.toString(), REMOTE_GET_ALL_FEDERATIONS);
-        Element securityRuleListElement = queryEl.addElement(IqElement.FEDERATION_LIST.toString());
+        Element federationListElement = queryEl.addElement(IqElement.FEDERATION_LIST.toString());
+        federationListElement.setText(jsonUtils.toJson(federationInstances));
 
-        Element imagesMapClassNameElement = queryEl.addElement(IqElement.FEDERATION_LIST_CLASS_NAME.toString());
-        imagesMapClassNameElement.setText(federationInstances.getClass().getName());
-
-        securityRuleListElement.setText(new Gson().toJson(federationInstances));
+        Element federationListClassNameElement = queryEl.addElement(IqElement.FEDERATION_LIST_CLASS_NAME.toString());
+        federationListClassNameElement.setText(federationInstances.getClass().getName());
     }
 }

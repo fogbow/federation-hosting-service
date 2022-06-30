@@ -22,9 +22,11 @@ public class ConfigurationPropertyKeys {
     public static final String XMPP_C2C_PORT_KEY = "xmpp_c2c_port";
     public static final String XMPP_PASSWORD_KEY = "xmpp_password";
     public static final String XMPP_STARTUP_ATTEMPTS = "xmpp_startup_attempts";
+    public static final String XMPP_TIME_BETWEEN_STARTUP_ATTEMPTS = "xmpp_time_between_startup_attempts";
     public static final String XMPP_SERVER_IP_KEY = "xmpp_server_ip";
     public static final String XMPP_TIMEOUT_KEY = "xmpp_timeout";
     
     public static final String COMMUNICATION_MECHANISM_CLASS_NAME = "communication_mechanism_class_name";
     public static final String SYNCHRONIZATION_MECHANISM_CLASS_NAME = "synchronization_mechanism_class_name";
+    public static final String ALLOWED_FHS_IDS_KEY = "allowed_fhs_ids";
 }

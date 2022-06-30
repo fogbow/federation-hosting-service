@@ -67,8 +67,11 @@ public class Main implements ApplicationRunner {
         applicationFacade.setSynchronizationManager(synchronizationManager);
         applicationFacade.setFhsCommunicationMechanism(fhsCommunicationMechanism);
         
+        List<String> allowedFhsIds = RemoteFacade.loadAllowedFhsIdsOrFail();
+        
         RemoteFacade remoteFacade = RemoteFacade.getInstance();
         
         remoteFacade.setFederationHost(federationHost);
+        remoteFacade.setAllowedFhsIds(allowedFhsIds);
     }
 }

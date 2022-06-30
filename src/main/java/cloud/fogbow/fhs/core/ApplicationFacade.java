@@ -74,6 +74,10 @@ public class ApplicationFacade {
         }
     }
     
+    private ApplicationFacade() {
+        
+    }
+    
     public static List<FederationUser> loadFhsOperatorsOrFail() throws ConfigurationErrorException {
         String operatorIdsListString = PropertiesHolder.getInstance().getProperty(
                 ConfigurationPropertyKeys.OPERATOR_IDS_KEY);

@@ -10,4 +10,5 @@ public class SystemConstants {
     public static final String JID_CONNECTOR = "";
     public static final String XMPP_SERVER_NAME_PREFIX = "ras-";
     public static final String XMPP_IS_ENABLED = "true";
+    public static final String ALLOWED_FHS_IDS_SEPARATOR = ",";
 }

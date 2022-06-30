@@ -34,7 +34,7 @@ public class RemoteGetAllFederationsRequest implements RemoteRequest<List<Federa
 
     @Override
     public List<FederationInstance> send() throws FogbowException {
-        IQ iq = marshal();
+        IQ iq = marshal(provider);
         LOGGER.debug(String.format(Messages.Log.SENDING_MSG_S, iq.getID()));
         IQ response = (IQ) packetSender.syncSendPacket(iq);
         XmppErrorConditionToExceptionTranslator.handleError(response, provider);
@@ -42,7 +42,7 @@ public class RemoteGetAllFederationsRequest implements RemoteRequest<List<Federa
         return unmarshalFederationList(response);
     }
 
-    private IQ marshal() {
+    public static IQ marshal(String provider) {
         IQ iq = new IQ(IQ.Type.get);
         iq.setTo(SystemConstants.JID_SERVICE_NAME + SystemConstants.JID_CONNECTOR + SystemConstants.XMPP_SERVER_NAME_PREFIX + provider);
         iq.getElement().addElement(IqElement.QUERY.toString(),
