@@ -31,6 +31,7 @@ public class RemoteFederationUser {
         return Objects.hash(id);
     }
 
+    // TODO test
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

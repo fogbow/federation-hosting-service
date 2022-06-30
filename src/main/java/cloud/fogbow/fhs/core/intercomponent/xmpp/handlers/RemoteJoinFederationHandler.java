@@ -17,6 +17,7 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppExceptionToErrorConditionTr
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationUser;
 
+// TODO test
 public class RemoteJoinFederationHandler extends AbstractQueryHandler  {
     private static final Logger LOGGER = Logger.getLogger(RemoteJoinFederationHandler.class);
 

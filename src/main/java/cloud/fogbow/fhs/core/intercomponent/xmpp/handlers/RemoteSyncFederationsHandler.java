@@ -21,6 +21,7 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.IqElement;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.RemoteMethod;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppExceptionToErrorConditionTranslator;
 
+// TODO test
 public class RemoteSyncFederationsHandler extends AbstractQueryHandler {
     private static final Logger LOGGER = Logger.getLogger(RemoteSyncFederationsHandler.class);
     

@@ -54,6 +54,7 @@ public class RemoteFederation {
         return Objects.hash(fedId, ownerFhsId, owningFedAdminId);
     }
 
+    // TODO test
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

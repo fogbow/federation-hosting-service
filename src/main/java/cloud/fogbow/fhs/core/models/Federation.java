@@ -414,6 +414,7 @@ public class Federation {
         }
     }
     
+    // TODO test
     public static String toJson(Federation federation) {
         Gson gson = new Gson();
         
@@ -432,6 +433,7 @@ public class Federation {
                 federationRemoteAdminsStr, federationMetadataStr);
     }
     
+    // TODO test
     public static Federation fromJson(String json) {
         // TODO constant
         String[] fields = json.split("#");

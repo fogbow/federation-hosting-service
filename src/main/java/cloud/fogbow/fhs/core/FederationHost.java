@@ -20,7 +20,6 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
-import cloud.fogbow.fhs.core.models.JoinRequest;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -259,11 +258,13 @@ public class FederationHost {
         }
     }
 
+    // TODO test
     public List<RemoteFederation> getRemoteFederationList(String requester) throws UnauthorizedRequestException {
         checkIfRequesterIsFedAdmin(requester);
         return new ArrayList<RemoteFederation>(this.remoteFederations);
     }
 
+    // TODO test
     public void addUserToAllowedAdmins(String requester, String fedAdminId, String fhsId, String federationId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
@@ -272,6 +273,7 @@ public class FederationHost {
         federation.addRemoteUserAsAllowedFedAdmin(fedAdminId, fhsId);
     }
 
+    // TODO test
     public void removeUserFromAllowedAdmins(String requester, String fedAdminId, String fhsId, String federationId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
@@ -585,37 +587,13 @@ public class FederationHost {
      * 
      */
     
+    // TODO test
     public void updateRemoteFederationList(String fhsId, List<RemoteFederation> fhsRemoteFederations) {
         this.remoteFederations.removeAll(fhsRemoteFederations);
         this.remoteFederations.addAll(fhsRemoteFederations);
     }
     
-    public void requestToJoinFederation(String federationId, String fhsUrl, String memberId) {
-        // TODO implement
-    }
-    
-    public List<JoinRequest> getJoinRequests(String memberId) {
-        // TODO implement
-        return null;
-    }
-    
-    public void grantJoinRequest(String memberId, String requestId) {
-        // TODO implement
-    }
-    
-    public void denyJoinRequest(String memberId, String requestId) {
-        // TODO implement
-    }
-    
-    public void leaveFederation(String federationId, String memberId) {
-        // TODO implement
-    }
-    
-    public List<Federation> getRemoteFederations() {
-        // TODO implement
-        return null;
-    }
-    
+    // TODO test
     public void requestToJoinRemoteFederation(String requester, String federationId) 
             throws FogbowException {
         checkIfRequesterIsFedAdmin(requester);
@@ -625,6 +603,7 @@ public class FederationHost {
         this.federationList.add(remoteFederation);
     }
     
+    // TODO test
     public Federation joinRemoteFederation(FederationUser requester, String fhsId, String federationId) throws InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         federation.addRemoteAdmin(requester, fhsId);

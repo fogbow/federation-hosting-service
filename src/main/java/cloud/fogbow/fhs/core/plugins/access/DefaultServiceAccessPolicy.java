@@ -14,7 +14,6 @@ import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
 
 // TODO documentation
-// TODO this class should use a more friendly format for the rules, such as XML
 public class DefaultServiceAccessPolicy implements ServiceAccessPolicy {
     public static final String ACCESS_LEVELS_SEPARATOR = ";";
     private static final String ACCESS_LEVELS_FIELDS_SEPARATOR = ":";

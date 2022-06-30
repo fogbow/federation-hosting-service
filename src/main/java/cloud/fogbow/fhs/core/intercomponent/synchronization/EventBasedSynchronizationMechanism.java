@@ -14,6 +14,7 @@ import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 
+// TODO test
 public class EventBasedSynchronizationMechanism implements SynchronizationMechanism {
     private final Logger LOGGER = Logger.getLogger(EventBasedSynchronizationMechanism.class);
     

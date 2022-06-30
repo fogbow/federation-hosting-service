@@ -223,6 +223,7 @@ public class ApplicationFacade {
         this.federationHost.deleteFederationInstance(federationId);
     }
     
+    // TODO test
     public void reload(String userToken) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.RELOAD_CONFIGURATION));
@@ -323,6 +324,7 @@ public class ApplicationFacade {
         }
     }
     
+    // TODO test
     public List<FederationDescription> getRemoteFederationList(String userToken) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_REMOTE_FEDERATION_LIST));
@@ -346,6 +348,7 @@ public class ApplicationFacade {
         }
     }
 
+    // TODO test
     public void joinRemoteFederation(String userToken, String federationId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.JOIN_REMOTE_FEDERATION));
@@ -359,6 +362,7 @@ public class ApplicationFacade {
         }
     }
     
+    // TODO test
     public List<AllowedRemoteJoin> getRemoteUsersAllowedAdmins(String userToken) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_REMOTE_USERS_ALLOWED_ADMINS));
@@ -384,6 +388,7 @@ public class ApplicationFacade {
         }
     }
     
+    // TODO test
     public void addRemoteUserToAllowedAdmins(String userToken, String remoteFedAdminId, String fhsId,
             String federationId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
@@ -398,6 +403,7 @@ public class ApplicationFacade {
         }
     }
     
+    // TODO test
     public void removeRemoteUserFromAllowedAdmins(String userToken, String remoteFedAdminId, String fhsId,
             String federationId) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);

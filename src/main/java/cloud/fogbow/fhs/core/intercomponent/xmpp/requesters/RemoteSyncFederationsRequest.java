@@ -20,6 +20,7 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.RemoteMethod;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppComponentManager;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTranslator;
 
+// TODO test
 public class RemoteSyncFederationsRequest  implements RemoteRequest<List<FederationInstance>>{
     private static final Logger LOGGER = Logger.getLogger(RemoteSyncFederationsRequest.class);
 

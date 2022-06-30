@@ -1,5 +1,6 @@
 package cloud.fogbow.fhs.core.plugins.mapper;
 
+// TODO to remove
 public class DefaultSystemToFederationMapper implements SystemToFederationMapper {
 
     private String federationId;

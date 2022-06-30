@@ -98,11 +98,11 @@ public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOp
     
     @Override
     public void setPolicy(String policy) throws ConfigurationErrorException {
-        
+        // does nothing
     }
 
     @Override
     public void updatePolicy(String policy) throws ConfigurationErrorException {
-        
+        // does nothing
     }
 }

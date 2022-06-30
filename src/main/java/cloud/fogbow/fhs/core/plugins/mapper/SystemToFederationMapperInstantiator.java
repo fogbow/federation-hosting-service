@@ -2,6 +2,7 @@ package cloud.fogbow.fhs.core.plugins.mapper;
 
 import cloud.fogbow.fhs.core.FhsClassFactory;
 
+// TODO to remove
 public class SystemToFederationMapperInstantiator {
 
     private FhsClassFactory classFactory;
