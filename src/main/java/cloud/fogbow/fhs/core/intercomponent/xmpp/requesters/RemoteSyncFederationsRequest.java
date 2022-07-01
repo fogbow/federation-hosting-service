@@ -37,7 +37,7 @@ public class RemoteSyncFederationsRequest  implements RemoteRequest<List<Federat
 
     @Override
     public List<FederationInstance> send() throws FogbowException {
-        IQ iq = marshal();
+        IQ iq = marshal(provider, new Gson().toJson(localFederations));
         LOGGER.debug(String.format(Messages.Log.SENDING_MSG_S, iq.getID()));
         IQ response = (IQ) packetSender.syncSendPacket(iq);
         XmppErrorConditionToExceptionTranslator.handleError(response, provider);
@@ -45,7 +45,7 @@ public class RemoteSyncFederationsRequest  implements RemoteRequest<List<Federat
         return unmarshalFederationList(response);
     }
 
-    private IQ marshal() {
+    public static IQ marshal(String provider, String localFederations) {
         IQ iq = new IQ(IQ.Type.get);
         iq.setTo(SystemConstants.JID_SERVICE_NAME + SystemConstants.JID_CONNECTOR + SystemConstants.XMPP_SERVER_NAME_PREFIX + provider);
         Element queryEl = iq.getElement().addElement(IqElement.QUERY.toString(), RemoteMethod.SYNC_FEDERATIONS.toString());
@@ -54,7 +54,7 @@ public class RemoteSyncFederationsRequest  implements RemoteRequest<List<Federat
         federationListClassNameElement.setText(localFederations.getClass().getName());
 
         Element federationListElement = queryEl.addElement(IqElement.FEDERATION_LIST.toString());
-        federationListElement.setText(new Gson().toJson(localFederations));
+        federationListElement.setText(localFederations);
         
         return iq;
     }

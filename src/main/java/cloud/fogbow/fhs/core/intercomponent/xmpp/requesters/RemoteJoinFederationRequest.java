@@ -36,7 +36,7 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
 
     @Override
     public Federation send() throws FogbowException {
-        IQ iq = marshal();
+        IQ iq = marshal(new Gson().toJson(requester), federationId, provider);
         LOGGER.debug(String.format(Messages.Log.SENDING_MSG_S, iq.getID()));
         IQ response = (IQ) packetSender.syncSendPacket(iq);
         XmppErrorConditionToExceptionTranslator.handleError(response, provider);
@@ -44,7 +44,7 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
         return unmarshalFederation(response);
     }
 
-    private IQ marshal() {
+    public static IQ marshal(String requester, String federationId, String provider) {
         IQ iq = new IQ(IQ.Type.set);
         iq.setTo(SystemConstants.JID_SERVICE_NAME + SystemConstants.JID_CONNECTOR + SystemConstants.XMPP_SERVER_NAME_PREFIX + provider);
         Element joinEl = iq.getElement().addElement(IqElement.QUERY.toString(),
@@ -54,7 +54,7 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
         federationIdEl.setText(federationId);
        
         Element requesterEl = joinEl.addElement(IqElement.REQUESTER_USER.toString());
-        requesterEl.setText(new Gson().toJson(requester));
+        requesterEl.setText(requester);
         
         return iq;
     }
