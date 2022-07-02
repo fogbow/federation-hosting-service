@@ -49,6 +49,7 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
+import cloud.fogbow.fhs.core.models.RemoteFederation;
 import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -174,6 +175,20 @@ public class ApplicationFacadeTest {
     private static final String OPERATOR_3_PROPERTY_2_VALUE = "operator3_property2";
     private static final String OPERATOR_3_PROPERTY_3_VALUE = "operator3_property3";
     private static final String NOT_OPERATOR_PROPERTY_VALUE = "not_operator_property_value";
+    private static final String REMOTE_FEDERATION_ID_1 = "remoteFederationId1";
+    private static final String REMOTE_FEDERATION_ID_2 = "remoteFederationId2";
+    private static final String REMOTE_FEDERATION_NAME_1 = "remoteFederationName1";
+    private static final String REMOTE_FEDERATION_NAME_2 = "remoteFederationName2";
+    private static final String REMOTE_OWNING_FED_ADMIN_ID_1 = "remoteOwningFedAdminId1";
+    private static final String REMOTE_OWNING_FED_ADMIN_ID_2 = "remoteOwningFedAdminId2";
+    private static final boolean REMOTE_FEDERATION_ENABLED_1 = true;
+    private static final boolean REMOTE_FEDERATION_ENABLED_2 = true;
+    private static final String REMOTE_OWNER_FHS_ID_1 = "remoteOwnerFhsId1";
+    private static final String REMOTE_OWNER_FHS_ID_2 = "remoteOwnerFhsId2";
+    private static final String REMOTE_FEDERATION_DESCRIPTION_1 = "remoteFederationDescription1";
+    private static final String REMOTE_FEDERATION_DESCRIPTION_2 = "remoteFederationDescription2";
+    private static final String REMOTE_FEDERATION_ADMIN_ID_1 = "remoteFederationAdminId1";
+    private static final String REMOTE_FHS_ID_1 = "remoteFhsId1";
     
     private ApplicationFacade applicationFacade;
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
@@ -206,6 +221,8 @@ public class ApplicationFacadeTest {
     private SynchronizationManager synchronizationManager;
     private Properties properties;
     private PropertiesHolder propertiesHolder;
+    private RemoteFederation remoteFederation1;
+    private RemoteFederation remoteFederation2;
     
     @Before
     public void setUp() throws FogbowException {
@@ -326,6 +343,13 @@ public class ApplicationFacadeTest {
         Mockito.when(federation2.getOwner()).thenReturn(ADMIN_ID_1);
         Mockito.when(federation2.enabled()).thenReturn(FEDERATION_ENABLED_2);
         
+        remoteFederation1 = new RemoteFederation(REMOTE_FEDERATION_ID_1, REMOTE_FEDERATION_NAME_1, 
+                REMOTE_FEDERATION_DESCRIPTION_1, REMOTE_FEDERATION_ENABLED_1, 
+                REMOTE_OWNING_FED_ADMIN_ID_1, REMOTE_OWNER_FHS_ID_1);
+        remoteFederation2 = new RemoteFederation(REMOTE_FEDERATION_ID_2, REMOTE_FEDERATION_NAME_2, 
+                REMOTE_FEDERATION_DESCRIPTION_2, REMOTE_FEDERATION_ENABLED_2, 
+                REMOTE_OWNING_FED_ADMIN_ID_2, REMOTE_OWNER_FHS_ID_2);
+        
         federationAttribute1 = Mockito.mock(FederationAttribute.class);
         Mockito.when(federationAttribute1.getId()).thenReturn(ATTRIBUTE_ID_1);
         Mockito.when(federationAttribute1.getName()).thenReturn(ATTRIBUTE_NAME_1);
@@ -391,6 +415,8 @@ public class ApplicationFacadeTest {
                 thenReturn(Arrays.asList(federation1, federation2));
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2)).thenReturn(Arrays.asList());
         Mockito.when(this.federationHost.getFederation(ADMIN_NAME_1, FEDERATION_ID_1)).thenReturn(federation1);
+        Mockito.when(this.federationHost.getRemoteFederationList(ADMIN_NAME_1)).thenReturn(
+                Arrays.asList(remoteFederation1, remoteFederation2));
         Mockito.when(this.federationHost.grantMembership(ADMIN_NAME_1, FEDERATION_ID_1, USER_ID_TO_ADD, USER_EMAIL_TO_ADD,
                 USER_DESCRIPTION_TO_ADD, USER_AUTHORIZATION_PROPERTIES)).thenReturn(federationUser1);
         Mockito.when(this.federationHost.getFederationMembers(ADMIN_NAME_1, FEDERATION_ID_1)).
@@ -611,6 +637,16 @@ public class ApplicationFacadeTest {
     }
     
     @Test
+    public void testListFederationsNoFederation() throws FogbowException {
+        List<FederationDescription> federationsDescriptions = this.applicationFacade.listFederations(TOKEN_2, ADMIN_NAME_2);
+        
+        assertTrue(federationsDescriptions.isEmpty());
+        
+        Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME_2);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_2));
+    }
+    
+    @Test
     public void testGetFederationInfo() throws FogbowException {
         FederationInfo federationInfo = this.applicationFacade.getFederationInfo(TOKEN_1, FEDERATION_ID_1);
         
@@ -632,13 +668,59 @@ public class ApplicationFacadeTest {
     }
     
     @Test
-    public void testListFederationsNoFederation() throws FogbowException {
-        List<FederationDescription> federationsDescriptions = this.applicationFacade.listFederations(TOKEN_2, ADMIN_NAME_2);
+    public void testGetRemoteFederationList() throws FogbowException {
+        List<FederationDescription> remoteFederationList = this.applicationFacade.getRemoteFederationList(TOKEN_1);
         
-        assertTrue(federationsDescriptions.isEmpty());
+        assertEquals(2, remoteFederationList.size());
+        assertEquals(REMOTE_FEDERATION_ID_1, remoteFederationList.get(0).getId());
+        assertEquals(REMOTE_FEDERATION_NAME_1, remoteFederationList.get(0).getName());
+        assertEquals(REMOTE_FEDERATION_DESCRIPTION_1, remoteFederationList.get(0).getDescription());
+        assertEquals(REMOTE_FEDERATION_ID_2, remoteFederationList.get(1).getId());
+        assertEquals(REMOTE_FEDERATION_NAME_2, remoteFederationList.get(1).getName());
+        assertEquals(REMOTE_FEDERATION_DESCRIPTION_2, remoteFederationList.get(1).getDescription());
         
-        Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME_2);
-        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_2));
+        Mockito.verify(this.federationHost).getRemoteFederationList(ADMIN_NAME_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testGetEmptyRemoteFederationList() throws FogbowException {
+        Mockito.when(this.federationHost.getRemoteFederationList(ADMIN_NAME_1)).thenReturn(
+                Arrays.asList());
+        
+        List<FederationDescription> remoteFederationList = this.applicationFacade.getRemoteFederationList(TOKEN_1);
+        
+        assertEquals(0, remoteFederationList.size());
+        Mockito.verify(this.federationHost).getRemoteFederationList(ADMIN_NAME_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testJoinRemoteFederation() throws FogbowException {
+        this.applicationFacade.joinRemoteFederation(TOKEN_1, REMOTE_FEDERATION_ID_1);
+        
+        Mockito.verify(this.federationHost).requestToJoinRemoteFederation(ADMIN_NAME_1, REMOTE_FEDERATION_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testAddRemoteUserToAllowedAdmins() throws FogbowException {
+        this.applicationFacade.addRemoteUserToAllowedAdmins(TOKEN_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                REMOTE_FHS_ID_1, REMOTE_FEDERATION_ID_1);
+        
+        Mockito.verify(this.federationHost).addUserToAllowedAdmins(ADMIN_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                REMOTE_FHS_ID_1, REMOTE_FEDERATION_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testRemoveRemoteUserFromAllowedAdmins() throws FogbowException {
+        this.applicationFacade.removeRemoteUserFromAllowedAdmins(TOKEN_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                REMOTE_FHS_ID_1, REMOTE_FEDERATION_ID_1);
+        
+        Mockito.verify(this.federationHost).removeUserFromAllowedAdmins(ADMIN_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                REMOTE_FHS_ID_1, REMOTE_FEDERATION_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
     @Test

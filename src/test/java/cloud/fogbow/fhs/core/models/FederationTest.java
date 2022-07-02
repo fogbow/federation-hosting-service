@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -21,10 +22,12 @@ import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 // TODO documentation
 public class FederationTest {
     private static final String FHS_ID_1 = "fhsId1";
+    private static final String FHS_ID_2 = "fhsId2";
     private static final String FEDERATION_ID_1 = "federationId1";
     private static final String FEDERATION_OWNER_1 = "federationOwner1";
     private static final String FEDERATION_NAME_1 = "federationName1";
@@ -45,6 +48,8 @@ public class FederationTest {
     private static final String FEDERATION_USER_DESCRIPTION_2 = "userDescription2";
     private static final boolean FEDERATION_USER_ENABLED_2 = true;
     private static final String NOT_REGISTERED_USER_ID = "notRegisteredUserId";
+    private static final String REMOTE_FED_ADMIN_ID_1 = "remoteFedAdminId1";
+    private static final String REMOTE_FED_ADMIN_ID_2 = "remoteFedAdminId2";
     private static final String FEDERATION_SERVICE_ID_1 = "federationServiceId1";
     private static final String FEDERATION_SERVICE_ID_2 = "federationServiceId2";
     private static final String ATTRIBUTE_ID_1 = "attributeId1";
@@ -65,6 +70,12 @@ public class FederationTest {
     private static final String SERVICE_DISCOVERY_POLICY_CLASS_NAME = "discoveryPolicyClassName";
     private static final String SERVICE_ACCESS_POLICY_CLASS_NAME = "accessPolicyClassName";
     private static final String SERVICE_ENDPOINT = "serviceEndpoint";
+    private static final String FEDERATION_MEMBERS_STR = "federationMembers";
+    private static final String FEDERATION_SERVICES_STR = "federationServices";
+    private static final String FEDERATION_ATTRIBUTES_STR = "federationAttributes";
+    private static final String ALLOWED_ADMINS_STR = "allowedAdmins";
+    private static final String REMOTE_ADMINS_STR = "remoteAdmins";
+    private static final String FEDERATION_METADATA_STR = "metadata";
     private List<FederationUser> federationMembers;
     private List<RemoteFederationUser> allowedAdmins;
     private List<FederationService> federationServices;
@@ -85,6 +96,7 @@ public class FederationTest {
     private Map<String, String> serviceMetadata;
     private FederationServiceFactory federationServiceFactory;
     private List<FederationUser> remoteAdmins;
+    private JsonUtils jsonUtils;
     
     @Before
     public void setUp() throws Exception {
@@ -100,6 +112,9 @@ public class FederationTest {
         this.federationMembers = new ArrayList<FederationUser>();
         this.federationMembers.add(this.federationUser1);
         this.federationMembers.add(this.federationUser2);
+        
+        this.allowedAdmins = new ArrayList<RemoteFederationUser>();
+        this.remoteAdmins = new ArrayList<FederationUser>();
         
         this.credentials = new HashMap<String, String>();
         this.credentials.put(CREDENTIALS_KEY, CREDENTIALS_VALUE);
@@ -146,11 +161,13 @@ public class FederationTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME, SERVICE_ACCESS_POLICY_CLASS_NAME, FEDERATION_ID_1, 
                 FEDERATION_METADATA_1)).thenReturn(federationService1);
         
+        this.jsonUtils = new JsonUtils();
+        
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
     }
     
     @Test
@@ -162,7 +179,7 @@ public class FederationTest {
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, 
                 this.federationServices, this.federationAttributes, this.authenticationPluginInstantiator, 
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
         
         List<FederationUser> federationUserListBefore = this.federation.getMemberList();
         
@@ -214,7 +231,7 @@ public class FederationTest {
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator,
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
         
         List<FederationService> servicesBeforeRegister = this.federation.getServices();
         assertEquals(0, servicesBeforeRegister.size());
@@ -242,7 +259,7 @@ public class FederationTest {
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
         
         this.federation.getService("unregisteredServiceId");
     }
@@ -287,7 +304,7 @@ public class FederationTest {
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
         
         List<FederationAttribute> attributesBeforeCreation = this.federation.getAttributes();
         
@@ -358,7 +375,7 @@ public class FederationTest {
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
         
         List<String> attributesBeforeRevoke = this.federationUser1.getAttributes();
         
@@ -394,7 +411,7 @@ public class FederationTest {
                 FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
                 FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
                 this.federationAttributes, this.authenticationPluginInstantiator, 
-                this.federationServiceFactory);
+                this.federationServiceFactory, this.jsonUtils);
         
         assertTrue(this.federation.isServiceOwner(FEDERATION_USER_NAME_1));
         assertFalse(this.federation.isServiceOwner(FEDERATION_USER_NAME_2));
@@ -434,5 +451,153 @@ public class FederationTest {
     @Test(expected = InvalidParameterException.class)
     public void testCannotMapCredentialsForInvalidMember() throws InvalidParameterException {
         this.federation.map(FEDERATION_SERVICE_ID_1, "invaliduserid", CLOUD_NAME);
+    }
+    
+    @Test
+    public void testAddRemoteUserAsAllowedFedAdmin() throws InvalidParameterException {
+        assertTrue(this.federation.getAllowedRemoteJoins().isEmpty());
+        
+        this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, FHS_ID_2);
+        
+        assertEquals(1, this.federation.getAllowedRemoteJoins().size());
+        assertEquals(REMOTE_FED_ADMIN_ID_1, this.federation.getAllowedRemoteJoins().get(0).getFedAdminId());
+        assertEquals(FHS_ID_2, this.federation.getAllowedRemoteJoins().get(0).getFhsId());
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotAddAlreadyRegisteredAllowedFedAdmin() throws InvalidParameterException {
+        this.allowedAdmins = new ArrayList<RemoteFederationUser>();
+        this.allowedAdmins.add(new RemoteFederationUser(REMOTE_FED_ADMIN_ID_1, FHS_ID_2));
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
+                this.federationAttributes, this.authenticationPluginInstantiator, 
+                this.federationServiceFactory, this.jsonUtils);
+
+        this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, FHS_ID_2);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotAddAllowedFedAdminWithNullId() throws InvalidParameterException {
+        this.federation.addRemoteUserAsAllowedFedAdmin(null, FHS_ID_2);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotAddAllowedFedAdminWithEmptyId() throws InvalidParameterException {
+        this.federation.addRemoteUserAsAllowedFedAdmin("", FHS_ID_2);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotAddAllowedFedAdminWithNullFhsId() throws InvalidParameterException {
+        this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, null);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotAddAllowedFedAdminWithEmptyFhsId() throws InvalidParameterException {
+        this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, "");
+    }
+    
+    @Test
+    public void testRemoveRemoteUserAsAllowedFedAdmin() throws InvalidParameterException {
+        this.allowedAdmins = new ArrayList<RemoteFederationUser>();
+        this.allowedAdmins.add(new RemoteFederationUser(REMOTE_FED_ADMIN_ID_1, FHS_ID_2));
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
+                this.federationAttributes, this.authenticationPluginInstantiator, 
+                this.federationServiceFactory, this.jsonUtils);
+        
+        this.federation.removeRemoteUserFromAllowedAdmins(REMOTE_FED_ADMIN_ID_1, FHS_ID_2);
+        
+        assertTrue(this.federation.getAllowedRemoteJoins().isEmpty());
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRemoveNotRegisteredAllowedFedAdmin() throws InvalidParameterException {
+        this.federation.removeRemoteUserFromAllowedAdmins(REMOTE_FED_ADMIN_ID_1, FHS_ID_2);
+    }
+    
+    @Test
+    public void testAddRemoteAdmin() throws InvalidParameterException {
+        this.allowedAdmins = new ArrayList<RemoteFederationUser>();
+        this.allowedAdmins.add(new RemoteFederationUser(REMOTE_FED_ADMIN_ID_1, FHS_ID_2));
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
+                this.federationAttributes, this.authenticationPluginInstantiator, 
+                this.federationServiceFactory, this.jsonUtils);
+        
+        FederationUser remoteFedAdmin1 = Mockito.mock(FederationUser.class);
+        Mockito.when(remoteFedAdmin1.getName()).thenReturn(REMOTE_FED_ADMIN_ID_1);
+        
+        this.federation.addRemoteAdmin(remoteFedAdmin1, FHS_ID_2);
+        
+        assertEquals(1, this.federation.getRemoteAdmins().size());
+        assertEquals(remoteFedAdmin1, this.federation.getRemoteAdmins().get(0));
+    }
+    
+    @Test
+    public void testCannotAddNotAuthorizedRemoteAdmin() {
+        this.allowedAdmins = new ArrayList<RemoteFederationUser>();
+        this.allowedAdmins.add(new RemoteFederationUser(REMOTE_FED_ADMIN_ID_1, FHS_ID_2));
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
+                this.federationAttributes, this.authenticationPluginInstantiator, 
+                this.federationServiceFactory, this.jsonUtils);
+        
+        FederationUser remoteFedAdmin2 = Mockito.mock(FederationUser.class);
+        Mockito.when(remoteFedAdmin2.getName()).thenReturn(REMOTE_FED_ADMIN_ID_2);
+        
+        try {
+            this.federation.addRemoteAdmin(remoteFedAdmin2, FHS_ID_2);
+            Assert.fail("Expected InvalidParameterException.");
+        } catch (InvalidParameterException e) {
+            
+        }
+        
+        assertTrue(this.federation.getRemoteAdmins().isEmpty());
+    }
+    
+    @Test
+    public void testToJson() {
+        this.allowedAdmins.add(Mockito.mock(RemoteFederationUser.class));
+        this.remoteAdmins.add(Mockito.mock(FederationUser.class));
+        
+        this.jsonUtils = Mockito.mock(JsonUtils.class);
+        Mockito.when(this.jsonUtils.toJson(FEDERATION_ENABLED)).thenReturn("true");
+        Mockito.when(this.jsonUtils.toJson(this.federationMembers)).thenReturn(FEDERATION_MEMBERS_STR);
+        Mockito.when(this.jsonUtils.toJson(this.federationServices)).thenReturn(FEDERATION_SERVICES_STR);
+        Mockito.when(this.jsonUtils.toJson(this.federationAttributes)).thenReturn(FEDERATION_ATTRIBUTES_STR);
+        Mockito.when(this.jsonUtils.toJson(this.allowedAdmins)).thenReturn(ALLOWED_ADMINS_STR);
+        Mockito.when(this.jsonUtils.toJson(this.remoteAdmins)).thenReturn(REMOTE_ADMINS_STR);
+        Mockito.when(this.jsonUtils.toJson(FEDERATION_METADATA_1)).thenReturn(FEDERATION_METADATA_STR);
+        
+        this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
+                FEDERATION_NAME_1, FHS_ID_1, FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, 
+                FEDERATION_ENABLED, this.federationMembers, this.allowedAdmins, this.remoteAdmins, this.federationServices, 
+                this.federationAttributes, this.authenticationPluginInstantiator, 
+                this.federationServiceFactory, this.jsonUtils);
+        
+        String serializedFederation = this.federation.toJson();
+        String expectedSerializedFederation = 
+                FEDERATION_ID_1 + Federation.SERIALIZATION_SEPARATOR +
+                FEDERATION_OWNER_1 + Federation.SERIALIZATION_SEPARATOR +
+                FEDERATION_NAME_1 + Federation.SERIALIZATION_SEPARATOR +
+                FHS_ID_1 + Federation.SERIALIZATION_SEPARATOR +
+                FEDERATION_DESCRIPTION_1 + Federation.SERIALIZATION_SEPARATOR +
+                "true" + Federation.SERIALIZATION_SEPARATOR + 
+                FEDERATION_MEMBERS_STR + Federation.SERIALIZATION_SEPARATOR +
+                FEDERATION_SERVICES_STR + Federation.SERIALIZATION_SEPARATOR +
+                FEDERATION_ATTRIBUTES_STR + Federation.SERIALIZATION_SEPARATOR + 
+                ALLOWED_ADMINS_STR + Federation.SERIALIZATION_SEPARATOR +
+                REMOTE_ADMINS_STR + Federation.SERIALIZATION_SEPARATOR + 
+                FEDERATION_METADATA_STR;
+        
+        assertEquals(expectedSerializedFederation, serializedFederation);
     }
 }

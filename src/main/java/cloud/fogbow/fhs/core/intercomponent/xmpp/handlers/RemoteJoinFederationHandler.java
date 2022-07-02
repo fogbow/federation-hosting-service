@@ -56,6 +56,6 @@ public class RemoteJoinFederationHandler extends AbstractQueryHandler  {
     private void updateResponse(IQ response, Federation federation) {
         Element queryEl = response.getElement().addElement(IqElement.QUERY.toString(), REMOTE_JOIN_FEDERATION);
         Element federationElement = queryEl.addElement(IqElement.REMOTE_FEDERATION.toString());
-        federationElement.setText(Federation.toJson(federation));
+        federationElement.setText(federation.toJson());
     }    
 }

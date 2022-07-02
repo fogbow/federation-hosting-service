@@ -22,7 +22,7 @@ import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 // TODO documentation
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ RemoteFacade.class, Federation.class })
+@PrepareForTest({ RemoteFacade.class })
 public class RemoteJoinFederationHandlerTest {
     private static final String IQ_RESULT_FORMAT = "\n<iq type=\"result\" id=\"%s\" from=\"%s\" to=\"%s\">\n" +
             "  <query xmlns=\"remoteJoinFederation\">\n" +
@@ -56,9 +56,7 @@ public class RemoteJoinFederationHandlerTest {
         Mockito.when(this.jsonUtils.fromJson(REQUESTER_STR, FederationUser.class)).thenReturn(requester);
         
         this.federation = Mockito.mock(Federation.class);
-        
-        PowerMockito.mockStatic(Federation.class);
-        BDDMockito.given(Federation.toJson(federation)).willReturn(FEDERATION_STR);
+        Mockito.when(this.federation.toJson()).thenReturn(FEDERATION_STR);
         
         this.remoteFacade = Mockito.mock(RemoteFacade.class);
         Mockito.when(this.remoteFacade.joinFederation(REQUESTING_MEMBER, requester, FEDERATION_ID)).thenReturn(federation);

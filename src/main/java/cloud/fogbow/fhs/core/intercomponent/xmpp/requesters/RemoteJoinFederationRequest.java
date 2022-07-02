@@ -15,6 +15,7 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.RemoteMethod;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppComponentManager;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTranslator;
 import cloud.fogbow.fhs.core.models.Federation;
+import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationUser;
 
 // TODO test
@@ -25,6 +26,7 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
     private FederationUser requester;
     private String federationId;
     private String provider;
+    private FederationFactory federationFactory;
     
     public RemoteJoinFederationRequest(XmppComponentManager packetSender, FederationUser requester, String federationId,
             String provider) {
@@ -32,6 +34,7 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
         this.requester = requester;
         this.federationId = federationId;
         this.provider = provider;
+        this.federationFactory = new FederationFactory();
     }
 
     @Override
@@ -62,6 +65,6 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
     private Federation unmarshalFederation(IQ response) throws InternalServerErrorException {
         Element queryElement = response.getElement().element(IqElement.QUERY.toString());
         String federationStr = queryElement.element(IqElement.REMOTE_FEDERATION.toString()).getText();
-        return Federation.fromJson(federationStr);
+        return this.federationFactory.createFederation(federationStr);
     }
 }

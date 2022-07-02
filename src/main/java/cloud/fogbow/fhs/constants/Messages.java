@@ -10,6 +10,9 @@ public class Messages {
         public static final String CANNOT_FIND_FEDERATION_ADMIN = "Cannot find federation admin %s.";
         public static final String EXPIRED_TOKEN = "Expired token.";
         public static final String FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY = "Federation name cannot be null or empty.";
+        public static final String FED_ADMIN_IS_ALREADY_ALLOWED_IN_FEDERATION = "Fed Admin is already allowed in federation.";
+        public static final String FED_ADMIN_IS_NOT_ALLOWED_IN_FEDERATION = "Fed Admin is not allowed in federation.";
+        public static final String FHS_ID_CANNOT_BE_NULL_NOR_EMPTY = "FHS ID cannot be null or empty.";
         public static final String FHS_IS_NOT_AUTHORIZED_TO_PERFORM_ACTION = "FHS is not authorized to perform action.";
         public static final String GENERIC_EXCEPTION_S = Log.GENERIC_EXCEPTION_S;
         public static final String INVALID_FHS_OPERATOR_ID = "Invalid FHS Operator ID: %s.";
@@ -21,6 +24,7 @@ public class Messages {
         public static final String NO_OPERATOR_ID_SPECIFIED = "No operator ID specified in the configuration file.";
         public static final String NO_OTHER_SERVICE_ADMIN_ID_SPECIFIED = "No other service admin ID specified in the configuration file.";
         public static final String NO_REMOTE_COMMUNICATION_CONFIGURED = "No remote communication configured.";
+        public static final String REMOTE_FED_ADMIN_ID_CANNOT_BE_NULL_NOR_EMPTY = "Remote Fed Admin ID cannot be null or empty.";
         public static final String REQUESTER_DOES_NOT_OWN_FEDERATION = "Requester %s does not own federation %s.";
         public static final String REQUESTER_IS_NOT_ADMIN = "Requester is not admin.";
         public static final String REQUESTER_IS_NOT_SERVICE_OWNER = "Requester is not service owner.";
