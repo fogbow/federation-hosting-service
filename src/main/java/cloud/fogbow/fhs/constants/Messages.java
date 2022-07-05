@@ -33,6 +33,7 @@ public class Messages {
         public static final String SERVICE_OWNER_CANNOT_BE_NULL_OR_EMPTY = "Service owner cannot be null or empty.";
         public static final String UNABLE_TO_FIND_CLASS_S = "Unable to find class %s.";
         public static final String UNABLE_TO_RETRIEVE_RESPONSE_FROM_PROVIDER_S = "Unable to retrieve response from provider: %s.";
+        public static final String UNAVAILABLE_PROVIDER = "Provider %s unavailable. Error message: %s.";
         public static final String USER_ALREADY_HAS_ATTRIBUTE = "User %s already has attribute %s.";
         public static final String USER_DOES_NOT_HAVE_ATTRIBUTE = "User %s does not have attribute %s.";
         public static final String USER_IS_NOT_AUTHORIZED_TO_PERFORM_OPERATION_ON_SERVICE = "User is not authorized to perform operation on service.";

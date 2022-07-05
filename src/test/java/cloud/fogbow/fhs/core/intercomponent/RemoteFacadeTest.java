@@ -102,6 +102,19 @@ public class RemoteFacadeTest {
     }
     
     @Test
+    public void testLoadAllowedFhsIdsEmptyFhsIdsProperty() throws ConfigurationErrorException {
+        this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
+        Mockito.when(this.propertiesHolder.getProperty(ConfigurationPropertyKeys.ALLOWED_FHS_IDS_KEY)).thenReturn("");
+        
+        PowerMockito.mockStatic(PropertiesHolder.class);
+        BDDMockito.given(PropertiesHolder.getInstance()).willReturn(propertiesHolder);
+        
+        List<String> allowedFhsIds = RemoteFacade.loadAllowedFhsIdsOrFail();
+        
+        assertTrue(allowedFhsIds.isEmpty());
+    }
+    
+    @Test
     public void testGetFederationList() throws FogbowException {
         this.federation1 = Mockito.mock(Federation.class);
         Mockito.when(this.federation1.getId()).thenReturn(FEDERATION_ID_1);

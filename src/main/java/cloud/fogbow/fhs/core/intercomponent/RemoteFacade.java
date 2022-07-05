@@ -44,9 +44,11 @@ public class RemoteFacade {
         }
         
         List<String> allowedFhsIds = new ArrayList<String>();
-            
-        for (String allowedFhsId :  allowedFhsIdsListString.split(SystemConstants.ALLOWED_FHS_IDS_SEPARATOR)) {
-            allowedFhsIds.add(allowedFhsId);
+        
+        if (!allowedFhsIdsListString.isEmpty()) {
+            for (String allowedFhsId :  allowedFhsIdsListString.split(SystemConstants.ALLOWED_FHS_IDS_SEPARATOR)) {
+                allowedFhsIds.add(allowedFhsId);
+            }
         }
         
         return allowedFhsIds;

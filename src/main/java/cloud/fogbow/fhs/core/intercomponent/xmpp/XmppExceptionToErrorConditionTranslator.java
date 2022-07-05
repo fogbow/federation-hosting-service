@@ -16,7 +16,6 @@ import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.common.exceptions.UnavailableProviderException;
 import cloud.fogbow.fhs.constants.Messages;
 
-// TODO test
 public class XmppExceptionToErrorConditionTranslator {
     private static final Logger LOGGER = Logger.getLogger(XmppExceptionToErrorConditionTranslator.class);
 

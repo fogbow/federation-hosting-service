@@ -5,6 +5,7 @@ import java.util.List;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FhsConnection;
 
+// TODO to remove
 public class RemoteFhsConnectionManager {
 
     public FhsConnection allowConnection(String fhsUrl) {

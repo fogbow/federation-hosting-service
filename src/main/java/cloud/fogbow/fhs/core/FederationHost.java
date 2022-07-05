@@ -48,6 +48,7 @@ public class FederationHost {
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
         this.federationFactory = federationFactory;
         this.databaseManager = databaseManager;
+        this.communicationMechanism = communicationMechanism;
     }
     
     public FederationHost(DatabaseManager databaseManager, 
@@ -68,6 +69,8 @@ public class FederationHost {
         this.federationList = this.databaseManager.getFederations();
         this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
         this.federationFactory = new FederationFactory();
+        // FIXME how reload should affect the remote federations data?
+        this.remoteFederations = new ArrayList<RemoteFederation>();
     }
 
     public void setRemoteFederationsList(List<RemoteFederation> remoteFederations) {
@@ -258,13 +261,11 @@ public class FederationHost {
         }
     }
 
-    // TODO test
     public List<RemoteFederation> getRemoteFederationList(String requester) throws UnauthorizedRequestException {
         checkIfRequesterIsFedAdmin(requester);
         return new ArrayList<RemoteFederation>(this.remoteFederations);
     }
 
-    // TODO test
     public void addUserToAllowedAdmins(String requester, String fedAdminId, String fhsId, String federationId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
@@ -273,13 +274,21 @@ public class FederationHost {
         federation.addRemoteUserAsAllowedFedAdmin(fedAdminId, fhsId);
     }
 
-    // TODO test
     public void removeUserFromAllowedAdmins(String requester, String fedAdminId, String fhsId, String federationId) 
             throws UnauthorizedRequestException, InvalidParameterException {
         checkIfRequesterIsFedAdmin(requester);
         Federation federation = getFederationOrFail(federationId);
         checkIfRequesterIsFederationOwner(requester, federation);
         federation.removeRemoteUserFromAllowedAdmins(fedAdminId, fhsId);
+    }
+    
+    public void requestToJoinRemoteFederation(String requester, String federationId) 
+            throws FogbowException {
+        checkIfRequesterIsFedAdmin(requester);
+        RemoteFederation federation = getRemoteFederationOrFail(federationId);
+        Federation remoteFederation = this.communicationMechanism.joinRemoteFederation(
+                lookUpAdminByName(requester), federation.getFedId(), federation.getOwnerFhsId());
+        this.federationList.add(remoteFederation);
     }
     
     /*
@@ -583,27 +592,15 @@ public class FederationHost {
     
     /*
      * 
-     * Remote federations
+     * Remote federations (methods called by RemoteFacade)
      * 
      */
     
-    // TODO test
     public void updateRemoteFederationList(String fhsId, List<RemoteFederation> fhsRemoteFederations) {
         this.remoteFederations.removeAll(fhsRemoteFederations);
         this.remoteFederations.addAll(fhsRemoteFederations);
     }
     
-    // TODO test
-    public void requestToJoinRemoteFederation(String requester, String federationId) 
-            throws FogbowException {
-        checkIfRequesterIsFedAdmin(requester);
-        RemoteFederation federation = getRemoteFederationOrFail(federationId);
-        Federation remoteFederation = this.communicationMechanism.joinRemoteFederation(lookUpAdminByName(requester), federation.getFedId(), 
-                federation.getOwnerFhsId());
-        this.federationList.add(remoteFederation);
-    }
-    
-    // TODO test
     public Federation joinRemoteFederation(FederationUser requester, String fhsId, String federationId) throws InvalidParameterException {
         Federation federation = getFederationOrFail(federationId);
         federation.addRemoteAdmin(requester, fhsId);

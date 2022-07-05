@@ -34,7 +34,6 @@ public class RemoteFederationUserId implements Serializable {
         return Objects.hash(fedAdminId, fhsId);
     }
 
-    // TODO test
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

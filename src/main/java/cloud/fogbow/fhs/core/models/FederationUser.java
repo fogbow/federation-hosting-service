@@ -24,6 +24,7 @@ public class FederationUser {
     private static final String MEMBER_ID_COLUMN_NAME = "member_id";
     private static final String MEMBER_NAME_COLUMN_NAME = "member_name";
     private static final String FEDERATION_ID_COLUMN_NAME = "federation_id";
+    private static final String FHS_ID_COLUMN_NAME = "fhs_id";
     private static final String MEMBER_EMAIL_COLUMN_NAME = "member_email";
     private static final String MEMBER_DESCRIPTION_COLUMN_NAME = "member_description";
     private static final String MEMBER_ENABLED_COLUMN_NAME = "member_enabled";
@@ -46,7 +47,7 @@ public class FederationUser {
     @Column(name = FEDERATION_ID_COLUMN_NAME)
     private String federationId;
     
-    // TODO add column name
+    @Column(name = FHS_ID_COLUMN_NAME)
     private String fhsId;
     
     @Column(name = MEMBER_EMAIL_COLUMN_NAME)

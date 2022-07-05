@@ -21,11 +21,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import cloud.fogbow.common.constants.HttpMethod;
-import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
-import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
-import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
@@ -35,6 +32,7 @@ import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
+import cloud.fogbow.fhs.core.models.RemoteFederation;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
@@ -44,6 +42,7 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
+// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class FederationHostTest {
@@ -116,7 +115,23 @@ public class FederationHostTest {
     private static final String REGULAR_USER_CREDENTIAL_VALUE_1 = "regularUserCredentialValue1";
     private static final String REGULAR_USER_CREDENTIAL_VALUE_2 = "regularUserCredentialValue2";
     private static final String FHS_ID_1 = "fhsId1";
+    private static final String FHS_ID_2 = "fhsId2";
     private static final String PROVIDER_ID = "providerId";
+    private static final String REMOTE_FEDERATION_ID_1 = "remoteFederationId1";
+    private static final String REMOTE_FEDERATION_NAME_1 = "remoteFederationName1";
+    private static final String UPDATED_REMOTE_FEDERATION_NAME_1 = "updatedRemoteFederationName1";
+    private static final String REMOTE_FEDERATION_DESCRIPTION_1 = "remoteFederationDescription1";
+    private static final boolean REMOTE_FEDERATION_ENABLED_1 = true;
+    private static final String REMOTE_FEDERATION_FHS_ID_1 = FHS_ID_2;
+    private static final String REMOTE_FEDERATION_OWNING_ADMIN_ID_1 = "remoteFederationOwningAdminId1";
+    private static final String REMOTE_FEDERATION_ID_2 = "remoteFederationId2";
+    private static final String REMOTE_FEDERATION_NAME_2 = "remoteFederationName2";
+    private static final String REMOTE_FEDERATION_DESCRIPTION_2 = "remoteFederationDescription2";
+    private static final String UPDATED_REMOTE_FEDERATION_DESCRIPTION_2 = "updatedRemoteFederationDescription2";
+    private static final boolean REMOTE_FEDERATION_ENABLED_2 = true;
+    private static final String REMOTE_FEDERATION_FHS_ID_2 = FHS_ID_2;
+    private static final String REMOTE_FEDERATION_OWNING_ADMIN_ID_2 = "remoteFederationOwningAdminId2";
+    private static final String REMOTE_FEDERATION_ADMIN_ID_1 = "remoteFederationAdminId1";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -149,9 +164,10 @@ public class FederationHostTest {
     private DatabaseManager databaseManager;
     private PropertiesHolder propertiesHolder;
     private FhsCommunicationMechanism communicationMechanism;
+    private List<RemoteFederation> remoteFederations;
+    private Federation remoteFederation1;
     
-    private void setUpFederationData() throws InvalidParameterException, UnauthenticatedUserException, 
-    ConfigurationErrorException, InternalServerErrorException {
+    private void setUpFederationData() throws FogbowException {
         this.databaseManager = Mockito.mock(DatabaseManager.class);
         Mockito.when(this.databaseManager.getFederationAdmins()).thenReturn(new ArrayList<FederationUser>());
         Mockito.when(this.databaseManager.getFederations()).thenReturn(new ArrayList<Federation>());
@@ -279,8 +295,23 @@ public class FederationHostTest {
         Mockito.when(this.federationFactory.createFederationFactory(ADMIN_NAME_1, FEDERATION_NAME_1, 
                 federationMetadata, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1)).thenReturn(federation1);
         
+        this.remoteFederation1 = Mockito.mock(Federation.class);
+        
+        this.communicationMechanism = Mockito.mock(FhsCommunicationMechanism.class);
+        Mockito.when(this.communicationMechanism.joinRemoteFederation(admin1, REMOTE_FEDERATION_ID_1, FHS_ID_2)).thenReturn(remoteFederation1);
+        
         this.federationHost = new FederationHost(adminList, federationList, jsonUtils, authenticationPluginInstantiator, 
                 this.federationFactory, databaseManager, communicationMechanism);
+        
+        this.remoteFederations = new ArrayList<RemoteFederation>();
+        this.remoteFederations.add(new RemoteFederation(REMOTE_FEDERATION_ID_1, REMOTE_FEDERATION_NAME_1, 
+                REMOTE_FEDERATION_DESCRIPTION_1, REMOTE_FEDERATION_ENABLED_1, 
+                REMOTE_FEDERATION_OWNING_ADMIN_ID_1, REMOTE_FEDERATION_FHS_ID_1));
+        this.remoteFederations.add(new RemoteFederation(REMOTE_FEDERATION_ID_2, REMOTE_FEDERATION_NAME_2, 
+                REMOTE_FEDERATION_DESCRIPTION_2, REMOTE_FEDERATION_ENABLED_2, 
+                REMOTE_FEDERATION_OWNING_ADMIN_ID_2, REMOTE_FEDERATION_FHS_ID_2));
+        
+        this.federationHost.setRemoteFederationsList(this.remoteFederations);
     }
     
     @Before
@@ -550,6 +581,113 @@ public class FederationHostTest {
         setUpFederationData();
         
         this.federationHost.deleteFederation(ADMIN_NAME_2, FEDERATION_ID_1);
+    }
+    
+    @Test
+    public void testGetRemoteFederationList() throws FogbowException {
+        setUpFederationData();
+        
+        List<RemoteFederation> returnedRemoteFederations = this.federationHost.getRemoteFederationList(ADMIN_NAME_1);
+        
+        assertEquals(this.remoteFederations, returnedRemoteFederations);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotGetRemoteFederationList() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.getRemoteFederationList(REGULAR_USER_NAME_1);
+    }
+    
+    @Test
+    public void testAddUserToAllowedAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.addUserToAllowedAdmins(ADMIN_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, FEDERATION_ID_1);
+        
+        Mockito.verify(this.federation1).addRemoteUserAsAllowedFedAdmin(REMOTE_FEDERATION_ADMIN_ID_1, FHS_ID_2);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotAddUserToAllowedAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.addUserToAllowedAdmins(REGULAR_USER_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, FEDERATION_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonFederationOwnerAdminCannotAddUserToAllowedAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.addUserToAllowedAdmins(ADMIN_NAME_2, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, FEDERATION_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotAddUserToAllowedAdminsPassingInvalidFederationId() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.addUserToAllowedAdmins(ADMIN_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, "invalidfederationid");
+    }
+    
+    @Test
+    public void testRemoveUserFromAllowedAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.removeUserFromAllowedAdmins(ADMIN_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, FHS_ID_2, FEDERATION_ID_1);
+        
+        Mockito.verify(this.federation1).removeRemoteUserFromAllowedAdmins(REMOTE_FEDERATION_ADMIN_ID_1, FHS_ID_2);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotRemoveUserFromAllowedAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.removeUserFromAllowedAdmins(REGULAR_USER_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, FEDERATION_ID_1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonFederationOwnerAdminCannotRemoveUserFromAllowedAdmins() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.removeUserFromAllowedAdmins(ADMIN_NAME_2, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, FEDERATION_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRemoveUserFromAllowedAdminsPassingInvalidFederationId() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.removeUserFromAllowedAdmins(ADMIN_NAME_1, REMOTE_FEDERATION_ADMIN_ID_1, 
+                FHS_ID_2, "invalidfederationid");
+    }
+    
+    @Test
+    public void testRequestToJoinRemoteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.requestToJoinRemoteFederation(ADMIN_NAME_1, REMOTE_FEDERATION_ID_1);
+        
+        Mockito.verify(this.communicationMechanism).joinRemoteFederation(admin1, REMOTE_FEDERATION_ID_1, FHS_ID_2);
+        Mockito.verify(this.federationList).add(remoteFederation1);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotRequestToJoinRemoteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.requestToJoinRemoteFederation(REGULAR_USER_NAME_1, REMOTE_FEDERATION_ID_1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotRequestToJoinUnknownRemoteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.requestToJoinRemoteFederation(ADMIN_NAME_1, "unknownremotefederationid");
     }
     
     /*
@@ -1020,8 +1158,7 @@ public class FederationHostTest {
      */
     
     @Test
-    public void testFederationAdminLogin() throws InvalidParameterException, UnauthenticatedUserException, 
-    ConfigurationErrorException, InternalServerErrorException {
+    public void testFederationAdminLogin() throws FogbowException {
         setUpFederationData();
         
         String returnedToken = this.federationHost.federationAdminLogin(ADMIN_ID_1, adminCredentials1);
@@ -1030,8 +1167,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testFederationAdminLoginInvalidAdmin() throws InvalidParameterException, UnauthenticatedUserException, 
-    ConfigurationErrorException, InternalServerErrorException {
+    public void testFederationAdminLoginInvalidAdmin() throws FogbowException {
         setUpFederationData();
         
         String returnedToken = this.federationHost.login(null, "invalidAdminId", adminCredentials1);
@@ -1040,8 +1176,7 @@ public class FederationHostTest {
     }
     
     @Test
-    public void testNonFederationAdminLogin() throws InvalidParameterException, UnauthenticatedUserException, 
-    ConfigurationErrorException, InternalServerErrorException {
+    public void testNonFederationAdminLogin() throws FogbowException {
         setUpFederationData();
         
         String returnedToken = this.federationHost.login(FEDERATION_ID_1, REGULAR_USER_ID_1, regularUserCredentials1);
@@ -1052,8 +1187,7 @@ public class FederationHostTest {
     }
     
     @Test(expected = InvalidParameterException.class)
-    public void testNonFederationAdminLoginInvalidFederationId() throws InvalidParameterException, UnauthenticatedUserException, 
-    ConfigurationErrorException, InternalServerErrorException {
+    public void testNonFederationAdminLoginInvalidFederationId() throws FogbowException {
         setUpFederationData();
         
         this.federationHost.login("invalidFederationId", REGULAR_USER_ID_1, regularUserCredentials1);
@@ -1074,4 +1208,55 @@ public class FederationHostTest {
         assertEquals(credentialsMapCloud1, responseCredentials);
     }
     
+    /*
+     * 
+     * Remote Federations
+     * 
+     */
+    
+    @Test
+    public void testUpdateRemoteFederationList() throws FogbowException {
+        setUpFederationData();
+        
+        List<RemoteFederation> federationsToUpdate = new ArrayList<RemoteFederation>();
+        
+        RemoteFederation updatedRemoteFederation1 = new RemoteFederation(REMOTE_FEDERATION_ID_1, 
+                UPDATED_REMOTE_FEDERATION_NAME_1, REMOTE_FEDERATION_DESCRIPTION_1, REMOTE_FEDERATION_ENABLED_1, 
+                REMOTE_FEDERATION_OWNING_ADMIN_ID_1, REMOTE_FEDERATION_FHS_ID_1);
+        RemoteFederation updatedRemoteFederation2 = new RemoteFederation(REMOTE_FEDERATION_ID_2, 
+                REMOTE_FEDERATION_NAME_2, UPDATED_REMOTE_FEDERATION_DESCRIPTION_2, REMOTE_FEDERATION_ENABLED_2, 
+                REMOTE_FEDERATION_OWNING_ADMIN_ID_2, REMOTE_FEDERATION_FHS_ID_2);
+        
+        federationsToUpdate.add(updatedRemoteFederation1);
+        federationsToUpdate.add(updatedRemoteFederation2);
+        
+        this.federationHost.updateRemoteFederationList(FHS_ID_2, federationsToUpdate);
+        
+        List<RemoteFederation> updatedRemoteFederationList = this.federationHost.getRemoteFederationList(ADMIN_NAME_1);
+        
+        assertEquals(2, updatedRemoteFederationList.size());
+        assertTrue(updatedRemoteFederationList.contains(updatedRemoteFederation1));
+        assertTrue(updatedRemoteFederationList.contains(updatedRemoteFederation2));
+    }
+    
+    @Test
+    public void testJoinRemoteFederation() throws FogbowException {
+        setUpFederationData();
+        
+        FederationUser remoteFederationUser = Mockito.mock(FederationUser.class);
+        
+        Federation returnedFederation = this.federationHost.joinRemoteFederation(remoteFederationUser, FHS_ID_2, FEDERATION_ID_1);
+        
+        Mockito.verify(this.federation1).addRemoteAdmin(remoteFederationUser, FHS_ID_2);
+        assertEquals(this.federation1, returnedFederation);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotJoinInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        FederationUser remoteFederationUser = Mockito.mock(FederationUser.class);
+        
+        this.federationHost.joinRemoteFederation(remoteFederationUser, FHS_ID_2, "invalidfederationid");
+    }
 }
