@@ -4,8 +4,6 @@ import org.apache.log4j.Logger;
 import org.dom4j.Element;
 import org.xmpp.packet.IQ;
 
-import com.google.gson.Gson;
-
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.fhs.constants.Messages;
@@ -17,8 +15,8 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTr
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationUser;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO test
 public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
     private static final Logger LOGGER = Logger.getLogger(RemoteJoinFederationRequest.class);
     
@@ -27,19 +25,26 @@ public class RemoteJoinFederationRequest implements RemoteRequest<Federation> {
     private String federationId;
     private String provider;
     private FederationFactory federationFactory;
+    private JsonUtils jsonUtils;
     
     public RemoteJoinFederationRequest(XmppComponentManager packetSender, FederationUser requester, String federationId,
-            String provider) {
+            String provider, FederationFactory federationFactory, JsonUtils jsonUtils) {
         this.packetSender = packetSender;
         this.requester = requester;
         this.federationId = federationId;
         this.provider = provider;
-        this.federationFactory = new FederationFactory();
+        this.jsonUtils = jsonUtils;
+        this.federationFactory = federationFactory;
+    }
+    
+    public RemoteJoinFederationRequest(XmppComponentManager packetSender, FederationUser requester, String federationId,
+            String provider) {
+        this(packetSender, requester, federationId, provider, new FederationFactory(), new JsonUtils());
     }
 
     @Override
     public Federation send() throws FogbowException {
-        IQ iq = marshal(new Gson().toJson(requester), federationId, provider);
+        IQ iq = marshal(this.jsonUtils.toJson(requester), federationId, provider);
         LOGGER.debug(String.format(Messages.Log.SENDING_MSG_S, iq.getID()));
         IQ response = (IQ) packetSender.syncSendPacket(iq);
         XmppErrorConditionToExceptionTranslator.handleError(response, provider);

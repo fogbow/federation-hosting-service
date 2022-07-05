@@ -1,13 +1,11 @@
 package cloud.fogbow.fhs.core.intercomponent.xmpp.requesters;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 import org.xmpp.packet.IQ;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import cloud.fogbow.common.exceptions.FogbowException;
@@ -19,25 +17,32 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.IqElement;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.RemoteMethod;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppComponentManager;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTranslator;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO test
 public class RemoteSyncFederationsRequest  implements RemoteRequest<List<FederationInstance>>{
     private static final Logger LOGGER = Logger.getLogger(RemoteSyncFederationsRequest.class);
 
     private String provider;
     private XmppComponentManager packetSender;
     private List<FederationInstance> localFederations;
+    private JsonUtils jsonUtils;
     
     public RemoteSyncFederationsRequest(XmppComponentManager packetSender, String provider,
-            List<FederationInstance> localFederations) {
+            List<FederationInstance> localFederations, JsonUtils jsonUtils) {
         this.packetSender = packetSender;
         this.provider = provider;
         this.localFederations = localFederations;
+        this.jsonUtils = jsonUtils;
+    }
+    
+    public RemoteSyncFederationsRequest(XmppComponentManager packetSender, String provider,
+            List<FederationInstance> localFederations) {
+        this(packetSender, provider, localFederations, new JsonUtils());
     }
 
     @Override
     public List<FederationInstance> send() throws FogbowException {
-        IQ iq = marshal(provider, new Gson().toJson(localFederations));
+        IQ iq = marshal(provider, this.jsonUtils.toJson(localFederations));
         LOGGER.debug(String.format(Messages.Log.SENDING_MSG_S, iq.getID()));
         IQ response = (IQ) packetSender.syncSendPacket(iq);
         XmppErrorConditionToExceptionTranslator.handleError(response, provider);
@@ -65,8 +70,7 @@ public class RemoteSyncFederationsRequest  implements RemoteRequest<List<Federat
 
         List<FederationInstance> rulesList;
         try {
-            Type listType = new TypeToken<List<FederationInstance>>(){}.getType();
-            rulesList = new Gson().fromJson(listStr, listType);
+            rulesList = this.jsonUtils.fromJson(listStr, new TypeToken<List<FederationInstance>>(){});
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
