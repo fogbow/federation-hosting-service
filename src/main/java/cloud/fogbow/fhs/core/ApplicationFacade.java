@@ -277,6 +277,7 @@ public class ApplicationFacade {
         }
     }
     
+    // TODO update test
     public List<FederationDescription> listFederations(String userToken, String owner) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.LIST_FEDERATIONS));
@@ -285,6 +286,8 @@ public class ApplicationFacade {
         
         try {
             List<Federation> federationList = this.federationHost.getFederationsOwnedByUser(requestUser.getId());
+            List<Federation> remoteFederationList = this.federationHost.getAdminRemoteFederations(requestUser.getId());
+            federationList.addAll(remoteFederationList);
             List<FederationDescription> federationDescriptions = new ArrayList<FederationDescription>();
             for (Federation federation : federationList) {
                 String id = federation.getId();

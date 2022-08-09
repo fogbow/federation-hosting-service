@@ -216,12 +216,22 @@ public class Federation {
         return owner;
     }
     
+    // TODO test
     public boolean isFederationOwner(String requester) {
-        // FIXME should check for other fed admins 
-        // in the federation
-        return this.owner.equals(requester);
+        return this.owner.equals(requester) || isRemoteAdmin(requester);
     }
     
+    // TODO test
+    public boolean isRemoteAdmin(String requester) {
+        for (FederationUser remoteAdmin : this.remoteAdmins) {
+            if (remoteAdmin.getName().equals(requester)) { 
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     public String getName() {
         return name;
     }

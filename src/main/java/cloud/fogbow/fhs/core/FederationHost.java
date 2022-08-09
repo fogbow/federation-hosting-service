@@ -237,6 +237,22 @@ public class FederationHost {
         }
     }
 
+    // TODO test
+    public List<Federation> getAdminRemoteFederations(String requester) throws UnauthorizedRequestException {
+        synchronized(this.federationList) {
+            checkIfRequesterIsFedAdmin(requester);
+            List<Federation> remoteFederations = new ArrayList<Federation>();
+            
+            for (Federation federation : this.federationList) {
+                if (federation.isRemoteAdmin(requester)) {
+                    remoteFederations.add(federation);
+                }
+            }
+            
+            return remoteFederations;
+        }
+    }
+
     public Federation getFederation(String requester, String federationId) throws InvalidParameterException, UnauthorizedRequestException {
         synchronized(this.federationList) {
             checkIfRequesterIsFedAdmin(requester);
