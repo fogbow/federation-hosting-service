@@ -27,6 +27,7 @@ import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
+import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationFactory;
@@ -166,6 +167,7 @@ public class FederationHostTest {
     private FhsCommunicationMechanism communicationMechanism;
     private List<RemoteFederation> remoteFederations;
     private Federation remoteFederation1;
+    private SynchronizationMechanism synchronizationMechanism;
     
     private void setUpFederationData() throws FogbowException {
         this.databaseManager = Mockito.mock(DatabaseManager.class);
@@ -274,6 +276,8 @@ public class FederationHostTest {
                 Arrays.asList(this.federationAttribute1, this.federationAttribute2));
         Mockito.when(federation1.login(REGULAR_USER_ID_1, this.regularUserCredentials1)).thenReturn(
                 REGULAR_USER_TOKEN_1);
+        Mockito.when(federation1.registerService(SERVICE_OWNER_NAME_1, SERVICE_ENDPOINT_1,
+                SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1)).thenReturn(SERVICE_ID_1);
         Mockito.when(federation1.map(SERVICE_ID_1, REGULAR_USER_ID_1, CLOUD_NAME)).thenReturn(
                 credentialsMapCloud1);
         
@@ -311,7 +315,10 @@ public class FederationHostTest {
                 REMOTE_FEDERATION_DESCRIPTION_2, REMOTE_FEDERATION_ENABLED_2, 
                 REMOTE_FEDERATION_OWNING_ADMIN_ID_2, REMOTE_FEDERATION_FHS_ID_2));
         
+        this.synchronizationMechanism = Mockito.mock(SynchronizationMechanism.class);
+        
         this.federationHost.setRemoteFederationsList(this.remoteFederations);
+        this.federationHost.setSynchronizationMechanism(this.synchronizationMechanism);
     }
     
     @Before

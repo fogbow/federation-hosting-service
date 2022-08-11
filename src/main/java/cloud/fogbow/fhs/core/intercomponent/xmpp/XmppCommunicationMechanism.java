@@ -13,10 +13,12 @@ import cloud.fogbow.fhs.constants.ConfigurationPropertyDefaults;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.PropertiesHolder;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.RemoteGetAllFederationsRequest;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.RemoteJoinFederationRequest;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.RemoteSyncFederationsRequest;
+import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.UpdateFederationRequest;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationUser;
 
@@ -93,5 +95,10 @@ public class XmppCommunicationMechanism implements FhsCommunicationMechanism {
     @Override
     public Federation joinRemoteFederation(FederationUser requester, String federationId, String ownerFhsId) throws FogbowException {
         return new RemoteJoinFederationRequest(packetSender, requester, federationId, ownerFhsId).send();
+    }
+
+    @Override
+    public void updateFederation(String remoteHost, FederationUpdate update) throws FogbowException {
+        new UpdateFederationRequest(packetSender, remoteHost, update).send();
     }
 }

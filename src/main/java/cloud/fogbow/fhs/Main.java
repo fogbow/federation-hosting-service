@@ -55,6 +55,8 @@ public class Main implements ApplicationRunner {
         SynchronizationMechanism synchronizationMechanism = SynchronizationMechanismInstantiator.getSynchronizationMechanism(
                 synchronizationMechanismClassName, federationHost, fhsCommunicationMechanism);
         
+        federationHost.setSynchronizationMechanism(synchronizationMechanism);
+        
         synchronizationMechanism.onStartUp();
         
         ApplicationFacade applicationFacade = ApplicationFacade.getInstance();
@@ -73,5 +75,6 @@ public class Main implements ApplicationRunner {
         
         remoteFacade.setFederationHost(federationHost);
         remoteFacade.setAllowedFhsIds(allowedFhsIds);
+        remoteFacade.setSynchronizationMechanism(synchronizationMechanism);
     }
 }

@@ -7,6 +7,7 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.handlers.RemoteGetAllFederationsHandler;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.handlers.RemoteJoinFederationHandler;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.handlers.RemoteSyncFederationsHandler;
+import cloud.fogbow.fhs.core.intercomponent.xmpp.handlers.RemoteUpdateFederationHandler;
 
 public class XmppComponentManager extends XMPPComponent {
     private static Logger LOGGER = Logger.getLogger(XmppComponentManager.class);
@@ -15,6 +16,7 @@ public class XmppComponentManager extends XMPPComponent {
         super(jid, password, xmppServerIp, xmppServerPort, timeout);
         // instantiate set handlers here
         addSetHandler(new RemoteJoinFederationHandler());
+        addSetHandler(new RemoteUpdateFederationHandler());
         // instantiate get handlers here
         addGetHandler(new RemoteGetAllFederationsHandler());
         addGetHandler(new RemoteSyncFederationsHandler());

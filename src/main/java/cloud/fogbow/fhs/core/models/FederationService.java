@@ -24,6 +24,7 @@ import cloud.fogbow.fhs.core.plugins.discovery.ServiceDiscoveryPolicy;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
+import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 @Entity
 @Table(name = "federation_service_table")
@@ -203,5 +204,18 @@ public class FederationService {
         
         setUpServiceLifeCyclePlugins(new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
                 new ServiceInvokerInstantiator());
+    }
+    
+    // TODO test
+    public String serialize() {
+        if (this.discoveryPolicyClassName == null || this.discoveryPolicyClassName.isEmpty()) {
+            // FIXME constant
+            return String.join("!^!", this.serviceId, this.ownerId, this.endpoint, "null",
+                    this.accessPolicyClassName, this.federationId, new JsonUtils().toJson(this.metadata));
+        } else {
+            // FIXME constant
+            return String.join("!^!", this.serviceId, this.ownerId, this.endpoint, this.discoveryPolicyClassName,
+                    this.accessPolicyClassName, this.federationId, new JsonUtils().toJson(this.metadata));
+        }
     }
 }

@@ -30,6 +30,7 @@ import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.PropertiesHolder;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.plugins.access.ServiceAccessPolicy;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -318,6 +319,10 @@ public class Federation {
         return attributes;
     }
 
+    public FederationAttribute getAttribute(String attributeId) {
+        return lookupAttribute(attributeId);
+    }
+
     // TODO should check if the attribute to be removed is not 'Member' of 'ServiceOwner'
     // In this case, it should throw exception.
     // TODO should check if some user uses the attribute.
@@ -443,6 +448,85 @@ public class Federation {
         } else {
             throw new InvalidParameterException(Messages.Exception.FED_ADMIN_IS_NOT_ALLOWED_IN_FEDERATION);
         }
+    }
+
+    // TODO test
+    public void update(FederationUpdate remoteUpdate) throws InvalidParameterException {
+        if (remoteUpdate.updatedName()) {
+            this.name = remoteUpdate.getNewName();
+        }
+        
+        if (remoteUpdate.updatedDescription()) {
+            this.description = remoteUpdate.getNewDescription();
+        }
+        
+        if (remoteUpdate.updatedEnabled()) {
+            this.enabled = remoteUpdate.getNewEnabled();
+        }
+        
+        for (FederationUser memberUpdate : remoteUpdate.getUpdatedMembers()) {
+            FederationUser memberToUpdate = lookupMember(memberUpdate.getName());
+            this.members.remove(memberToUpdate);
+            this.members.add(memberUpdate);
+        }
+        
+        for (String serviceUpdateStr : remoteUpdate.getUpdatedServices()) {
+            FederationServiceFactory factory = new FederationServiceFactory();
+            FederationService serviceUpdate = factory.deserialize(serviceUpdateStr);
+            FederationService serviceToUpdate = lookupService(serviceUpdate.getServiceId());
+            this.services.remove(serviceToUpdate);
+            this.services.add(serviceUpdate);
+        }
+        
+        for (FederationAttribute attributeUpdate : remoteUpdate.getUpdatedAttributes()) {
+            FederationAttribute attributeToUpdate = lookupAttribute(attributeUpdate.getId());
+            this.attributes.remove(attributeToUpdate);
+            this.attributes.add(attributeUpdate);
+        }
+        
+        for (String memberIdToDelete : remoteUpdate.getMembersToDelete()) {
+            this.members.remove(lookupMember(memberIdToDelete));
+        }
+        
+        for (String serviceIdToDelete : remoteUpdate.getServicesToDelete()) {
+            this.services.remove(lookupService(serviceIdToDelete));
+        }
+        
+        for (String attributeIdToDelete : remoteUpdate.getAttributesToDelete()) {
+            this.attributes.remove(lookupAttribute(attributeIdToDelete));
+        }
+        
+        this.metadata = remoteUpdate.getUpdatedMetadata();
+    }
+    
+    private FederationUser lookupMember(String userId) {
+        for (FederationUser member : members) {
+            if (member.getName().equals(userId)) {
+                return member;
+            }
+        }
+        
+        return null;
+    }
+    
+    private FederationService lookupService(String serviceId) {
+        for (FederationService service : services) {
+            if (service.getServiceId().equals(serviceId)) {
+                return service;
+            }
+        }
+        
+        return null;
+    }
+    
+    private FederationAttribute lookupAttribute(String attributeId) {
+        for (FederationAttribute attribute : attributes) {
+            if (attribute.getId().equals(attributeId)) {
+                return attribute;
+            }
+        }
+        
+        return null;
     }
     
     // TODO move this method to FederationFactory

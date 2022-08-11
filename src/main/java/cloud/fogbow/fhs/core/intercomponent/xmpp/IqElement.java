@@ -6,7 +6,9 @@ public enum IqElement {
     FEDERATION_LIST_CLASS_NAME("federationListClassName"), 
     FEDERATION_ID("federationId"),
     REQUESTER_USER("requesterUser"),
-    REMOTE_FEDERATION("remoteFederation");
+    REMOTE_FEDERATION("remoteFederation"), 
+    FEDERATION_UPDATE_CLASS_NAME("federationUpdateClassName"), 
+    FEDERATION_UPDATE("federationUpdate");
     
     private final String element;
 

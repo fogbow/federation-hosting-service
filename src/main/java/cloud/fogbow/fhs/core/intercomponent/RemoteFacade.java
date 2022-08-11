@@ -21,6 +21,7 @@ public class RemoteFacade {
     
     private List<String> allowedFhsIds;
     private FederationHost federationHost;
+    private SynchronizationMechanism syncMechanism;
     
     public static RemoteFacade getInstance() {
         synchronized (RemoteFacade.class) {
@@ -56,6 +57,10 @@ public class RemoteFacade {
     
     public void setFederationHost(FederationHost federationHost) {
         this.federationHost = federationHost;
+    }
+    
+    public void setSynchronizationMechanism(SynchronizationMechanism synchronizationMechanism) {
+        this.syncMechanism = synchronizationMechanism;
     }
     
     public void setAllowedFhsIds(List<String> allowedFhsIds) {
@@ -100,5 +105,11 @@ public class RemoteFacade {
         }
         
         throw new UnauthorizedRequestException(Messages.Exception.FHS_IS_NOT_AUTHORIZED_TO_PERFORM_ACTION);
+    }
+    
+    public void updateFederation(String fhsId, FederationUpdate federationUpdate) {
+        if (this.allowedFhsIds.contains(fhsId)) {
+            this.syncMechanism.onRemoteUpdate(federationUpdate);
+        }
     }
 }

@@ -15,6 +15,7 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
@@ -102,12 +103,12 @@ public class EventBasedSynchronizationMechanism implements SynchronizationMechan
     }
     
     @Override
-    public void onLocalUpdate(Federation updatedFederation) {
+    public void onLocalUpdate(FederationUpdate updatedFederation) {
         // TODO Implement
     }
 
     @Override
-    public void onRemoteUpdate(Federation updatedFederation) {
+    public void onRemoteUpdate(FederationUpdate updatedFederation) {
         // TODO Implement
     }
 

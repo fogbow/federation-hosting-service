@@ -14,6 +14,10 @@ public class RemoteFederationUser {
     @Embedded
     private RemoteFederationUserId id;
     
+    public RemoteFederationUser() {
+        
+    }
+    
     public RemoteFederationUser(String fedAdminId, String fhsId) {
         this.id = new RemoteFederationUserId(fedAdminId, fhsId);
     }

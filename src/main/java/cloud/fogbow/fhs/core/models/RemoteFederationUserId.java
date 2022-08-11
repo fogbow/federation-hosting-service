@@ -16,6 +16,10 @@ public class RemoteFederationUserId implements Serializable {
     @Column
     private String fhsId;
     
+    public RemoteFederationUserId() {
+        
+    }
+    
     public RemoteFederationUserId(String fedAdminId, String fhsId) {
         this.fedAdminId = fedAdminId;
         this.fhsId = fhsId;

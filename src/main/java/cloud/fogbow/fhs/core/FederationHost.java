@@ -1,6 +1,7 @@
 package cloud.fogbow.fhs.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,9 @@ import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
+import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationFactory;
@@ -37,6 +40,7 @@ public class FederationHost {
     private FederationFactory federationFactory;
     private DatabaseManager databaseManager;
     private FhsCommunicationMechanism communicationMechanism;
+    private SynchronizationMechanism syncMechanism;
     
     public FederationHost(List<FederationUser> federationAdminList, 
             List<Federation> federationList, JsonUtils jsonUtils, 
@@ -75,6 +79,10 @@ public class FederationHost {
 
     public void setRemoteFederationsList(List<RemoteFederation> remoteFederations) {
         this.remoteFederations = remoteFederations;
+    }
+    
+    public void setSynchronizationMechanism(SynchronizationMechanism syncMechanism) {
+        this.syncMechanism = syncMechanism;
     }
             
     /*
@@ -307,6 +315,15 @@ public class FederationHost {
         this.federationList.add(remoteFederation);
     }
     
+    // TODO test
+    public void updateFederationUsingRemoteData(FederationUpdate remoteUpdate) throws InvalidParameterException {
+        Federation federationToUpdate = getFederationOrFail(remoteUpdate.getTargetFederationId());
+        
+        synchronized(federationToUpdate) {
+            federationToUpdate.update(remoteUpdate);
+        }
+    }
+    
     /*
      * 
      * Membership
@@ -325,6 +342,13 @@ public class FederationHost {
             checkIfRequesterIsFederationOwner(requester, federationToAdd);
             FederationUser newMember = federationToAdd.addUser(userId, email, description, authenticationProperties);
             this.databaseManager.saveFederation(federationToAdd);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    withMembers(Arrays.asList(newMember)).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
+            
             return newMember;
         }
     }
@@ -366,6 +390,12 @@ public class FederationHost {
             checkIfRequesterIsFederationOwner(requester, federation);
             federation.revokeMembership(memberId);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    deleteMember(memberId).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
         }
     }
     
@@ -387,6 +417,13 @@ public class FederationHost {
             checkIfRequesterIsFederationOwner(requester, federation);
             String newAttributeId = federation.createAttribute(attributeName);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    withAttributes(Arrays.asList(federation.getAttribute(newAttributeId))).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
+            
             return newAttributeId;
         }
     }
@@ -417,6 +454,12 @@ public class FederationHost {
             checkIfRequesterIsFederationOwner(requester, federation);
             federation.deleteAttribute(attributeId);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    deleteAttribute(attributeId).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
         }
     }
     
@@ -432,6 +475,12 @@ public class FederationHost {
             checkIfRequesterIsFederationOwner(requester, federation);
             federation.grantAttribute(memberId, attributeId);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    withMembers(Arrays.asList(federation.getUserByMemberId(memberId))).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
         }
     }
     
@@ -447,6 +496,12 @@ public class FederationHost {
             checkIfRequesterIsFederationOwner(requester, federation);
             federation.revokeAttribute(memberId, attributeId);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    withMembers(Arrays.asList(federation.getUserByMemberId(memberId))).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
         }
     }
     
@@ -472,6 +527,13 @@ public class FederationHost {
             String serviceId = federation.registerService(requester, endpoint, discoveryPolicyClassName, 
                     accessPolicyClassName, metadata);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    withServices(Arrays.asList(federation.getService(serviceId).serialize())).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
+            
             return serviceId;
         }
     }
@@ -525,7 +587,8 @@ public class FederationHost {
     }
 
     public void updateService(String requester, String federationId, String ownerId, String serviceId,
-            Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) throws InvalidParameterException, UnauthorizedRequestException {
+            Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) 
+                    throws InvalidParameterException, UnauthorizedRequestException {
         Federation federation = getFederationOrFail(federationId);
         
         synchronized(federation) {
@@ -540,6 +603,12 @@ public class FederationHost {
             FederationService federationService = federation.getService(serviceId);
             federationService.update(metadata, discoveryPolicyClassName, accessPolicyClassName);
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    withServices(Arrays.asList(federation.getService(serviceId).serialize())).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
         }
     }
     
@@ -557,8 +626,13 @@ public class FederationHost {
             }
             
             federation.deleteService(serviceId);
-            
             this.databaseManager.saveFederation(federation);
+            
+            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+                    updateFederation(federationId).
+                    deleteService(serviceId).
+                    build();
+            this.syncMechanism.onLocalUpdate(update);
         }
     }
     
