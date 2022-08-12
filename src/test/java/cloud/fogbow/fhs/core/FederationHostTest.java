@@ -26,6 +26,7 @@ import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdateBuilder;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
@@ -168,6 +169,7 @@ public class FederationHostTest {
     private List<RemoteFederation> remoteFederations;
     private Federation remoteFederation1;
     private SynchronizationMechanism synchronizationMechanism;
+    private FederationUpdateBuilder updateBuilder;
     
     private void setUpFederationData() throws FogbowException {
         this.databaseManager = Mockito.mock(DatabaseManager.class);
@@ -304,8 +306,18 @@ public class FederationHostTest {
         this.communicationMechanism = Mockito.mock(FhsCommunicationMechanism.class);
         Mockito.when(this.communicationMechanism.joinRemoteFederation(admin1, REMOTE_FEDERATION_ID_1, FHS_ID_2)).thenReturn(remoteFederation1);
         
+        this.updateBuilder = Mockito.mock(FederationUpdateBuilder.class);
+        
+        Mockito.when(this.updateBuilder.updateFederation(Mockito.anyString())).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.withMember(Mockito.any(FederationUser.class))).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.withService(Mockito.anyString())).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.withAttribute(Mockito.any(FederationAttribute.class))).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.deleteMember(Mockito.anyString())).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.deleteService(Mockito.anyString())).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.deleteAttribute(Mockito.anyString())).thenReturn(updateBuilder);
+        
         this.federationHost = new FederationHost(adminList, federationList, jsonUtils, authenticationPluginInstantiator, 
-                this.federationFactory, databaseManager, communicationMechanism);
+                this.federationFactory, databaseManager, communicationMechanism, this.updateBuilder);
         
         this.remoteFederations = new ArrayList<RemoteFederation>();
         this.remoteFederations.add(new RemoteFederation(REMOTE_FEDERATION_ID_1, REMOTE_FEDERATION_NAME_1, 

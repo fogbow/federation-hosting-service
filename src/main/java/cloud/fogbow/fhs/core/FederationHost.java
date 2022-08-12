@@ -1,7 +1,6 @@
 package cloud.fogbow.fhs.core;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +15,7 @@ import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdateBuilder;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
@@ -41,18 +41,21 @@ public class FederationHost {
     private DatabaseManager databaseManager;
     private FhsCommunicationMechanism communicationMechanism;
     private SynchronizationMechanism syncMechanism;
+    private FederationUpdateBuilder updateBuilder;
     
     public FederationHost(List<FederationUser> federationAdminList, 
             List<Federation> federationList, JsonUtils jsonUtils, 
             FederationAuthenticationPluginInstantiator authenticationPluginInstantiator, 
             FederationFactory federationFactory, DatabaseManager databaseManager, 
-            FhsCommunicationMechanism communicationMechanism) {
+            FhsCommunicationMechanism communicationMechanism, 
+            FederationUpdateBuilder updateBuilder) {
         this.federationAdminList = federationAdminList;
         this.federationList = federationList;
         this.authenticationPluginInstantiator = authenticationPluginInstantiator;
         this.federationFactory = federationFactory;
         this.databaseManager = databaseManager;
         this.communicationMechanism = communicationMechanism;
+        this.updateBuilder = updateBuilder;
     }
     
     public FederationHost(DatabaseManager databaseManager, 
@@ -75,6 +78,7 @@ public class FederationHost {
         this.federationFactory = new FederationFactory();
         // FIXME how reload should affect the remote federations data?
         this.remoteFederations = new ArrayList<RemoteFederation>();
+        this.updateBuilder = new FederationUpdateBuilder();
     }
 
     public void setRemoteFederationsList(List<RemoteFederation> remoteFederations) {
@@ -315,15 +319,6 @@ public class FederationHost {
         this.federationList.add(remoteFederation);
     }
     
-    // TODO test
-    public void updateFederationUsingRemoteData(FederationUpdate remoteUpdate) throws InvalidParameterException {
-        Federation federationToUpdate = getFederationOrFail(remoteUpdate.getTargetFederationId());
-        
-        synchronized(federationToUpdate) {
-            federationToUpdate.update(remoteUpdate);
-        }
-    }
-    
     /*
      * 
      * Membership
@@ -343,9 +338,9 @@ public class FederationHost {
             FederationUser newMember = federationToAdd.addUser(userId, email, description, authenticationProperties);
             this.databaseManager.saveFederation(federationToAdd);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withMembers(Arrays.asList(newMember)).
+                    withMember(newMember).
                     build();
             this.syncMechanism.onLocalUpdate(update);
             
@@ -391,7 +386,7 @@ public class FederationHost {
             federation.revokeMembership(memberId);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
                     deleteMember(memberId).
                     build();
@@ -418,9 +413,9 @@ public class FederationHost {
             String newAttributeId = federation.createAttribute(attributeName);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withAttributes(Arrays.asList(federation.getAttribute(newAttributeId))).
+                    withAttribute(federation.getAttribute(newAttributeId)).
                     build();
             this.syncMechanism.onLocalUpdate(update);
             
@@ -455,7 +450,7 @@ public class FederationHost {
             federation.deleteAttribute(attributeId);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
                     deleteAttribute(attributeId).
                     build();
@@ -476,9 +471,9 @@ public class FederationHost {
             federation.grantAttribute(memberId, attributeId);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withMembers(Arrays.asList(federation.getUserByMemberId(memberId))).
+                    withMember(federation.getUserByMemberId(memberId)).
                     build();
             this.syncMechanism.onLocalUpdate(update);
         }
@@ -497,9 +492,9 @@ public class FederationHost {
             federation.revokeAttribute(memberId, attributeId);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withMembers(Arrays.asList(federation.getUserByMemberId(memberId))).
+                    withMember(federation.getUserByMemberId(memberId)).
                     build();
             this.syncMechanism.onLocalUpdate(update);
         }
@@ -528,9 +523,9 @@ public class FederationHost {
                     accessPolicyClassName, metadata);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withServices(Arrays.asList(federation.getService(serviceId).serialize())).
+                    withService(federation.getService(serviceId).serialize()).
                     build();
             this.syncMechanism.onLocalUpdate(update);
             
@@ -604,9 +599,9 @@ public class FederationHost {
             federationService.update(metadata, discoveryPolicyClassName, accessPolicyClassName);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withServices(Arrays.asList(federation.getService(serviceId).serialize())).
+                    withService(federation.getService(serviceId).serialize()).
                     build();
             this.syncMechanism.onLocalUpdate(update);
         }
@@ -628,7 +623,7 @@ public class FederationHost {
             federation.deleteService(serviceId);
             this.databaseManager.saveFederation(federation);
             
-            FederationUpdate update = new FederationUpdate.FederationUpdateBuilder().
+            FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
                     deleteService(serviceId).
                     build();
@@ -697,11 +692,16 @@ public class FederationHost {
         return federation;
     }
 
-    public void leaveRemoteFederation(String federationId) {
-        // TODO implement
+    // TODO test
+    public void updateFederationUsingRemoteData(FederationUpdate remoteUpdate) throws InvalidParameterException {
+        Federation federationToUpdate = getFederationOrFail(remoteUpdate.getTargetFederationId());
+        
+        synchronized(federationToUpdate) {
+            federationToUpdate.update(remoteUpdate);
+        }
     }
     
-    public void updateRemoteFederation(Federation federation) {
+    public void leaveRemoteFederation(String federationId) {
         // TODO implement
     }
     
