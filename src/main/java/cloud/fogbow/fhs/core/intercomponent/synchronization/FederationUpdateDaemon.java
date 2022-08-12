@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
+import cloud.fogbow.common.util.StoppableRunner;
 import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
@@ -22,7 +23,7 @@ import cloud.fogbow.fhs.core.models.RemoteFederation;
 
 // TODO test
 // TODO refactor
-public class FederationUpdateDaemon implements Runnable {
+public class FederationUpdateDaemon extends StoppableRunner implements Runnable {
     private final Logger LOGGER = Logger.getLogger(FederationUpdateDaemon.class);
     
     private List<FederationUpdate> localUpdates;
@@ -34,6 +35,8 @@ public class FederationUpdateDaemon implements Runnable {
     
     public FederationUpdateDaemon(List<FederationUpdate> localUpdates, List<FederationUpdate> remoteUpdates, 
             FhsCommunicationMechanism communicationMechanism, FederationHost federationHost) throws ConfigurationErrorException {
+        // FIXME constant
+        super(5000L);
         this.localUpdates = localUpdates;
         this.remoteUpdates = remoteUpdates;
         this.federationHost = federationHost;
@@ -83,23 +86,6 @@ public class FederationUpdateDaemon implements Runnable {
         }
         
         return fhsFederations;
-    }
-    
-    @Override
-    public void run() {
-        while (true) {
-            synchronizeFederationInstances();
-            synchronizeLocalUpdates();
-            synchronizeRemoteUpdates();
-            
-            try {
-                // FIXME constant
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
     }
 
     private void synchronizeFederationInstances() {
@@ -233,5 +219,12 @@ public class FederationUpdateDaemon implements Runnable {
         }
         
         return supportingFhss;
+    }
+
+    @Override
+    public void doRun() throws InterruptedException {
+        synchronizeFederationInstances();
+        synchronizeLocalUpdates();
+        synchronizeRemoteUpdates();
     }
 }
