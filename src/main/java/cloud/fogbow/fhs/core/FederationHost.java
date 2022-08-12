@@ -272,6 +272,12 @@ public class FederationHost {
             return federation;
         }
     }
+
+    public Federation getFederation(String federationId) throws InvalidParameterException {
+        synchronized(this.federationList) {
+            return getFederationOrFail(federationId);
+        }
+    }
     
     public void deleteFederation(String requester, String federationId) throws UnauthorizedRequestException, InvalidParameterException {
         synchronized(this.federationList) {

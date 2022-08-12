@@ -9,6 +9,7 @@ public class Messages {
         public static final String CANNOT_FIND_FEDERATION = "Cannot find federation %s.";
         public static final String CANNOT_FIND_FEDERATION_ADMIN = "Cannot find federation admin %s.";
         public static final String EXPIRED_TOKEN = "Expired token.";
+        public static final String FAILED_TO_UPDATE_FEDERATION_IN_FHS = "Failed to update federation in FHS %s.";
         public static final String FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY = "Federation name cannot be null or empty.";
         public static final String FED_ADMIN_IS_ALREADY_ALLOWED_IN_FEDERATION = "Fed Admin is already allowed in federation.";
         public static final String FED_ADMIN_IS_NOT_ALLOWED_IN_FEDERATION = "Fed Admin is not allowed in federation.";

@@ -451,6 +451,21 @@ public class Federation {
     }
 
     // TODO test
+    public List<String> getSupportingFhss() {
+        List<String> supportingFhss = new ArrayList<String>();
+        
+        for (FederationUser remoteAdmin : this.remoteAdmins) {
+            String supportingFhs = remoteAdmin.getFhsId();
+            
+            if (!supportingFhs.equals(this.fhsId)) {
+                supportingFhss.add(supportingFhs);
+            }
+        }
+        
+        return supportingFhss;
+    }
+    
+    // TODO test
     public void update(FederationUpdate remoteUpdate) throws InvalidParameterException {
         if (remoteUpdate.updatedName()) {
             this.name = remoteUpdate.getNewName();
