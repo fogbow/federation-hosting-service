@@ -19,10 +19,11 @@ public class LocalUpdateHandlerTest {
     private static final String FHS_ID_1 = "fhsId1";
     private static final String FHS_ID_2 = "fhsId2";
     private static final String FHS_ID_3 = "fhsId3";
+    private static final String LOCAL_FHS_ID = "localFhsId";
     private static final String REMOTE_FHS_ID = "remoteFhsId";
+
     private FederationHost federationHost;
     private FhsCommunicationMechanism communicationMechanism;
-    private String localFhsId = "localFhsId";
     private LocalUpdateHandler handler;
     private FederationUpdate update;
     private Federation federation;
@@ -40,12 +41,12 @@ public class LocalUpdateHandlerTest {
         this.update = Mockito.mock(FederationUpdate.class);
         Mockito.when(this.update.getTargetFederationId()).thenReturn(TARGET_FEDERATION_ID);
         
-        handler = new LocalUpdateHandler(this.federationHost, this.communicationMechanism, this.localFhsId);
+        handler = new LocalUpdateHandler(this.federationHost, this.communicationMechanism, LOCAL_FHS_ID);
     }
     
     @Test
     public void testHandleLocalUpdateOnLocalFederation() throws FogbowException {
-        Mockito.when(this.federation.getFhsId()).thenReturn(localFhsId);
+        Mockito.when(this.federation.getFhsId()).thenReturn(LOCAL_FHS_ID);
         
         Mockito.when(this.update.getUpdatedFhss()).
             thenReturn(Arrays.asList()).
@@ -66,7 +67,7 @@ public class LocalUpdateHandlerTest {
     
     @Test
     public void testHandleLocalUpdateOnLocalFederationUpdateFails() throws FogbowException {
-        Mockito.when(this.federation.getFhsId()).thenReturn(localFhsId);
+        Mockito.when(this.federation.getFhsId()).thenReturn(LOCAL_FHS_ID);
         Mockito.when(this.update.getUpdatedFhss()).
             thenReturn(Arrays.asList()).
             thenReturn(Arrays.asList()).
@@ -88,7 +89,7 @@ public class LocalUpdateHandlerTest {
     
     @Test
     public void testHandleLocalUpdateOnLocalFederationTryingUpdateAgainAfterFail() throws FogbowException {
-        Mockito.when(this.federation.getFhsId()).thenReturn(localFhsId);
+        Mockito.when(this.federation.getFhsId()).thenReturn(LOCAL_FHS_ID);
         
         Mockito.when(this.update.getUpdatedFhss()).
             thenReturn(Arrays.asList(FHS_ID_2, FHS_ID_3)).

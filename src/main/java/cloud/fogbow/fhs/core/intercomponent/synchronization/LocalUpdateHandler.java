@@ -32,7 +32,7 @@ public class LocalUpdateHandler {
         if (federation.getFhsId().equals(localFhsId)) {
             updateLocalFederation(update, federation);
         } else {
-            updateRemoteFederatoin(update, federation);
+            updateRemoteFederation(update, federation);
         }
     }
 
@@ -57,7 +57,7 @@ public class LocalUpdateHandler {
     }
 
     // if updated federation is remote, update only the owner
-    private void updateRemoteFederatoin(FederationUpdate update, Federation federation) {
+    private void updateRemoteFederation(FederationUpdate update, Federation federation) {
         try {
             communicationMechanism.updateFederation(federation.getFhsId(), update);
             update.setAsCompleted();
