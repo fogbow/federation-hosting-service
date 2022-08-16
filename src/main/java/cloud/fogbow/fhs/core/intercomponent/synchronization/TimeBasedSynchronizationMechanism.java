@@ -3,6 +3,10 @@ package cloud.fogbow.fhs.core.intercomponent.synchronization;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
+
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
@@ -13,8 +17,9 @@ import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 
-// TODO test
 public class TimeBasedSynchronizationMechanism implements SynchronizationMechanism {
+    private final Logger LOGGER = Logger.getLogger(TimeBasedSynchronizationMechanism.class);
+    
     private List<FederationUpdate> localUpdates;
     private List<FederationUpdate> remoteUpdates;
     private Thread updateThread;
@@ -22,6 +27,7 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
     private FhsCommunicationMechanism communicationMechanism;
     private List<String> allowedFhssIds;
     private long sleepTime;
+    private String localFhsId;
     
     public TimeBasedSynchronizationMechanism(FederationHost federationHost) throws ConfigurationErrorException {
         this.federationHost = federationHost;
@@ -44,9 +50,31 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
             }
         }
         
-        // FIXME constant
-        this.sleepTime = Long.valueOf(PropertiesHolder.getInstance().getProperty(
-                "synchronization_sleep_time"));
+        String sleepTimeString = PropertiesHolder.getInstance().getProperty(
+                ConfigurationPropertyKeys.SYNCHRONIZATION_SLEEP_TIME);
+        
+        if (sleepTimeString == null) {
+            throw new ConfigurationErrorException(Messages.Exception.MISSING_SYNCHRONIZATION_SLEEP_TIME_PROPERTY);
+        }
+
+        this.sleepTime = Long.valueOf(sleepTimeString);
+        
+        this.localFhsId = PropertiesHolder.getInstance().getProperty(
+                ConfigurationPropertyKeys.PROVIDER_ID_KEY);
+        
+        if (this.localFhsId == null) {
+            throw new ConfigurationErrorException(Messages.Exception.MISSING_PROVIDER_ID_PROPERTY);
+        }
+    }
+    
+    @VisibleForTesting
+    List<String> getAllowedFhssIds() {
+        return this.allowedFhssIds;
+    }
+    
+    @VisibleForTesting
+    long getSleepTime() {
+        return this.sleepTime;
     }
     
     @Override
@@ -57,12 +85,13 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
     @Override
     public void onStartUp() throws Exception {
         if (updateThread == null) {
-            this.updateThread = new Thread(new FederationUpdateDaemon(localUpdates, 
-                    remoteUpdates, communicationMechanism, federationHost, 
-                    this.sleepTime, this.allowedFhssIds));
-            updateThread.start();
+            FederationUpdateDaemon daemon = new FederationUpdateDaemon(
+                    this.localUpdates, this.remoteUpdates, this.communicationMechanism, 
+                    this.federationHost, this.sleepTime, this.allowedFhssIds, this.localFhsId);
+            this.updateThread = new Thread(daemon);
+            this.updateThread.start();
         } else {
-            // TODO error
+            LOGGER.error(Messages.Exception.SYNCHRONIZATION_MECHANISM_HAS_ALREADY_BEEN_STARTED_UP);
         }
     }
 

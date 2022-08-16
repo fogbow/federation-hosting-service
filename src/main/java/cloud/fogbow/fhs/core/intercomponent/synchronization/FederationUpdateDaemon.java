@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.util.StoppableRunner;
@@ -17,8 +16,6 @@ import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 
-// TODO test
-// TODO refactor
 public class FederationUpdateDaemon extends StoppableRunner implements Runnable {
     private final Logger LOGGER = Logger.getLogger(FederationUpdateDaemon.class);
     
@@ -26,34 +23,37 @@ public class FederationUpdateDaemon extends StoppableRunner implements Runnable 
     private List<FederationUpdate> remoteUpdates;
     private FhsCommunicationMechanism communicationMechanism;
     private FederationHost federationHost;
-    private String localFhsId;
     private List<String> allowedFhssIds;
     private LocalUpdateHandler localUpdateHandler;
     private RemoteUpdateHandler remoteUpdateHandler;
     
     public FederationUpdateDaemon(List<FederationUpdate> localUpdates, List<FederationUpdate> remoteUpdates, 
             FhsCommunicationMechanism communicationMechanism, FederationHost federationHost, long sleepTime,
-            List<String> allowedFhssIds) throws ConfigurationErrorException {
+            List<String> allowedFhssIds, String localFhsId, LocalUpdateHandler localUpdateHandler, 
+            RemoteUpdateHandler remoteUpdateHandler) {
         super(sleepTime);
         this.localUpdates = localUpdates;
         this.remoteUpdates = remoteUpdates;
         this.federationHost = federationHost;
         this.communicationMechanism = communicationMechanism;
         this.allowedFhssIds = allowedFhssIds;
-        this.localUpdateHandler = new LocalUpdateHandler(federationHost, communicationMechanism, localFhsId);
-        this.remoteUpdateHandler = new RemoteUpdateHandler(federationHost, communicationMechanism, localFhsId);
+        this.localUpdateHandler = localUpdateHandler;
+        this.remoteUpdateHandler = remoteUpdateHandler;
+    }
+    
+    public FederationUpdateDaemon(List<FederationUpdate> localUpdates, List<FederationUpdate> remoteUpdates, 
+            FhsCommunicationMechanism communicationMechanism, FederationHost federationHost, long sleepTime,
+            List<String> allowedFhssIds, String localFhsId) {
+        this(localUpdates, remoteUpdates, communicationMechanism, federationHost, sleepTime, allowedFhssIds, localFhsId,
+                new LocalUpdateHandler(federationHost, communicationMechanism, localFhsId), 
+                new RemoteUpdateHandler(federationHost, communicationMechanism, localFhsId));
     }
 
     @Override
-    public void doRun() throws InterruptedException {
-        try {
-            synchronizeFederationInstances();
-            synchronizeLocalUpdates();
-            synchronizeRemoteUpdates();
-        } catch (InvalidParameterException e) {
-            // TODO handle
-            e.printStackTrace();
-        }
+    public void doRun() {
+        synchronizeFederationInstances();
+        synchronizeLocalUpdates();
+        synchronizeRemoteUpdates();
     }
     
     private void synchronizeFederationInstances() {
@@ -97,21 +97,28 @@ public class FederationUpdateDaemon extends StoppableRunner implements Runnable 
         return fhsFederations;
     }
 
-    private void synchronizeLocalUpdates() throws InvalidParameterException {
+    private void synchronizeLocalUpdates() {
         synchronized(this.localUpdates) {
-            
             for (FederationUpdate localUpdate : this.localUpdates) {
-                this.localUpdateHandler.handleLocalUpdate(localUpdate);
+                try {
+                    this.localUpdateHandler.handleLocalUpdate(localUpdate);
+                } catch (InvalidParameterException e) {
+                    LOGGER.error(Messages.Exception.FAILED_TO_HANDLE_LOCAL_UPDATE);
+                }
             }
             
             this.localUpdates.removeIf(u -> u.completed());
         }
     }
 
-    private void synchronizeRemoteUpdates() throws InvalidParameterException {
+    private void synchronizeRemoteUpdates() {
         synchronized(this.remoteUpdates) {
             for (FederationUpdate remoteUpdate : this.remoteUpdates) {
-                this.remoteUpdateHandler.handleRemoteUpdate(remoteUpdate);
+                try {
+                    this.remoteUpdateHandler.handleRemoteUpdate(remoteUpdate);
+                } catch (InvalidParameterException e) {
+                    LOGGER.error(Messages.Exception.FAILED_TO_HANDLE_REMOTE_UPDATE);
+                }
             }
             
             this.remoteUpdates.removeIf(u -> u.completed());

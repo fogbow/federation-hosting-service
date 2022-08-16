@@ -9,6 +9,8 @@ public class Messages {
         public static final String CANNOT_FIND_FEDERATION = "Cannot find federation %s.";
         public static final String CANNOT_FIND_FEDERATION_ADMIN = "Cannot find federation admin %s.";
         public static final String EXPIRED_TOKEN = "Expired token.";
+        public static final String FAILED_TO_HANDLE_LOCAL_UPDATE = "Failed to handle local update.";
+        public static final String FAILED_TO_HANDLE_REMOTE_UPDATE = "Failed to handle remote update.";
         public static final String FAILED_TO_UPDATE_FEDERATION_IN_FHS = "Failed to update federation in FHS %s.";
         public static final String FEDERATION_NAME_CANNOT_BE_NULL_OR_EMPTY = "Federation name cannot be null or empty.";
         public static final String FED_ADMIN_IS_ALREADY_ALLOWED_IN_FEDERATION = "Fed Admin is already allowed in federation.";
@@ -22,6 +24,8 @@ public class Messages {
         public static final String INVALID_TOKEN = "Invalid token.";
         public static final String MEMBER_NOT_FOUND_IN_FEDERATION = "Member %s not found in federation %s.";
         public static final String MISSING_ALLOWED_FHS_IDS_PROPERTY = "Missing allowed fhs IDs property.";
+        public static final String MISSING_PROVIDER_ID_PROPERTY = "Missing provider ID property.";
+        public static final String MISSING_SYNCHRONIZATION_SLEEP_TIME_PROPERTY = "Missing synchronization sleep time property.";
         public static final String NO_OPERATOR_ID_SPECIFIED = "No operator ID specified in the configuration file.";
         public static final String NO_OTHER_SERVICE_ADMIN_ID_SPECIFIED = "No other service admin ID specified in the configuration file.";
         public static final String NO_REMOTE_COMMUNICATION_CONFIGURED = "No remote communication configured.";
@@ -32,6 +36,7 @@ public class Messages {
         public static final String SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY = "Service endpoint cannot be null or empty.";
         public static final String SERVICE_NOT_FOUND = "Service %s not found in federation %s.";
         public static final String SERVICE_OWNER_CANNOT_BE_NULL_OR_EMPTY = "Service owner cannot be null or empty.";
+        public static final String SYNCHRONIZATION_MECHANISM_HAS_ALREADY_BEEN_STARTED_UP = "Synchronization Mechanism has already been started up.";
         public static final String UNABLE_TO_FIND_CLASS_S = "Unable to find class %s.";
         public static final String UNABLE_TO_RETRIEVE_RESPONSE_FROM_PROVIDER_S = "Unable to retrieve response from provider: %s.";
         public static final String UNAVAILABLE_PROVIDER = "Provider %s unavailable. Error message: %s.";

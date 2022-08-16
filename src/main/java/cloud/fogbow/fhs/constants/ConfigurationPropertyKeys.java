@@ -29,4 +29,5 @@ public class ConfigurationPropertyKeys {
     public static final String COMMUNICATION_MECHANISM_CLASS_NAME = "communication_mechanism_class_name";
     public static final String SYNCHRONIZATION_MECHANISM_CLASS_NAME = "synchronization_mechanism_class_name";
     public static final String ALLOWED_FHS_IDS_KEY = "allowed_fhs_ids";
+    public static final String SYNCHRONIZATION_SLEEP_TIME = "synchronization_sleep_time";
 }
