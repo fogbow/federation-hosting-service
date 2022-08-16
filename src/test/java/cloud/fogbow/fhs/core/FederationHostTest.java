@@ -1165,7 +1165,7 @@ public class FederationHostTest {
         this.federationHost.invokeService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1, HttpMethod.GET, 
                 new ArrayList<String>(), new HashMap<String, String>(), new HashMap<String, Object>());
         
-        Mockito.verify(this.federation1).invoke(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1, 
+        Mockito.verify(this.federation1).invoke(REGULAR_USER_NAME_1, SERVICE_ID_1, 
                 HttpMethod.GET, new ArrayList<String>(), new HashMap<String, String>(), 
                 new HashMap<String, Object>());
     }

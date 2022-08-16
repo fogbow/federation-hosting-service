@@ -645,7 +645,7 @@ public class FederationHost {
     public ServiceResponse invokeService(String requester, String federationId, String serviceId, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         Federation federation = lookUpFederationById(federationId);
-        return federation.invoke(requester, federationId, serviceId, method, path, headers, body);
+        return federation.invoke(requester, serviceId, method, path, headers, body);
     }
     
     /*

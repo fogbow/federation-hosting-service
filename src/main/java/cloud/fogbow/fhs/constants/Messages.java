@@ -6,6 +6,7 @@ public class Messages {
         public static final String ADMIN_ALREADY_EXISTS = "Admin already exists.";
         public static final String ADMIN_NAME_CANNOT_BE_NULL_OR_EMPTY = "Admin name cannot be null or empty.";
         public static final String ATTRIBUTE_DOES_NOT_EXIST_IN_FEDERATION = "Attribute %s does not exist in federation %s.";
+        public static final String CANNOT_DELETE_ATTRIBUTE = "Cannot delete attribute %s.";
         public static final String CANNOT_FIND_FEDERATION = "Cannot find federation %s.";
         public static final String CANNOT_FIND_FEDERATION_ADMIN = "Cannot find federation admin %s.";
         public static final String EXPIRED_TOKEN = "Expired token.";

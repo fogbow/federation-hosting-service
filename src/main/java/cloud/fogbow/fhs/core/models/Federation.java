@@ -62,7 +62,7 @@ public class Federation {
     public static final String SERVICE_OWNER_ATTRIBUTE_NAME = "serviceOwner";
     private static final FederationAttribute MEMBER_ATTRIBUTE = 
             new FederationAttribute(MEMBER_ATTRIBUTE_NAME, MEMBER_ATTRIBUTE_NAME);
-    private static FederationAttribute SERVICE_OWNER_ATTRIBUTE = 
+    private static final FederationAttribute SERVICE_OWNER_ATTRIBUTE = 
             new FederationAttribute(SERVICE_OWNER_ATTRIBUTE_NAME, SERVICE_OWNER_ATTRIBUTE_NAME);
     
     @Column(name = FEDERATION_ID_COLUMN_NAME)
@@ -217,12 +217,10 @@ public class Federation {
         return owner;
     }
     
-    // TODO test
     public boolean isFederationOwner(String requester) {
         return this.owner.equals(requester) || isRemoteAdmin(requester);
     }
     
-    // TODO test
     public boolean isRemoteAdmin(String requester) {
         for (FederationUser remoteAdmin : this.remoteAdmins) {
             if (remoteAdmin.getName().equals(requester)) { 
@@ -323,11 +321,16 @@ public class Federation {
         return lookupAttribute(attributeId);
     }
 
-    // TODO should check if the attribute to be removed is not 'Member' of 'ServiceOwner'
-    // In this case, it should throw exception.
     // TODO should check if some user uses the attribute.
     public void deleteAttribute(String attributeId) throws InvalidParameterException {
         FederationAttribute attribute = getAttributeById(attributeId);
+        
+        if (attribute.equals(Federation.MEMBER_ATTRIBUTE) ||
+                attribute.equals(Federation.SERVICE_OWNER_ATTRIBUTE)) {
+            throw new InvalidParameterException(
+                    String.format(Messages.Exception.CANNOT_DELETE_ATTRIBUTE, attributeId));
+        }
+        
         this.attributes.remove(attribute);
     }
 
@@ -352,7 +355,6 @@ public class Federation {
         }
     }
     
-    // TODO test
     private FederationAttribute getAttributeById(String attributeId) {
         if (Federation.MEMBER_ATTRIBUTE_NAME.equals(attributeId)) {
             return Federation.MEMBER_ATTRIBUTE;
@@ -395,8 +397,7 @@ public class Federation {
         return service.getAccessPolicy().getCredentialsForAccess(user, cloudName);
     }
     
-    // TODO test
-    public ServiceResponse invoke(String requester, String federationId, String serviceId, HttpMethod method, 
+    public ServiceResponse invoke(String requester, String serviceId, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         FederationService service = getService(serviceId);
         ServiceAccessPolicy accessPolicy = service.getAccessPolicy();
@@ -450,7 +451,6 @@ public class Federation {
         }
     }
 
-    // TODO test
     public List<String> getSupportingFhss() {
         List<String> supportingFhss = new ArrayList<String>();
         
@@ -465,7 +465,6 @@ public class Federation {
         return supportingFhss;
     }
     
-    // TODO test
     public void update(FederationUpdate remoteUpdate) throws InvalidParameterException {
         if (remoteUpdate.updatedName()) {
             this.name = remoteUpdate.getNewName();
@@ -486,8 +485,7 @@ public class Federation {
         }
         
         for (String serviceUpdateStr : remoteUpdate.getUpdatedServices()) {
-            FederationServiceFactory factory = new FederationServiceFactory();
-            FederationService serviceUpdate = factory.deserialize(serviceUpdateStr);
+            FederationService serviceUpdate = this.federationServiceFactory.deserialize(serviceUpdateStr);
             FederationService serviceToUpdate = lookupService(serviceUpdate.getServiceId());
             this.services.remove(serviceToUpdate);
             this.services.add(serviceUpdate);
@@ -544,7 +542,6 @@ public class Federation {
         return null;
     }
     
-    // TODO move this method to FederationFactory
     public String toJson() {
         String federationEnabledStr = this.jsonUtils.toJson(this.enabled());
         String federationMembersStr = this.jsonUtils.toJson(this.getMemberList());

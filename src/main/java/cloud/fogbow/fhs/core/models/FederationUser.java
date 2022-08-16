@@ -88,6 +88,7 @@ public class FederationUser {
         this.id = id;
         this.name = name;
         this.federationId = federationId;
+        this.fhsId = fhsId;
         this.email = email;
         this.description = description;
         this.enabled = enabled;
