@@ -7,7 +7,6 @@ import java.util.Map;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationUser;
 
-// TODO test
 public class FederationUpdate {
     private String targetFederationId;
     private String newName;

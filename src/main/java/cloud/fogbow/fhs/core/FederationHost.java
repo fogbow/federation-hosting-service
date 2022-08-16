@@ -273,6 +273,7 @@ public class FederationHost {
         }
     }
 
+    // TODO test
     public Federation getFederation(String federationId) throws InvalidParameterException {
         synchronized(this.federationList) {
             return getFederationOrFail(federationId);

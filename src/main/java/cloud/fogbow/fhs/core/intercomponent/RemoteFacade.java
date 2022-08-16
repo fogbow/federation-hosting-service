@@ -107,6 +107,7 @@ public class RemoteFacade {
         throw new UnauthorizedRequestException(Messages.Exception.FHS_IS_NOT_AUTHORIZED_TO_PERFORM_ACTION);
     }
     
+    // TODO test
     public void updateFederation(String fhsId, FederationUpdate federationUpdate) {
         if (this.allowedFhsIds.contains(fhsId)) {
             this.syncMechanism.onRemoteUpdate(federationUpdate);
