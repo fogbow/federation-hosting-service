@@ -13,6 +13,10 @@ import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.google.common.annotations.VisibleForTesting;
+
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
@@ -25,10 +29,13 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
+import cloud.fogbow.fhs.core.utils.MapUtils;
 
 @Entity
 @Table(name = "federation_service_table")
 public class FederationService {
+    public static final String SERIALIZED_FIELDS_SEPARATOR = "!^!";
+    public static final String EMPTY_DISCOVERY_POLICY_CLASS_NAME = "null";
     private static final String SERVICE_ID_COLUMN_NAME = "service_id";
     private static final String SERVICE_OWNER_ID_COLUMN_NAME = "service_owner_id";
     private static final String SERVICE_ENDPOINT_COLUMN_NAME = "service_endpoint";
@@ -77,17 +84,32 @@ public class FederationService {
     @Transient
     private ServiceInvoker invoker;
     
+    @Transient
+    private DiscoveryPolicyInstantiator discoveryPolicyInstantiator;
+    
+    @Transient
+    private AccessPolicyInstantiator accessPolicyInstantiator;
+    
+    @Transient
+    private ServiceInvokerInstantiator serviceInvokerInstantiator;
+    
+    @Transient
+    private JsonUtils jsonUtils;
+    
     @PostLoad
     private void startUp() {
-        setUpServiceLifeCyclePlugins(new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
-                new ServiceInvokerInstantiator());
+        this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
+        this.accessPolicyInstantiator = new AccessPolicyInstantiator();
+        this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
+        this.jsonUtils = new JsonUtils();
+        
+        setUpServiceLifeCyclePlugins();
     }
     
-    private void setUpServiceLifeCyclePlugins(DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
-            AccessPolicyInstantiator accessPolicyInstantiator, ServiceInvokerInstantiator invokerInstantiator) {
+    private void setUpServiceLifeCyclePlugins() {
         this.discoveryPolicy = discoveryPolicyInstantiator.getDiscoveryPolicy(this.discoveryPolicyClassName);
         this.accessPolicy = accessPolicyInstantiator.getAccessPolicy(this.accessPolicyClassName, this.metadata);
-        this.invoker = invokerInstantiator.getInvoker(this.invokerClassName, this.metadata, this.federationId);
+        this.invoker = serviceInvokerInstantiator.getInvoker(this.invokerClassName, this.metadata, this.federationId);
     }
     
     public FederationService() {
@@ -97,7 +119,7 @@ public class FederationService {
     public FederationService(String serviceId, String ownerId, String endpoint, String discoveryPolicyClassName, 
             String accessPolicyClassName, String federationId, Map<String, String> metadata, 
             DiscoveryPolicyInstantiator discoveryPolicyInstantiator, AccessPolicyInstantiator accessPolicyInstantiator, 
-            ServiceInvokerInstantiator invokerInstantiator) throws InvalidParameterException {
+            ServiceInvokerInstantiator invokerInstantiator, JsonUtils jsonUtils) throws InvalidParameterException {
         if (endpoint == null || endpoint.isEmpty()) {
             throw new InvalidParameterException(
                     Messages.Exception.SERVICE_ENDPOINT_CANNOT_BE_NULL_OR_EMPTY);
@@ -111,15 +133,62 @@ public class FederationService {
         this.discoveryPolicyClassName = discoveryPolicyClassName;
         this.accessPolicyClassName = accessPolicyClassName;
         this.invokerClassName = this.metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
+        this.discoveryPolicyInstantiator = discoveryPolicyInstantiator;
+        this.accessPolicyInstantiator = accessPolicyInstantiator;
+        this.serviceInvokerInstantiator = invokerInstantiator;
+        this.jsonUtils = jsonUtils;
         
-        setUpServiceLifeCyclePlugins(discoveryPolicyInstantiator, accessPolicyInstantiator, invokerInstantiator);
+        setUpServiceLifeCyclePlugins();
     }
     
     public FederationService(String ownerId, String endpoint, String discoveryPolicyClassName, 
             String accessPolicyClassName, String federationId, Map<String, String> metadata) throws InvalidParameterException {
         this(UUID.randomUUID().toString(), ownerId, endpoint, discoveryPolicyClassName, accessPolicyClassName, 
                 federationId, metadata, new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
-                new ServiceInvokerInstantiator());
+                new ServiceInvokerInstantiator(), new JsonUtils());
+    }
+    
+    public FederationService(String serializedService, DiscoveryPolicyInstantiator discoveryPolicyInstantiator, 
+            AccessPolicyInstantiator accessPolicyInstantiator, ServiceInvokerInstantiator invokerInstantiator, 
+            JsonUtils jsonUtils) {
+        this(serializedService);
+        this.discoveryPolicyInstantiator = new DiscoveryPolicyInstantiator();
+        this.accessPolicyInstantiator = new AccessPolicyInstantiator();
+        this.serviceInvokerInstantiator = new ServiceInvokerInstantiator();
+        this.jsonUtils = new JsonUtils();
+        
+        setUpServiceLifeCyclePlugins();
+    }
+    
+    @VisibleForTesting
+    FederationService(String serializedService) {
+        String[] fields = StringUtils.splitByWholeSeparator(
+                serializedService, FederationService.SERIALIZED_FIELDS_SEPARATOR);
+        
+        this.serviceId = fields[0];
+        this.ownerId = fields[1];
+        this.endpoint = fields[2];
+        
+        if (fields[3].equals(EMPTY_DISCOVERY_POLICY_CLASS_NAME)) {
+            this.discoveryPolicyClassName = "";
+        } else {
+            this.discoveryPolicyClassName = fields[3];
+        }
+
+        this.accessPolicyClassName = fields[4];
+        this.federationId = fields[5];
+        this.metadata = new MapUtils().deserializeMap(fields[6]);
+        this.invokerClassName = this.metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
+    }
+    
+    public String serialize() {
+        if (this.discoveryPolicyClassName == null || this.discoveryPolicyClassName.isEmpty()) {
+            return String.join(SERIALIZED_FIELDS_SEPARATOR, this.serviceId, this.ownerId, this.endpoint, EMPTY_DISCOVERY_POLICY_CLASS_NAME,
+                    this.accessPolicyClassName, this.federationId, this.jsonUtils.toJson(this.metadata));
+        } else {
+            return String.join(SERIALIZED_FIELDS_SEPARATOR, this.serviceId, this.ownerId, this.endpoint, this.discoveryPolicyClassName,
+                    this.accessPolicyClassName, this.federationId, this.jsonUtils.toJson(this.metadata));
+        }
     }
 
     public String getOwnerId() {
@@ -165,6 +234,26 @@ public class FederationService {
     public String getServiceId() {
         return serviceId;
     }
+
+    @VisibleForTesting
+    String getDiscoveryPolicyClassName() {
+        return this.discoveryPolicyClassName;
+    }
+
+    @VisibleForTesting
+    String getAccessPolicyClassName() {
+        return this.accessPolicyClassName;
+    }
+    
+    @VisibleForTesting
+    String getInvokerClassName() {
+        return this.invokerClassName;
+    }
+
+    @VisibleForTesting
+    String getFederationId() {
+        return this.federationId;
+    }
     
     public ServiceResponse invoke(FederationUser user, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
@@ -193,7 +282,6 @@ public class FederationService {
                 && Objects.equals(ownerId, other.ownerId) && Objects.equals(serviceId, other.serviceId);
     }
 
-    // TODO test
     public void update(Map<String, String> metadata, String discoveryPolicyClassName, String accessPolicyClassName) {
         String invokerClassName = metadata.get(INVOKER_CLASS_NAME_METADATA_KEY);
         
@@ -201,21 +289,7 @@ public class FederationService {
         this.accessPolicyClassName = accessPolicyClassName;
         this.invokerClassName = invokerClassName;
         this.metadata = metadata;
-        
-        setUpServiceLifeCyclePlugins(new DiscoveryPolicyInstantiator(), new AccessPolicyInstantiator(), 
-                new ServiceInvokerInstantiator());
-    }
-    
-    // TODO test
-    public String serialize() {
-        if (this.discoveryPolicyClassName == null || this.discoveryPolicyClassName.isEmpty()) {
-            // FIXME constant
-            return String.join("!^!", this.serviceId, this.ownerId, this.endpoint, "null",
-                    this.accessPolicyClassName, this.federationId, new JsonUtils().toJson(this.metadata));
-        } else {
-            // FIXME constant
-            return String.join("!^!", this.serviceId, this.ownerId, this.endpoint, this.discoveryPolicyClassName,
-                    this.accessPolicyClassName, this.federationId, new JsonUtils().toJson(this.metadata));
-        }
+
+        setUpServiceLifeCyclePlugins();
     }
 }
