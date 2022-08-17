@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import cloud.fogbow.common.constants.FogbowConstants;
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
@@ -127,6 +129,11 @@ public class ApplicationFacade {
         this.authorizationPlugin = authorizationPlugin;
     }
     
+    @VisibleForTesting
+    AuthorizationPlugin<FhsOperation> getAuthorizationPlugin() {
+        return this.authorizationPlugin;
+    }
+    
     public void setLocalFederationHost(FederationHost localFederationHost) {
         this.federationHost = localFederationHost;
     }
@@ -227,7 +234,6 @@ public class ApplicationFacade {
         this.federationHost.deleteFederationInstance(federationId);
     }
     
-    // TODO test
     public void reload(String userToken) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.RELOAD_CONFIGURATION));
@@ -277,7 +283,6 @@ public class ApplicationFacade {
         }
     }
     
-    // TODO update test
     public List<FederationDescription> listFederations(String userToken, String owner) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.LIST_FEDERATIONS));
@@ -287,20 +292,27 @@ public class ApplicationFacade {
         try {
             List<Federation> federationList = this.federationHost.getFederationsOwnedByUser(requestUser.getId());
             List<Federation> remoteFederationList = this.federationHost.getAdminRemoteFederations(requestUser.getId());
-            federationList.addAll(remoteFederationList);
             List<FederationDescription> federationDescriptions = new ArrayList<FederationDescription>();
             for (Federation federation : federationList) {
-                String id = federation.getId();
-                String name = federation.getName();
-                String description = federation.getDescription();
-                
-                federationDescriptions.add(new FederationDescription(id, name, description));
+                federationDescriptions.add(createFederationDescription(federation));
+            }
+            
+            for (Federation federation : remoteFederationList) {
+                federationDescriptions.add(createFederationDescription(federation));
             }
             
             return federationDescriptions;    
         } finally {
             synchronizationManager.finishOperation();
         }
+    }
+
+    private FederationDescription createFederationDescription(Federation federation) {
+        String id = federation.getId();
+        String name = federation.getName();
+        String description = federation.getDescription();
+        
+        return new FederationDescription(id, name, description);
     }
 
     public FederationInfo getFederationInfo(String userToken, String federationId) throws FogbowException {
@@ -367,7 +379,6 @@ public class ApplicationFacade {
         }
     }
     
-    // TODO test
     public List<AllowedRemoteJoin> getRemoteUsersAllowedAdmins(String userToken) throws FogbowException {
         SystemUser requestUser = authenticate(userToken);
         this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.GET_REMOTE_USERS_ALLOWED_ADMINS));

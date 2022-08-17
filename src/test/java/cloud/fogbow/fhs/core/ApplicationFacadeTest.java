@@ -21,6 +21,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import cloud.fogbow.common.constants.FogbowConstants;
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
 import cloud.fogbow.common.exceptions.FogbowException;
@@ -30,6 +31,7 @@ import cloud.fogbow.common.exceptions.UnauthenticatedUserException;
 import cloud.fogbow.common.models.SystemUser;
 import cloud.fogbow.common.plugins.authorization.AuthorizationPlugin;
 import cloud.fogbow.common.util.ServiceAsymmetricKeysHolder;
+import cloud.fogbow.fhs.api.http.response.AllowedRemoteJoin;
 import cloud.fogbow.fhs.api.http.response.AttributeDescription;
 import cloud.fogbow.fhs.api.http.response.FedAdminInfo;
 import cloud.fogbow.fhs.api.http.response.FederationDescription;
@@ -44,12 +46,15 @@ import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.SystemConstants;
+import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationAttribute;
 import cloud.fogbow.fhs.core.models.FederationService;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
+import cloud.fogbow.fhs.core.models.RemoteFederationUser;
 import cloud.fogbow.fhs.core.plugins.authentication.AuthenticationUtil;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlugin;
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
@@ -62,7 +67,8 @@ import cloud.fogbow.fhs.core.utils.SynchronizationManager;
 // TODO add checks to authorization
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ FhsPublicKeysHolder.class , AuthenticationUtil.class, 
-    ServiceAsymmetricKeysHolder.class, PropertiesHolder.class })
+    ServiceAsymmetricKeysHolder.class, PropertiesHolder.class,
+    AuthorizationPluginInstantiator.class })
 public class ApplicationFacadeTest {
     private static final String TOKEN_1 = "userToken";
     private static final String TOKEN_2 = "userToken2";
@@ -152,6 +158,11 @@ public class ApplicationFacadeTest {
     private static final String OPERATOR_ID_3 = "operator3";
     private static final String OPERATOR_IDS = 
             String.join(SystemConstants.OPERATOR_IDS_SEPARATOR, OPERATOR_ID_1, OPERATOR_ID_2, OPERATOR_ID_3);
+    private static final String RELOAD_OPERATOR_ID_1 = "reloadOperator1";
+    private static final String RELOAD_OPERATOR_ID_2 = "reloadOperator2";
+    private static final String RELOAD_OPERATOR_ID_3 = "reloadOperator3";
+    private static final String RELOAD_OPERATOR_IDS = 
+            String.join(SystemConstants.OPERATOR_IDS_SEPARATOR, RELOAD_OPERATOR_ID_1, RELOAD_OPERATOR_ID_2, RELOAD_OPERATOR_ID_3);
     private static final String PROPERTY_1 = "identityPluginClassName";
     private static final String PROPERTY_2 = "property2";
     private static final String PROPERTY_3 = "property3";
@@ -188,7 +199,11 @@ public class ApplicationFacadeTest {
     private static final String REMOTE_FEDERATION_DESCRIPTION_1 = "remoteFederationDescription1";
     private static final String REMOTE_FEDERATION_DESCRIPTION_2 = "remoteFederationDescription2";
     private static final String REMOTE_FEDERATION_ADMIN_ID_1 = "remoteFederationAdminId1";
+    private static final String REMOTE_FEDERATION_ADMIN_ID_2 = "remoteFederationAdminId2";
     private static final String REMOTE_FHS_ID_1 = "remoteFhsId1";
+    private static final String AUTHORIZATION_PLUGIN_CLASS_NAME = "authorizationPluginClassName";
+    private static final String PUBLIC_KEY_FILE_PATH = "publicKeyFilePath";
+    private static final String PRIVATE_KEY_FILE_PATH = "privateKeyFilePath";
     
     private ApplicationFacade applicationFacade;
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
@@ -196,6 +211,8 @@ public class ApplicationFacadeTest {
     private RSAPublicKey asPublicKey;
     private Federation federation1;
     private Federation federation2;
+    private Federation federationOwnedByAnotherFhs1;
+    private Federation federationOwnedByAnotherFhs2;
     private SystemUser systemUser1;
     private SystemUser systemUser2;
     private SystemUser fhsOperatorSystemUser1;
@@ -223,6 +240,9 @@ public class ApplicationFacadeTest {
     private PropertiesHolder propertiesHolder;
     private RemoteFederation remoteFederation1;
     private RemoteFederation remoteFederation2;
+    private AuthorizationPlugin<FhsOperation> newAuthorizationPlugin;
+    private RemoteFederationUser remoteFederationUser1;
+    private RemoteFederationUser remoteFederationUser2;
     
     @Before
     public void setUp() throws FogbowException {
@@ -253,6 +273,7 @@ public class ApplicationFacadeTest {
         
         this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
         Mockito.when(this.propertiesHolder.getProperty(ConfigurationPropertyKeys.OPERATOR_IDS_KEY)).thenReturn(OPERATOR_IDS);
+        Mockito.when(this.propertiesHolder.getProperty(ConfigurationPropertyKeys.AUTHORIZATION_PLUGIN_CLASS_KEY)).thenReturn(AUTHORIZATION_PLUGIN_CLASS_NAME);
         Mockito.when(this.propertiesHolder.getProperties()).thenReturn(properties);
         
         PowerMockito.mockStatic(PropertiesHolder.class);
@@ -327,6 +348,9 @@ public class ApplicationFacadeTest {
         Mockito.when(fhsOperator2.getIdentityPluginClassName()).thenReturn(AUTHENTICATION_PLUGIN_CLASS_NAME);
         Mockito.when(fhsOperator2.getIdentityPluginProperties()).thenReturn(AUTHENTICATION_PLUGIN_PROPERTIES);
         
+        remoteFederationUser1 = new RemoteFederationUser(REMOTE_FEDERATION_ADMIN_ID_1, REMOTE_FHS_ID_1);
+        remoteFederationUser2 = new RemoteFederationUser(REMOTE_FEDERATION_ADMIN_ID_2, REMOTE_FHS_ID_1);
+        
         federation1 = Mockito.mock(Federation.class);
         Mockito.when(federation1.getName()).thenReturn(FEDERATION_NAME_1);
         Mockito.when(federation1.getId()).thenReturn(FEDERATION_ID_1);
@@ -335,6 +359,7 @@ public class ApplicationFacadeTest {
         Mockito.when(federation1.getMemberList()).thenReturn(Arrays.asList(federationUser1, federationUser2));
         Mockito.when(federation1.getServices()).thenReturn(Arrays.asList(federationService, federationService2));
         Mockito.when(federation1.enabled()).thenReturn(FEDERATION_ENABLED_1);
+        Mockito.when(federation1.getAllowedRemoteJoins()).thenReturn(Arrays.asList(remoteFederationUser1, remoteFederationUser2));
         
         federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getName()).thenReturn(FEDERATION_NAME_2);
@@ -342,6 +367,17 @@ public class ApplicationFacadeTest {
         Mockito.when(federation2.getDescription()).thenReturn(FEDERATION_DESCRIPTION_2);
         Mockito.when(federation2.getOwner()).thenReturn(ADMIN_ID_1);
         Mockito.when(federation2.enabled()).thenReturn(FEDERATION_ENABLED_2);
+        Mockito.when(federation2.getAllowedRemoteJoins()).thenReturn(Arrays.asList(remoteFederationUser1));
+        
+        federationOwnedByAnotherFhs1 = Mockito.mock(Federation.class);
+        Mockito.when(federationOwnedByAnotherFhs1.getName()).thenReturn(REMOTE_FEDERATION_NAME_1);
+        Mockito.when(federationOwnedByAnotherFhs1.getId()).thenReturn(REMOTE_FEDERATION_ID_1);
+        Mockito.when(federationOwnedByAnotherFhs1.getDescription()).thenReturn(REMOTE_FEDERATION_DESCRIPTION_1);
+        
+        federationOwnedByAnotherFhs2 = Mockito.mock(Federation.class);
+        Mockito.when(federationOwnedByAnotherFhs2.getName()).thenReturn(REMOTE_FEDERATION_NAME_2);
+        Mockito.when(federationOwnedByAnotherFhs2.getId()).thenReturn(REMOTE_FEDERATION_ID_2);
+        Mockito.when(federationOwnedByAnotherFhs2.getDescription()).thenReturn(REMOTE_FEDERATION_DESCRIPTION_2);
         
         remoteFederation1 = new RemoteFederation(REMOTE_FEDERATION_ID_1, REMOTE_FEDERATION_NAME_1, 
                 REMOTE_FEDERATION_DESCRIPTION_1, REMOTE_FEDERATION_ENABLED_1, 
@@ -414,6 +450,8 @@ public class ApplicationFacadeTest {
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1)).
                 thenReturn(Arrays.asList(federation1, federation2));
         Mockito.when(this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2)).thenReturn(Arrays.asList());
+        Mockito.when(this.federationHost.getAdminRemoteFederations(ADMIN_NAME_1)).thenReturn(
+                Arrays.asList(federationOwnedByAnotherFhs1, federationOwnedByAnotherFhs2));
         Mockito.when(this.federationHost.getFederation(ADMIN_NAME_1, FEDERATION_ID_1)).thenReturn(federation1);
         Mockito.when(this.federationHost.getRemoteFederationList(ADMIN_NAME_1)).thenReturn(
                 Arrays.asList(remoteFederation1, remoteFederation2));
@@ -451,7 +489,6 @@ public class ApplicationFacadeTest {
         applicationFacade.setAuthenticationPluginInstantiator(authenticationPluginInstantiator);
         applicationFacade.setSynchronizationManager(synchronizationManager);
     }
-    
 
     @Test
     public void testLoadFhsOperators() throws ConfigurationErrorException {
@@ -607,6 +644,41 @@ public class ApplicationFacadeTest {
     }
     
     @Test
+    public void testReload() throws FogbowException {
+        this.newAuthorizationPlugin = Mockito.mock(AuthorizationPlugin.class);
+        DatabaseManager databaseManager = Mockito.mock(DatabaseManager.class);
+        FhsCommunicationMechanism communicationMechanism = Mockito.mock(FhsCommunicationMechanism.class);
+        
+        PowerMockito.mockStatic(FhsPublicKeysHolder.class);
+        
+        PowerMockito.mockStatic(AuthorizationPluginInstantiator.class);
+        BDDMockito.given(AuthorizationPluginInstantiator.getAuthorizationPlugin(AUTHORIZATION_PLUGIN_CLASS_NAME)).
+            willReturn(newAuthorizationPlugin);
+        
+        Mockito.when(this.propertiesHolder.getProperty(ConfigurationPropertyKeys.OPERATOR_IDS_KEY)).thenReturn(RELOAD_OPERATOR_IDS);
+        Mockito.when(this.propertiesHolder.getProperty(FogbowConstants.PUBLIC_KEY_FILE_PATH)).thenReturn(PUBLIC_KEY_FILE_PATH);
+        Mockito.when(this.propertiesHolder.getProperty(FogbowConstants.PRIVATE_KEY_FILE_PATH)).thenReturn(PRIVATE_KEY_FILE_PATH);
+        
+        this.applicationFacade.setDatabaseManager(databaseManager);
+        this.applicationFacade.setFhsCommunicationMechanism(communicationMechanism);
+        
+        this.applicationFacade.reload(FHS_OPERATOR_TOKEN_1);
+        
+        BDDMockito.verify(AuthenticationUtil.class);
+        AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
+        BDDMockito.verify(PropertiesHolder.class);
+        PropertiesHolder.reset();
+        BDDMockito.verify(FhsPublicKeysHolder.class);
+        FhsPublicKeysHolder.reset();
+        BDDMockito.verify(ServiceAsymmetricKeysHolder.class);
+        ServiceAsymmetricKeysHolder.reset(PUBLIC_KEY_FILE_PATH, PRIVATE_KEY_FILE_PATH);
+        
+        Mockito.verify(this.federationHost).reload(databaseManager, communicationMechanism);
+        
+        assertEquals(newAuthorizationPlugin, this.applicationFacade.getAuthorizationPlugin());
+    }
+    
+    @Test
     public void testCreateFederation() throws FogbowException {
         FederationId federationId = this.applicationFacade.createFederation(TOKEN_1, FEDERATION_NAME_1, 
                 FEDERATION_METADATA_1, FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
@@ -624,13 +696,19 @@ public class ApplicationFacadeTest {
     public void testListFederations() throws FogbowException {
         List<FederationDescription> federationsDescriptions = this.applicationFacade.listFederations(TOKEN_1, ADMIN_NAME_1);
         
-        assertEquals(2, federationsDescriptions.size());
+        assertEquals(4, federationsDescriptions.size());
         assertEquals(FEDERATION_NAME_1, federationsDescriptions.get(0).getName());
         assertEquals(FEDERATION_ID_1, federationsDescriptions.get(0).getId());
         assertEquals(FEDERATION_DESCRIPTION_1, federationsDescriptions.get(0).getDescription());
         assertEquals(FEDERATION_NAME_2, federationsDescriptions.get(1).getName());
         assertEquals(FEDERATION_ID_2, federationsDescriptions.get(1).getId());
         assertEquals(FEDERATION_DESCRIPTION_2, federationsDescriptions.get(1).getDescription());
+        assertEquals(REMOTE_FEDERATION_NAME_1, federationsDescriptions.get(2).getName());
+        assertEquals(REMOTE_FEDERATION_ID_1, federationsDescriptions.get(2).getId());
+        assertEquals(REMOTE_FEDERATION_DESCRIPTION_1, federationsDescriptions.get(2).getDescription());
+        assertEquals(REMOTE_FEDERATION_NAME_2, federationsDescriptions.get(3).getName());
+        assertEquals(REMOTE_FEDERATION_ID_2, federationsDescriptions.get(3).getId());
+        assertEquals(REMOTE_FEDERATION_DESCRIPTION_2, federationsDescriptions.get(3).getDescription());
         
         Mockito.verify(this.federationHost).getFederationsOwnedByUser(ADMIN_NAME_1);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
@@ -700,6 +778,29 @@ public class ApplicationFacadeTest {
         this.applicationFacade.joinRemoteFederation(TOKEN_1, REMOTE_FEDERATION_ID_1);
         
         Mockito.verify(this.federationHost).requestToJoinRemoteFederation(ADMIN_NAME_1, REMOTE_FEDERATION_ID_1);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testGetRemoteUsersAllowedAdmins() throws FogbowException {
+        List<AllowedRemoteJoin> allowedAdminsJoins = this.applicationFacade.getRemoteUsersAllowedAdmins(TOKEN_1);
+        
+        assertEquals(3, allowedAdminsJoins.size());
+        assertEquals(FEDERATION_ID_1, allowedAdminsJoins.get(0).getFederationId());
+        assertEquals(FEDERATION_NAME_1, allowedAdminsJoins.get(0).getFederationName());
+        assertEquals(REMOTE_FEDERATION_ADMIN_ID_1, allowedAdminsJoins.get(0).getRemoteFedAdminId());
+        assertEquals(REMOTE_FHS_ID_1, allowedAdminsJoins.get(0).getFhsId());
+        
+        assertEquals(FEDERATION_ID_1, allowedAdminsJoins.get(1).getFederationId());
+        assertEquals(FEDERATION_NAME_1, allowedAdminsJoins.get(1).getFederationName());
+        assertEquals(REMOTE_FEDERATION_ADMIN_ID_2, allowedAdminsJoins.get(1).getRemoteFedAdminId());
+        assertEquals(REMOTE_FHS_ID_1, allowedAdminsJoins.get(1).getFhsId());
+        
+        assertEquals(FEDERATION_ID_2, allowedAdminsJoins.get(2).getFederationId());
+        assertEquals(FEDERATION_NAME_2, allowedAdminsJoins.get(2).getFederationName());
+        assertEquals(REMOTE_FEDERATION_ADMIN_ID_1, allowedAdminsJoins.get(2).getRemoteFedAdminId());
+        assertEquals(REMOTE_FHS_ID_1, allowedAdminsJoins.get(2).getFhsId());
+        
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
