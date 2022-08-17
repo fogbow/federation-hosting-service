@@ -107,10 +107,8 @@ public class FogbowServiceInvokerTest {
     
     @Test(expected = ConfigurationErrorException.class)
     public void testInstantiationFailsIfServicePublicKeyEndpointIsEmpty() throws ConfigurationErrorException {
-        HashMap<String, String> metadata = new HashMap<String, String>();
         this.metadata.put(FogbowServiceInvoker.SERVICE_PUBLIC_KEY_ENDPOINT, "");
-        
-        new FogbowServiceInvoker(metadata, LOCAL_PROVIDER_ID);
+        new FogbowServiceInvoker(this.metadata, LOCAL_PROVIDER_ID);
     }
     
     @Test(expected = ConfigurationErrorException.class)

@@ -76,7 +76,7 @@ public class FederationHost {
         this.federationList = this.databaseManager.getFederations();
         this.authenticationPluginInstantiator = new FederationAuthenticationPluginInstantiator();
         this.federationFactory = new FederationFactory();
-        // FIXME how reload should affect the remote federations data?
+        // Should reloading affect the remote federations data?
         this.remoteFederations = new ArrayList<RemoteFederation>();
         this.updateBuilder = new FederationUpdateBuilder();
     }
@@ -249,7 +249,6 @@ public class FederationHost {
         }
     }
 
-    // TODO test
     public List<Federation> getAdminRemoteFederations(String requester) throws UnauthorizedRequestException {
         synchronized(this.federationList) {
             checkIfRequesterIsFedAdmin(requester);
@@ -273,7 +272,6 @@ public class FederationHost {
         }
     }
 
-    // TODO test
     public Federation getFederation(String federationId) throws InvalidParameterException {
         synchronized(this.federationList) {
             return getFederationOrFail(federationId);
@@ -699,7 +697,6 @@ public class FederationHost {
         return federation;
     }
 
-    // TODO test
     public void updateFederationUsingRemoteData(FederationUpdate remoteUpdate) throws InvalidParameterException {
         Federation federationToUpdate = getFederationOrFail(remoteUpdate.getTargetFederationId());
         

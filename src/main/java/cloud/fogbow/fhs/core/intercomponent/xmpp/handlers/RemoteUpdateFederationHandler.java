@@ -7,7 +7,6 @@ import org.xmpp.packet.IQ;
 
 import com.google.gson.reflect.TypeToken;
 
-import cloud.fogbow.common.exceptions.InternalServerErrorException;
 import cloud.fogbow.common.util.IntercomponentUtil;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
@@ -18,11 +17,15 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.RemoteMethod;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppExceptionToErrorConditionTranslator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO test
 public class RemoteUpdateFederationHandler extends AbstractQueryHandler {
     private static final Logger LOGGER = Logger.getLogger(RemoteSyncFederationsHandler.class);
     
     private JsonUtils jsonUtils;
+    
+    public RemoteUpdateFederationHandler(JsonUtils jsonUtils) {
+        super(RemoteMethod.UPDATE_FEDERATION.toString());
+        this.jsonUtils = jsonUtils;
+    }
     
     public RemoteUpdateFederationHandler() {
         super(RemoteMethod.UPDATE_FEDERATION.toString());
@@ -37,8 +40,8 @@ public class RemoteUpdateFederationHandler extends AbstractQueryHandler {
         try {
             String senderId = IntercomponentUtil.getSender(iq.getFrom().toBareJID(), SystemConstants.XMPP_SERVER_NAME_PREFIX);
             
-            FederationUpdate remoteFederations = unmarshalFederationUpdate(iq);
-            RemoteFacade.getInstance().updateFederation(senderId, remoteFederations);
+            FederationUpdate federationUpdate = unmarshalFederationUpdate(iq);
+            RemoteFacade.getInstance().updateFederation(senderId, federationUpdate);
         } catch (Throwable e) {
             XmppExceptionToErrorConditionTranslator.updateErrorCondition(response, e);
         }
@@ -46,17 +49,9 @@ public class RemoteUpdateFederationHandler extends AbstractQueryHandler {
         return response;
     }
 
-    private FederationUpdate unmarshalFederationUpdate(IQ request) throws InternalServerErrorException {
+    private FederationUpdate unmarshalFederationUpdate(IQ request) {
         Element queryElement = request.getElement().element(IqElement.QUERY.toString());
         String updateStr = queryElement.element(IqElement.FEDERATION_UPDATE.toString()).getText();
-
-        FederationUpdate federationUpdate;
-        try {
-            federationUpdate = this.jsonUtils.fromJson(updateStr, new TypeToken<FederationUpdate>(){});
-        } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-
-        return federationUpdate;
+        return this.jsonUtils.fromJson(updateStr, new TypeToken<FederationUpdate>(){});
     }
 }

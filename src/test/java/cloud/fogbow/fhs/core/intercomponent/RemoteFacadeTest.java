@@ -62,6 +62,8 @@ public class RemoteFacadeTest {
     private Federation federation2;
     private Federation federation3;
     private FederationUser federationUser;
+    private FederationUpdate federationUpdate;
+    private SynchronizationMechanism syncMechanism;
     
     @Before
     public void setUp() throws InvalidParameterException {
@@ -74,10 +76,15 @@ public class RemoteFacadeTest {
         this.federationHost = Mockito.mock(FederationHost.class);
         Mockito.when(this.federationHost.joinRemoteFederation(federationUser, FHS_ID_1, FEDERATION_ID_1)).thenReturn(federation1);
         
+        this.federationUpdate = Mockito.mock(FederationUpdate.class);
+        
+        this.syncMechanism = Mockito.mock(SynchronizationMechanism.class);
+        
         remoteFacade = RemoteFacade.getInstance();
         
         remoteFacade.setFederationHost(federationHost);
         remoteFacade.setAllowedFhsIds(Arrays.asList(FHS_ID_1, FHS_ID_2, FHS_ID_3));
+        remoteFacade.setSynchronizationMechanism(syncMechanism);
     }
     
     @Test
@@ -235,5 +242,17 @@ public class RemoteFacadeTest {
     @Test(expected = UnauthorizedRequestException.class)
     public void testUserFromUnauthorizedFhsCannotJoinFederation() throws FogbowException {
         this.remoteFacade.joinFederation(NOT_AUTHORIZED_FHS_ID, federationUser, FEDERATION_ID_1);
+    }
+    
+    @Test
+    public void testUpdateFederation() throws FogbowException {
+        this.remoteFacade.updateFederation(FHS_ID_1, federationUpdate);
+        
+        Mockito.verify(this.syncMechanism).onRemoteUpdate(federationUpdate);
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testUnauthorizedFhsCannotUpdateFederation() throws FogbowException {
+        this.remoteFacade.updateFederation(NOT_AUTHORIZED_FHS_ID, federationUpdate);
     }
 }

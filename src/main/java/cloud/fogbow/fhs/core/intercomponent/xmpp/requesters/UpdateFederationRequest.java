@@ -14,7 +14,6 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppComponentManager;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTranslator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO test
 public class UpdateFederationRequest implements RemoteRequest<Void>{
     private static final Logger LOGGER = Logger.getLogger(UpdateFederationRequest.class);
 

@@ -26,6 +26,7 @@ import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.common.exceptions.UnauthorizedRequestException;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FederationUpdateBuilder;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
@@ -62,9 +63,12 @@ public class FederationHostTest {
     private static final String UPDATED_ADMIN_EMAIL_1 = "updatedAdminEmail1";
     private static final String UPDATED_ADMIN_DESCRIPTION_1 = "updatedAdminDescription1";
     private static final boolean UPDATED_ADMIN_ENABLED_1 = false;
+    private static final String REMOTE_ADMIN_NAME_1 = "remoteAdminName1";
     private static final String FEDERATION_ID_1 = "federationId1";
     private static final String FEDERATION_ID_2 = "federationId2";
     private static final String FEDERATION_ID_3 = "federationId3";
+    private static final String FEDERATION_ID_4 = "federationId4";
+    private static final String FEDERATION_ID_5 = "federationId5";
     private static final String FEDERATION_NAME_1 = "federation1";
     private static final String FEDERATION_DESCRIPTION_1 = "federationDescription1";
     private static final boolean FEDERATION_ENABLED_1 = true;
@@ -143,6 +147,8 @@ public class FederationHostTest {
     private Federation federation1;
     private Federation federation2;
     private Federation federation3;
+    private Federation federation4;
+    private Federation federation5;
     private List<FederationUser> adminList;
     private List<Federation> federationList;
     private Map<String, String> federationMetadata;
@@ -170,6 +176,7 @@ public class FederationHostTest {
     private Federation remoteFederation1;
     private SynchronizationMechanism synchronizationMechanism;
     private FederationUpdateBuilder updateBuilder;
+    private FederationUpdate federationUpdate;
     
     private void setUpFederationData() throws FogbowException {
         this.databaseManager = Mockito.mock(DatabaseManager.class);
@@ -264,6 +271,9 @@ public class FederationHostTest {
         Mockito.when(federation1.getOwner()).thenReturn(ADMIN_NAME_1);
         Mockito.when(federation1.isFederationOwner(ADMIN_NAME_1)).thenReturn(true);
         Mockito.when(federation1.isFederationOwner(ADMIN_NAME_2)).thenReturn(false);
+        Mockito.when(federation1.isRemoteAdmin(ADMIN_NAME_1)).thenReturn(false);
+        Mockito.when(federation1.isRemoteAdmin(ADMIN_NAME_2)).thenReturn(false);
+        Mockito.when(federation1.isRemoteAdmin(REMOTE_ADMIN_NAME_1)).thenReturn(true);
         Mockito.when(federation1.getService(SERVICE_ID_1)).thenReturn(service1);
         Mockito.when(federation1.getService(SERVICE_ID_2)).thenReturn(service2);
         Mockito.when(federation1.getService(SERVICE_ID_3)).thenReturn(service3);
@@ -286,13 +296,29 @@ public class FederationHostTest {
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
         Mockito.when(federation2.getOwner()).thenReturn(ADMIN_NAME_2);
+        Mockito.when(federation2.isRemoteAdmin(ADMIN_NAME_1)).thenReturn(false);
+        Mockito.when(federation2.isRemoteAdmin(ADMIN_NAME_2)).thenReturn(false);
         
         this.federation3 = Mockito.mock(Federation.class);
         Mockito.when(federation3.getId()).thenReturn(FEDERATION_ID_3);
         Mockito.when(federation3.getOwner()).thenReturn(ADMIN_NAME_1);
+        Mockito.when(federation3.isRemoteAdmin(ADMIN_NAME_1)).thenReturn(false);
+        Mockito.when(federation3.isRemoteAdmin(ADMIN_NAME_2)).thenReturn(false);
+        
+        this.federation4 = Mockito.mock(Federation.class);
+        Mockito.when(federation4.getId()).thenReturn(FEDERATION_ID_4);
+        Mockito.when(federation4.getOwner()).thenReturn(REMOTE_ADMIN_NAME_1);
+        Mockito.when(federation4.isRemoteAdmin(ADMIN_NAME_1)).thenReturn(true);
+        Mockito.when(federation4.isRemoteAdmin(ADMIN_NAME_2)).thenReturn(false);
+        
+        this.federation5 = Mockito.mock(Federation.class);
+        Mockito.when(federation5.getId()).thenReturn(FEDERATION_ID_5);
+        Mockito.when(federation5.getOwner()).thenReturn(REMOTE_ADMIN_NAME_1);
+        Mockito.when(federation5.isRemoteAdmin(ADMIN_NAME_1)).thenReturn(true);
+        Mockito.when(federation5.isRemoteAdmin(ADMIN_NAME_2)).thenReturn(true);
         
         this.adminList = TestUtils.getMockedList(2, admin1, admin2);
-        this.federationList = TestUtils.getMockedList(2, federation1, federation2, federation3);
+        this.federationList = TestUtils.getMockedList(2, federation1, federation2, federation3, federation4, federation5);
         
         this.jsonUtils = Mockito.mock(JsonUtils.class);
         Mockito.when(jsonUtils.fromJson(CREDENTIALS_STRING, Map.class)).thenReturn(credentialsMap);
@@ -307,7 +333,6 @@ public class FederationHostTest {
         Mockito.when(this.communicationMechanism.joinRemoteFederation(admin1, REMOTE_FEDERATION_ID_1, FHS_ID_2)).thenReturn(remoteFederation1);
         
         this.updateBuilder = Mockito.mock(FederationUpdateBuilder.class);
-        
         Mockito.when(this.updateBuilder.updateFederation(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.withMember(Mockito.any(FederationUser.class))).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.withService(Mockito.anyString())).thenReturn(updateBuilder);
@@ -315,6 +340,9 @@ public class FederationHostTest {
         Mockito.when(this.updateBuilder.deleteMember(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.deleteService(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.deleteAttribute(Mockito.anyString())).thenReturn(updateBuilder);
+        
+        this.federationUpdate = Mockito.mock(FederationUpdate.class);
+        Mockito.when(this.federationUpdate.getTargetFederationId()).thenReturn(FEDERATION_ID_1);
         
         this.federationHost = new FederationHost(adminList, federationList, jsonUtils, authenticationPluginInstantiator, 
                 this.federationFactory, databaseManager, communicationMechanism, this.updateBuilder);
@@ -458,10 +486,12 @@ public class FederationHostTest {
         
         List<Federation> federations = this.federationHost.getFederations();
         
-        assertEquals(3, federations.size());
+        assertEquals(5, federations.size());
         assertEquals(federation1, federations.get(0));
         assertEquals(federation2, federations.get(1));
         assertEquals(federation3, federations.get(2));
+        assertEquals(federation4, federations.get(3));
+        assertEquals(federation5, federations.get(4));
     }
     
     @Test
@@ -550,6 +580,44 @@ public class FederationHostTest {
     }
     
     @Test
+    public void testGetOwnedFederations() throws FogbowException {
+        setUpFederationData();
+
+        List<Federation> federationsAdmin1 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1);
+        assertEquals(2, federationsAdmin1.size());
+        assertTrue(federationsAdmin1.contains(federation1));
+        assertTrue(federationsAdmin1.contains(federation3));
+
+        setUpFederationData();
+        
+        List<Federation> federationsAdmin2 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2);
+        assertEquals(1, federationsAdmin2.size());
+        assertTrue(federationsAdmin2.contains(federation2));
+    }
+    
+    @Test(expected = UnauthorizedRequestException.class)
+    public void testNonAdminUserCannotGetOwnedFederations() throws FogbowException {
+        setUpFederationData();
+
+        this.federationHost.getFederationsOwnedByUser(REGULAR_USER_NAME_1);
+    }
+    
+    @Test
+    public void testGetAdminRemoteFederations() throws FogbowException {
+        setUpFederationData();
+        
+        List<Federation> remoteFederationsAdmin1 = this.federationHost.getAdminRemoteFederations(ADMIN_NAME_1);
+        List<Federation> remoteFederationsAdmin2 = this.federationHost.getAdminRemoteFederations(ADMIN_NAME_2);
+        
+        assertEquals(2, remoteFederationsAdmin1.size());
+        assertTrue(remoteFederationsAdmin1.contains(this.federation4));
+        assertTrue(remoteFederationsAdmin1.contains(this.federation5));
+        
+        assertEquals(1, remoteFederationsAdmin2.size());
+        assertTrue(remoteFederationsAdmin2.contains(this.federation5));
+    }
+    
+    @Test
     public void testGetFederation() throws FogbowException {
         setUpFederationData();
         
@@ -570,6 +638,22 @@ public class FederationHostTest {
         setUpFederationData();
 
         this.federationHost.getFederation(REGULAR_USER_NAME_1, FEDERATION_ID_1);
+    }
+    
+    @Test
+    public void testGetFederationWithoutAuthorizationCheck() throws FogbowException {
+        setUpFederationData();
+        
+        Federation returnedFederation1 = this.federationHost.getFederation(FEDERATION_ID_1);
+        
+        assertEquals(this.federation1, returnedFederation1);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testGetNonExistentFederationWithoutAuthorizationCheck() throws FogbowException {
+        setUpFederationData();
+
+        this.federationHost.getFederation("nonexistentid");
     }
     
     @Test
@@ -1134,30 +1218,7 @@ public class FederationHostTest {
         assertEquals(service1, services.get(0));
         assertEquals(service2, services.get(1));
     }
-    
-    @Test
-    public void testGetOwnedFederations() throws FogbowException {
-        setUpFederationData();
 
-        List<Federation> federationsAdmin1 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_1);
-        assertEquals(2, federationsAdmin1.size());
-        assertTrue(federationsAdmin1.contains(federation1));
-        assertTrue(federationsAdmin1.contains(federation3));
-
-        setUpFederationData();
-        
-        List<Federation> federationsAdmin2 = this.federationHost.getFederationsOwnedByUser(ADMIN_NAME_2);
-        assertEquals(1, federationsAdmin2.size());
-        assertTrue(federationsAdmin2.contains(federation2));
-    }
-    
-    @Test(expected = UnauthorizedRequestException.class)
-    public void testNonAdminUserCannotGetOwnedFederations() throws FogbowException {
-        setUpFederationData();
-
-        this.federationHost.getFederationsOwnedByUser(REGULAR_USER_NAME_1);
-    }
-    
     @Test
     public void testInvokeService() throws FogbowException {
         setUpFederationData();
@@ -1277,5 +1338,23 @@ public class FederationHostTest {
         FederationUser remoteFederationUser = Mockito.mock(FederationUser.class);
         
         this.federationHost.joinRemoteFederation(remoteFederationUser, FHS_ID_2, "invalidfederationid");
+    }
+    
+    @Test
+    public void testUpdateFederationUsingRemoteData() throws FogbowException {
+        setUpFederationData();
+        
+        this.federationHost.updateFederationUsingRemoteData(federationUpdate);
+        
+        Mockito.verify(this.federation1).update(federationUpdate);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotUpdateUsingRemoteDataInvalidFederation() throws FogbowException {
+        setUpFederationData();
+        
+        Mockito.when(federationUpdate.getTargetFederationId()).thenReturn("invalidfederationid");
+        
+        this.federationHost.updateFederationUsingRemoteData(federationUpdate);
     }
 }
