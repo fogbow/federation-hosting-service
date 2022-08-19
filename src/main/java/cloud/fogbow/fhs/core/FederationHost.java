@@ -345,7 +345,7 @@ public class FederationHost {
             
             FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withMember(newMember).
+                    withMember(new JsonUtils().toJson(newMember)).
                     build();
             this.syncMechanism.onLocalUpdate(update);
             
@@ -420,7 +420,7 @@ public class FederationHost {
             
             FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withAttribute(federation.getAttribute(newAttributeId)).
+                    withAttribute(federation.getAttribute(newAttributeId).serialize()).
                     build();
             this.syncMechanism.onLocalUpdate(update);
             
@@ -478,7 +478,7 @@ public class FederationHost {
             
             FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withMember(federation.getUserByMemberId(memberId)).
+                    withMember(new JsonUtils().toJson(federation.getUserByMemberId(memberId))).
                     build();
             this.syncMechanism.onLocalUpdate(update);
         }
@@ -499,7 +499,7 @@ public class FederationHost {
             
             FederationUpdate update = this.updateBuilder.
                     updateFederation(federationId).
-                    withMember(federation.getUserByMemberId(memberId)).
+                    withMember(new JsonUtils().toJson(federation.getUserByMemberId(memberId))).
                     build();
             this.syncMechanism.onLocalUpdate(update);
         }

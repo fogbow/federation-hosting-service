@@ -286,6 +286,7 @@ public class FederationHostTest {
         Mockito.when(federation1.createAttribute(ATTRIBUTE_NAME_1)).thenReturn(ATTRIBUTE_ID_1);
         Mockito.when(federation1.getAttributes()).thenReturn(
                 Arrays.asList(this.federationAttribute1, this.federationAttribute2));
+        Mockito.when(federation1.getAttribute(ATTRIBUTE_ID_1)).thenReturn(federationAttribute1);
         Mockito.when(federation1.login(REGULAR_USER_ID_1, this.regularUserCredentials1)).thenReturn(
                 REGULAR_USER_TOKEN_1);
         Mockito.when(federation1.registerService(SERVICE_OWNER_NAME_1, SERVICE_ENDPOINT_1,
@@ -334,9 +335,9 @@ public class FederationHostTest {
         
         this.updateBuilder = Mockito.mock(FederationUpdateBuilder.class);
         Mockito.when(this.updateBuilder.updateFederation(Mockito.anyString())).thenReturn(updateBuilder);
-        Mockito.when(this.updateBuilder.withMember(Mockito.any(FederationUser.class))).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.withMember(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.withService(Mockito.anyString())).thenReturn(updateBuilder);
-        Mockito.when(this.updateBuilder.withAttribute(Mockito.any(FederationAttribute.class))).thenReturn(updateBuilder);
+        Mockito.when(this.updateBuilder.withAttribute(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.deleteMember(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.deleteService(Mockito.anyString())).thenReturn(updateBuilder);
         Mockito.when(this.updateBuilder.deleteAttribute(Mockito.anyString())).thenReturn(updateBuilder);

@@ -5,19 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cloud.fogbow.fhs.core.models.FederationAttribute;
-import cloud.fogbow.fhs.core.models.FederationUser;
-
 public class FederationUpdateBuilder {
     private String targetFederationId;
     private String newName;
     private String newDescription;
     private Boolean newEnabled;
-    private List<FederationUser> updatedMembers;
+    private List<String> updatedMembers;
     private List<String> membersToDelete;
     private List<String> updatedServices;
     private List<String> servicesToDelete;
-    private List<FederationAttribute> updatedAttributes;
+    private List<String> updatedAttributes;
     private List<String> attributesToDelete;
     private Map<String, String> updatedMetadata;
     
@@ -26,9 +23,9 @@ public class FederationUpdateBuilder {
         newName = null;
         newDescription = null;
         newEnabled = null;
-        updatedMembers = new ArrayList<FederationUser>();
+        updatedMembers = new ArrayList<String>();
         updatedServices = new ArrayList<String>();
-        updatedAttributes = new ArrayList<FederationAttribute>();
+        updatedAttributes = new ArrayList<String>();
         membersToDelete = new ArrayList<String>();
         servicesToDelete = new ArrayList<String>();
         attributesToDelete = new ArrayList<String>();
@@ -50,23 +47,13 @@ public class FederationUpdateBuilder {
         return this;
     }
     
-    public FederationUpdateBuilder withMembers(List<FederationUser> updatedMembers) {
-        this.updatedMembers = updatedMembers;
-        return this;
-    }
-    
-    public FederationUpdateBuilder withMember(FederationUser member) {
+    public FederationUpdateBuilder withMember(String member) {
         this.updatedMembers.add(member);
         return this;
     }
     
     public FederationUpdateBuilder deleteMember(String memberId) {
         this.membersToDelete.add(memberId);
-        return this;
-    }
-    
-    public FederationUpdateBuilder withServices(List<String> updatedServices) { 
-        this.updatedServices = updatedServices;
         return this;
     }
     
@@ -80,12 +67,7 @@ public class FederationUpdateBuilder {
         return this;
     }
     
-    public FederationUpdateBuilder withAttributes(List<FederationAttribute> updatedAttributes) {
-        this.updatedAttributes = updatedAttributes;
-        return this;
-    }
-    
-    public FederationUpdateBuilder withAttribute(FederationAttribute attribute) {
+    public FederationUpdateBuilder withAttribute(String attribute) {
         this.updatedAttributes.add(attribute);
         return this;
     }
@@ -101,7 +83,7 @@ public class FederationUpdateBuilder {
     }
     
     public FederationUpdate build() {
-        return new FederationUpdate(targetFederationId, newName, newDescription, 
+        return new FederationUpdate(true, targetFederationId, newName, newDescription, 
                 newEnabled, updatedMembers, updatedServices, updatedAttributes, membersToDelete, 
                 servicesToDelete, attributesToDelete, updatedMetadata);
     }

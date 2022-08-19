@@ -14,7 +14,12 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.common.exceptions.ConfigurationErrorException;
@@ -30,6 +35,8 @@ import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlug
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
 // TODO documentation
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ FederationAttribute.class })
 public class FederationTest {
     private static final String FHS_ID_1 = "fhsId1";
     private static final String FHS_ID_2 = "fhsId2";
@@ -126,6 +133,10 @@ public class FederationTest {
     private static final String FEDERATION_METADATA_VALUE_1 = "federationMetadataValue1";
     private static final String FEDERATION_METADATA_VALUE_2 = "federationMetadataValue2";
     private static final String UPDATED_FEDERATION_METADATA_VALUE_1 = "updatedFederationMetadataValue1";
+    private static final String UPDATED_FEDERATION_USER_1_STR = "updatedFederationUser1";
+    private static final String FEDERATION_USER_3_STR = "federationUser3";
+    private static final String UPDATED_FEDERATION_ATTRIBUTE_1_STR = "updatedFederationAttribute1";
+    private static final String FEDERATION_ATTRIBUTE_3_STR = "federationAttribute3";
 
     private Federation federation;
     private List<FederationUser> federationMembers;
@@ -257,10 +268,16 @@ public class FederationTest {
         Mockito.when(this.federationServiceFactory.createService(SERVICE_OWNER_ID, SERVICE_ENDPOINT, 
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME, SERVICE_ACCESS_POLICY_CLASS_NAME, FEDERATION_ID_1, 
                 serviceMetadata)).thenReturn(federationService1);
-        Mockito.when(this.federationServiceFactory.deserialize(FEDERATION_SERVICE_STR)).thenReturn(updatedFederationService1);
         Mockito.when(this.federationServiceFactory.deserialize(FEDERATION_SERVICE_STR_3)).thenReturn(federationService3);
+        Mockito.when(this.federationServiceFactory.deserialize(FEDERATION_SERVICE_STR)).thenReturn(updatedFederationService1);
         
-        this.jsonUtils = new JsonUtils();
+        this.jsonUtils = Mockito.mock(JsonUtils.class);
+        Mockito.when(this.jsonUtils.fromJson(UPDATED_FEDERATION_USER_1_STR, FederationUser.class)).thenReturn(updatedFederationUser1);
+        Mockito.when(this.jsonUtils.fromJson(FEDERATION_USER_3_STR, FederationUser.class)).thenReturn(federationUser3);
+        
+        PowerMockito.mockStatic(FederationAttribute.class);
+        BDDMockito.given(FederationAttribute.deserialize(FEDERATION_ATTRIBUTE_3_STR)).willReturn(federationAttribute3);
+        BDDMockito.given(FederationAttribute.deserialize(UPDATED_FEDERATION_ATTRIBUTE_1_STR)).willReturn(updatedFederationAttribute1);
         
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
                 FEDERATION_NAME_1, FHS_ID_1, federationMetadata1, FEDERATION_DESCRIPTION_1, 
@@ -759,17 +776,17 @@ public class FederationTest {
     
     @Test
     public void testUpdate() throws InvalidParameterException {
-        List<FederationUser> newMembers = new ArrayList<FederationUser>();
-        newMembers.add(updatedFederationUser1);
-        newMembers.add(federationUser3);
+        List<String> newMembers = new ArrayList<String>();
+        newMembers.add(UPDATED_FEDERATION_USER_1_STR);
+        newMembers.add(FEDERATION_USER_3_STR);
         
         List<String> newServices = new ArrayList<String>();
         newServices.add(FEDERATION_SERVICE_STR);
         newServices.add(FEDERATION_SERVICE_STR_3);
         
-        List<FederationAttribute> newAttributes = new ArrayList<FederationAttribute>();
-        newAttributes.add(updatedFederationAttribute1);
-        newAttributes.add(federationAttribute3);
+        List<String> newAttributes = new ArrayList<String>();
+        newAttributes.add(UPDATED_FEDERATION_ATTRIBUTE_1_STR);
+        newAttributes.add(FEDERATION_ATTRIBUTE_3_STR);
         
         List<String> membersToDelete = new ArrayList<String>();
         membersToDelete.add(FEDERATION_USER_NAME_2);
@@ -784,7 +801,7 @@ public class FederationTest {
         updateMetadata.put(FEDERATION_METADATA_KEY_1, UPDATED_FEDERATION_METADATA_VALUE_1);
         updateMetadata.put(FEDERATION_METADATA_KEY_2, FEDERATION_METADATA_VALUE_2);
         
-        FederationUpdate remoteUpdate = new FederationUpdate(FEDERATION_ID_1,
+        FederationUpdate remoteUpdate = new FederationUpdate(false, FEDERATION_ID_1,
                 UPDATE_NEW_NAME, UPDATE_NEW_DESCRIPTION, UPDATED_NEW_ENABLED,
                 newMembers, newServices, newAttributes, membersToDelete, servicesToDelete,
                 attributesToDelete, updateMetadata);

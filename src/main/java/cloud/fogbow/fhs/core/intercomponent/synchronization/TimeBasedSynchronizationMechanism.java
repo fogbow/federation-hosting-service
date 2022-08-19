@@ -13,6 +13,7 @@ import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.FederationHost;
 import cloud.fogbow.fhs.core.PropertiesHolder;
+import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
@@ -20,6 +21,7 @@ import cloud.fogbow.fhs.core.intercomponent.SynchronizationMechanism;
 public class TimeBasedSynchronizationMechanism implements SynchronizationMechanism {
     private final Logger LOGGER = Logger.getLogger(TimeBasedSynchronizationMechanism.class);
     
+    private DatabaseManager databaseManager;
     private List<FederationUpdate> localUpdates;
     private List<FederationUpdate> remoteUpdates;
     private Thread updateThread;
@@ -29,11 +31,23 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
     private long sleepTime;
     private String localFhsId;
     
-    public TimeBasedSynchronizationMechanism(FederationHost federationHost) throws ConfigurationErrorException {
+    public TimeBasedSynchronizationMechanism(DatabaseManager databaseManager, FederationHost federationHost) throws ConfigurationErrorException {
         this.federationHost = federationHost;
-        // TODO should load from storage
+        this.databaseManager = databaseManager;
+        
         this.localUpdates = new ArrayList<FederationUpdate>();
         this.remoteUpdates = new ArrayList<FederationUpdate>();
+        
+        List<FederationUpdate> updates = this.databaseManager.getUpdates();
+        
+        for (FederationUpdate update : updates) {
+            if (update.isLocal()) {
+                this.localUpdates.add(update);
+            } else { 
+                this.remoteUpdates.add(update);
+            }
+        }
+        
         this.allowedFhssIds = new ArrayList<String>();
         
         String allowedFhsIdsListString = PropertiesHolder.getInstance().getProperty(
@@ -77,6 +91,16 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
         return this.sleepTime;
     }
     
+    @VisibleForTesting
+    List<FederationUpdate> getLocalUpdates() {
+        return this.localUpdates;
+    }
+
+    @VisibleForTesting
+    List<FederationUpdate> getRemoteUpdates() {
+        return this.remoteUpdates;
+    }
+    
     @Override
     public void setCommunicationMechanism(FhsCommunicationMechanism communicationMechanism) {
         this.communicationMechanism = communicationMechanism;
@@ -86,7 +110,7 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
     public void onStartUp() throws Exception {
         if (updateThread == null) {
             FederationUpdateDaemon daemon = new FederationUpdateDaemon(
-                    this.localUpdates, this.remoteUpdates, this.communicationMechanism, 
+                    this.databaseManager, this.localUpdates, this.remoteUpdates, this.communicationMechanism, 
                     this.federationHost, this.sleepTime, this.allowedFhssIds, this.localFhsId);
             this.updateThread = new Thread(daemon);
             this.updateThread.start();
@@ -98,14 +122,18 @@ public class TimeBasedSynchronizationMechanism implements SynchronizationMechani
     @Override
     public void onLocalUpdate(FederationUpdate updatedFederation) {
         synchronized(localUpdates) {
+            updatedFederation.local();
             this.localUpdates.add(updatedFederation);
+            this.databaseManager.saveFederationUpdate(updatedFederation);
         }
     }
 
     @Override
     public void onRemoteUpdate(FederationUpdate updatedFederation) {
         synchronized(remoteUpdates) {
+            updatedFederation.remote();
             this.remoteUpdates.add(updatedFederation);
+            this.databaseManager.saveFederationUpdate(updatedFederation);
         }
     }
 }

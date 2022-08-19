@@ -53,7 +53,7 @@ public class Main implements ApplicationRunner {
         String synchronizationMechanismClassName = 
                 PropertiesHolder.getInstance().getProperty(ConfigurationPropertyKeys.SYNCHRONIZATION_MECHANISM_CLASS_NAME);
         SynchronizationMechanism synchronizationMechanism = SynchronizationMechanismInstantiator.getSynchronizationMechanism(
-                synchronizationMechanismClassName, federationHost, fhsCommunicationMechanism);
+                synchronizationMechanismClassName, databaseManager, federationHost, fhsCommunicationMechanism);
         
         federationHost.setSynchronizationMechanism(synchronizationMechanism);
         

@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationUser;
 
@@ -16,6 +17,9 @@ public class DatabaseManager {
     
     @Autowired
     private FederationUserRepository federationUserRepository;
+    
+    @Autowired
+    private FederationUpdateRepository federationUpdateRepository;
     
     public DatabaseManager() {
     }
@@ -55,5 +59,17 @@ public class DatabaseManager {
         }
         
         return federationAdmins;
+    }
+    
+    public void saveFederationUpdate(FederationUpdate updatedFederation) {
+        this.federationUpdateRepository.save(updatedFederation);
+    }
+    
+    public void removeUpdate(FederationUpdate update) {
+        this.federationUpdateRepository.delete(update);
+    }
+    
+    public List<FederationUpdate> getUpdates() {
+        return this.federationUpdateRepository.findAll();
     }
 }

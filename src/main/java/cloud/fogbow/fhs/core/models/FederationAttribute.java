@@ -41,4 +41,13 @@ public class FederationAttribute {
     public String getName() {
         return name;
     }
+    
+    public String serialize() {
+        return String.join("-", id, name);
+    }
+    
+    public static FederationAttribute deserialize(String attributeStr) {
+        String[] fields = attributeStr.split("-");
+        return new FederationAttribute(fields[0], fields[1]);
+    }
 }

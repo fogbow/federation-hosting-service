@@ -478,7 +478,8 @@ public class Federation {
             this.enabled = remoteUpdate.getNewEnabled();
         }
         
-        for (FederationUser memberUpdate : remoteUpdate.getUpdatedMembers()) {
+        for (String memberUpdateStr : remoteUpdate.getUpdatedMembers()) {
+            FederationUser memberUpdate = this.jsonUtils.fromJson(memberUpdateStr, FederationUser.class);
             FederationUser memberToUpdate = lookupMember(memberUpdate.getName());
             this.members.remove(memberToUpdate);
             this.members.add(memberUpdate);
@@ -491,7 +492,8 @@ public class Federation {
             this.services.add(serviceUpdate);
         }
         
-        for (FederationAttribute attributeUpdate : remoteUpdate.getUpdatedAttributes()) {
+        for (String attributeUpdateStr : remoteUpdate.getUpdatedAttributes()) {
+            FederationAttribute attributeUpdate = FederationAttribute.deserialize(attributeUpdateStr);
             FederationAttribute attributeToUpdate = lookupAttribute(attributeUpdate.getId());
             this.attributes.remove(attributeToUpdate);
             this.attributes.add(attributeUpdate);

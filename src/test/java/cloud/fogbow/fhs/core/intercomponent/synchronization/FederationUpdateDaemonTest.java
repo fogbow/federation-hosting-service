@@ -15,6 +15,7 @@ import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.common.exceptions.InvalidParameterException;
 import cloud.fogbow.fhs.api.http.response.FederationInstance;
 import cloud.fogbow.fhs.core.FederationHost;
+import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
@@ -57,6 +58,7 @@ public class FederationUpdateDaemonTest {
     private static final String REMOTE_FEDERATION_FHS_2_OWNER_2 = "remoteFederationFhs2Owner2";
     private static final String LOCAL_FHS_ID = "localFhsId";
     
+    private DatabaseManager databaseManager;
     private FederationUpdateDaemon daemon;
     private List<FederationUpdate> localUpdates;
     private List<FederationUpdate> remoteUpdates;
@@ -163,7 +165,9 @@ public class FederationUpdateDaemonTest {
         this.localUpdateHandler = Mockito.mock(LocalUpdateHandler.class);
         this.remoteUpdateHandler = Mockito.mock(RemoteUpdateHandler.class);
         
-        this.daemon = new FederationUpdateDaemon(this.localUpdates, this.remoteUpdates, 
+        this.databaseManager = Mockito.mock(DatabaseManager.class);
+        
+        this.daemon = new FederationUpdateDaemon(this.databaseManager, this.localUpdates, this.remoteUpdates, 
                 this.communicationMechanism, this.federationHost, SLEEP_TIME, this.allowedFhssIds, LOCAL_FHS_ID, 
                 this.localUpdateHandler, this.remoteUpdateHandler);
     }
@@ -179,8 +183,12 @@ public class FederationUpdateDaemonTest {
         Mockito.verify(this.remoteUpdateHandler).handleRemoteUpdate(remoteFederationUpdate2);
         assertEquals(1, this.localUpdates.size());
         assertTrue(this.localUpdates.contains(localFederationUpdate2));
+        Mockito.verify(this.databaseManager).removeUpdate(localFederationUpdate1);
+        Mockito.verify(this.databaseManager).saveFederationUpdate(localFederationUpdate2);
         assertEquals(1, this.remoteUpdates.size());
         assertTrue(this.remoteUpdates.contains(remoteFederationUpdate1));
+        Mockito.verify(this.databaseManager).removeUpdate(remoteFederationUpdate2);
+        Mockito.verify(this.databaseManager).saveFederationUpdate(remoteFederationUpdate1);
     }
     
     @Test
@@ -203,7 +211,7 @@ public class FederationUpdateDaemonTest {
     }
     
     @Test
-    public void testRemotelUpdateSynchronizationFailed() throws InvalidParameterException {
+    public void testRemoteUpdateSynchronizationFailed() throws InvalidParameterException {
         Mockito.doThrow(InvalidParameterException.class).when(this.remoteUpdateHandler).handleRemoteUpdate(remoteFederationUpdate1);
         
         this.daemon.doRun();
