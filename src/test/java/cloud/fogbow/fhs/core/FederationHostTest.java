@@ -138,6 +138,7 @@ public class FederationHostTest {
     private static final String REMOTE_FEDERATION_FHS_ID_2 = FHS_ID_2;
     private static final String REMOTE_FEDERATION_OWNING_ADMIN_ID_2 = "remoteFederationOwningAdminId2";
     private static final String REMOTE_FEDERATION_ADMIN_ID_1 = "remoteFederationAdminId1";
+    private static final String OPERATION_STR = "operationStr";
     
     private FederationHost federationHost;
     private FederationUser admin1;
@@ -293,6 +294,7 @@ public class FederationHostTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1)).thenReturn(SERVICE_ID_1);
         Mockito.when(federation1.map(SERVICE_ID_1, REGULAR_USER_ID_1, CLOUD_NAME)).thenReturn(
                 credentialsMapCloud1);
+        Mockito.when(federation1.isAuthorized(SERVICE_ID_1, REGULAR_USER_ID_1, OPERATION_STR)).thenReturn(true);
         
         this.federation2 = Mockito.mock(Federation.class);
         Mockito.when(federation2.getId()).thenReturn(FEDERATION_ID_2);
@@ -1287,6 +1289,17 @@ public class FederationHostTest {
         Map<String, String> responseCredentials = this.federationHost.map(FEDERATION_ID_1, SERVICE_ID_1, REGULAR_USER_ID_1, CLOUD_NAME);
         
         assertEquals(credentialsMapCloud1, responseCredentials);
+    }
+    
+    @Test
+    public void testIsAuthorized() throws FogbowException {
+        setUpFederationData();
+        
+        boolean isAuthorized = this.federationHost.isAuthorized(FEDERATION_ID_1, SERVICE_ID_1, 
+                REGULAR_USER_ID_1, OPERATION_STR);
+        
+        Mockito.verify(this.federation1).isAuthorized(SERVICE_ID_1, REGULAR_USER_ID_1, OPERATION_STR);
+        assertTrue(isAuthorized);
     }
     
     /*

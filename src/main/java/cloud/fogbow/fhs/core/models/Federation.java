@@ -403,13 +403,13 @@ public class Federation {
         return service.getAccessPolicy().isAllowedToPerform(user, getServiceOperation(operation));
     }
     
-    private ServiceOperation getServiceOperation(String operation) {
+    private ServiceOperation getServiceOperation(String operation) throws InvalidParameterException {
         switch (operation) {
             case "GET": return new ServiceOperation(HttpMethod.GET);
             case "POST": return new ServiceOperation(HttpMethod.POST);
             case "DELETE": return new ServiceOperation(HttpMethod.DELETE);
             case "PUT": return new ServiceOperation(HttpMethod.PUT);
-            default: return new ServiceOperation(HttpMethod.GET);
+            default: throw new InvalidParameterException(Messages.Exception.INVALID_OPERATION);
         }
     }
 

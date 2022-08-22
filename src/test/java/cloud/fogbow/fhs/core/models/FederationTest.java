@@ -137,6 +137,10 @@ public class FederationTest {
     private static final String FEDERATION_USER_3_STR = "federationUser3";
     private static final String UPDATED_FEDERATION_ATTRIBUTE_1_STR = "updatedFederationAttribute1";
     private static final String FEDERATION_ATTRIBUTE_3_STR = "federationAttribute3";
+    private static final String OPERATION_GET = "GET";
+    private static final String OPERATION_POST = "POST";
+    private static final String OPERATION_DELETE = "DELETE";
+    private static final String OPERATION_PUT = "PUT";
 
     private Federation federation;
     private List<FederationUser> federationMembers;
@@ -611,6 +615,60 @@ public class FederationTest {
     @Test(expected = InvalidParameterException.class)
     public void testCannotMapCredentialsForInvalidMember() throws InvalidParameterException {
         this.federation.map(FEDERATION_SERVICE_ID_1, "invaliduserid", CLOUD_NAME);
+    }
+    
+    @Test
+    public void testIsAuthorized() throws InvalidParameterException {
+        // GET
+        boolean isAuthorizedOperationGet = this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, 
+                FEDERATION_USER_NAME_1, OPERATION_GET);
+        
+        assertTrue(isAuthorizedOperationGet);
+        
+        Mockito.verify(this.accessPolicy).isAllowedToPerform(Mockito.eq(federationUser1), 
+                Mockito.eq(new ServiceOperation(HttpMethod.GET)));
+        
+        // POST
+        boolean isAuthorizedOperationPost = this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, 
+                FEDERATION_USER_NAME_1, OPERATION_POST);
+        
+        assertTrue(isAuthorizedOperationPost);
+        
+        Mockito.verify(this.accessPolicy).isAllowedToPerform(Mockito.eq(federationUser1), 
+                Mockito.eq(new ServiceOperation(HttpMethod.POST)));
+        
+        // DELETE
+        boolean isAuthorizedOperationDelete = this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, 
+                FEDERATION_USER_NAME_1, OPERATION_DELETE);
+        
+        assertTrue(isAuthorizedOperationDelete);
+        
+        Mockito.verify(this.accessPolicy).isAllowedToPerform(Mockito.eq(federationUser1), 
+                Mockito.eq(new ServiceOperation(HttpMethod.DELETE)));
+        
+        // PUT
+        boolean isAuthorizedOperationPut = this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, 
+                FEDERATION_USER_NAME_1, OPERATION_PUT);
+        
+        assertTrue(isAuthorizedOperationPut);
+        
+        Mockito.verify(this.accessPolicy).isAllowedToPerform(Mockito.eq(federationUser1), 
+                Mockito.eq(new ServiceOperation(HttpMethod.PUT)));
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotVerifyAuthorizationForInvalidService() throws InvalidParameterException {
+        this.federation.isAuthorized("invalidserviceid", FEDERATION_USER_NAME_1, OPERATION_GET);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotVerifyAuthorizationForInvalidMember() throws InvalidParameterException {
+        this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, "invaliduserid", OPERATION_GET);
+    }
+    
+    @Test(expected = InvalidParameterException.class)
+    public void testCannotVerifyAuthorizationForInvalidOperation() throws InvalidParameterException {
+        this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, FEDERATION_USER_NAME_1, "invalidoperation");
     }
     
     @Test

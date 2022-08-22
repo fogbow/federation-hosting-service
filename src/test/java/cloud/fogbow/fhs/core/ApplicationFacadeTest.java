@@ -44,6 +44,7 @@ import cloud.fogbow.fhs.api.http.response.RequestResponse;
 import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
+import cloud.fogbow.fhs.api.parameters.OperationToAuthorize;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
@@ -204,6 +205,7 @@ public class ApplicationFacadeTest {
     private static final String AUTHORIZATION_PLUGIN_CLASS_NAME = "authorizationPluginClassName";
     private static final String PUBLIC_KEY_FILE_PATH = "publicKeyFilePath";
     private static final String PRIVATE_KEY_FILE_PATH = "privateKeyFilePath";
+    private static final String OPERATION_STR = "operationStr";
     
     private ApplicationFacade applicationFacade;
     private AuthorizationPlugin<FhsOperation> authorizationPlugin;
@@ -243,6 +245,7 @@ public class ApplicationFacadeTest {
     private AuthorizationPlugin<FhsOperation> newAuthorizationPlugin;
     private RemoteFederationUser remoteFederationUser1;
     private RemoteFederationUser remoteFederationUser2;
+    private OperationToAuthorize operationToAuthorize;
     
     @Before
     public void setUp() throws FogbowException {
@@ -437,6 +440,8 @@ public class ApplicationFacadeTest {
         Mockito.when(this.authenticationPluginInstantiator.getAuthenticationPlugin(
                 AUTHENTICATION_PLUGIN_CLASS_NAME, AUTHENTICATION_PLUGIN_PROPERTIES)).thenReturn(authenticationPlugin);
         
+        this.operationToAuthorize = new OperationToAuthorize(OPERATION_STR);
+        
         this.authorizationPlugin = Mockito.mock(AuthorizationPlugin.class);
         this.federationHost = Mockito.mock(FederationHost.class);
         Mockito.when(this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_1, 
@@ -476,6 +481,7 @@ public class ApplicationFacadeTest {
         Mockito.when(this.federationHost.map(FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, CLOUD_NAME)).thenReturn(CREDENTIALS);
         Mockito.when(this.federationHost.login("", USER_ID_1, userCredentials1)).thenReturn(USER_TOKEN_1);
         Mockito.when(this.federationHost.federationAdminLogin(ADMIN_ID_1, adminCredentials)).thenReturn(ADMIN_TOKEN);
+        Mockito.when(this.federationHost.isAuthorized(FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, OPERATION_STR)).thenReturn(true);
         
         this.fhsOperators = new ArrayList<FederationUser>();
         this.fhsOperators.add(fhsOperator1);
@@ -1057,6 +1063,15 @@ public class ApplicationFacadeTest {
         assertEquals(response, CREDENTIALS);
         
         Mockito.verify(this.federationHost).map(FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, CLOUD_NAME);
+        BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
+    }
+    
+    @Test
+    public void testIsAuthorized() throws FogbowException {
+        boolean authorized = this.applicationFacade.isAuthorized(TOKEN_1, FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, this.operationToAuthorize);
+        
+        assertTrue(authorized);
+        Mockito.verify(this.federationHost).isAuthorized(FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, OPERATION_STR);
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
 }

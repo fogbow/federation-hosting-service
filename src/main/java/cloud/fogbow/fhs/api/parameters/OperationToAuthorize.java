@@ -7,6 +7,10 @@ public class OperationToAuthorize {
         
     }
 
+    public OperationToAuthorize(String operation) {
+        this.operation = operation;
+    }
+
     public String getOperation() {
         return operation;
     }

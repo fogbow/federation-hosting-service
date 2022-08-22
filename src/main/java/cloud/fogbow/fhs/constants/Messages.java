@@ -21,6 +21,7 @@ public class Messages {
         public static final String GENERIC_EXCEPTION_S = Log.GENERIC_EXCEPTION_S;
         public static final String INVALID_FHS_OPERATOR_ID = "Invalid FHS Operator ID: %s.";
         public static final String INVALID_LOCAL_PROVIDER_ID = "Invalid local provider ID.";
+        public static final String INVALID_OPERATION = "Invalid operation on federated service.";
         public static final String INVALID_SERVICE_PUBLIC_KEY_ENDPOINT = "Invalid service public key endpoint.";
         public static final String INVALID_TOKEN = "Invalid token.";
         public static final String MEMBER_NOT_FOUND_IN_FEDERATION = "Member %s not found in federation %s.";
