@@ -397,6 +397,22 @@ public class Federation {
         return service.getAccessPolicy().getCredentialsForAccess(user, cloudName);
     }
     
+    public boolean isAuthorized(String serviceId, String userId, String operation) throws InvalidParameterException {
+        FederationService service = getService(serviceId);
+        FederationUser user = getUserById(userId);
+        return service.getAccessPolicy().isAllowedToPerform(user, getServiceOperation(operation));
+    }
+    
+    private ServiceOperation getServiceOperation(String operation) {
+        switch (operation) {
+            case "GET": return new ServiceOperation(HttpMethod.GET);
+            case "POST": return new ServiceOperation(HttpMethod.POST);
+            case "DELETE": return new ServiceOperation(HttpMethod.DELETE);
+            case "PUT": return new ServiceOperation(HttpMethod.PUT);
+            default: return new ServiceOperation(HttpMethod.GET);
+        }
+    }
+
     public ServiceResponse invoke(String requester, String serviceId, HttpMethod method, 
             List<String> path, Map<String, String> headers, Map<String, Object> body) throws FogbowException {
         FederationService service = getService(serviceId);

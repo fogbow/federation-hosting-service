@@ -79,6 +79,7 @@ public class Messages {
         public static final String INVOKE_PATCH_REQUEST_RECEIVED = "Invoke patch request received.";
         public static final String INVOKE_POST_REQUEST_RECEIVED = "Invoke post request received.";
         public static final String INVOKE_PUT_REQUEST_RECEIVED = "Invoke put request received.";
+        public static final String IS_OPERATION_AUTHORIZED_RECEIVED = "Is operation authorized received.";
         public static final String JOIN_DENY_RECEIVED = "Join deny received.";
         public static final String JOIN_GRANT_RECEIVED = "Join grant received.";
         public static final String JOIN_REMOTE_FEDERATION_RECEIVED = "Join remote federation received.";

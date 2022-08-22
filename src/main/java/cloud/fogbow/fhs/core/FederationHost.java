@@ -680,6 +680,12 @@ public class FederationHost {
         return federation.map(serviceId, userId, cloudName);
     }
     
+    public boolean isAuthorized(String federationId, String serviceId, 
+            String userId, String operation) throws UnauthorizedRequestException, InvalidParameterException {
+        Federation federation = lookUpFederationById(federationId);
+        return federation.isAuthorized(serviceId, userId, operation);
+    }
+    
     /*
      * 
      * Remote federations (methods called by RemoteFacade)

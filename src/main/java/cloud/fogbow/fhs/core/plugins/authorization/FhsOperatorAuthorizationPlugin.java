@@ -26,7 +26,7 @@ public class FhsOperatorAuthorizationPlugin implements AuthorizationPlugin<FhsOp
                     OperationType.LIST_FEDERATION_INSTANCES, OperationType.UPDATE_FEDERATION, 
                     OperationType.DELETE_FEDERATION_INSTANCE, OperationType.RELOAD_CONFIGURATION);
     public static final List<OperationType> OTHER_SERVICES_ADMIN_ONLY_OPERATIONS = 
-            Arrays.asList(OperationType.MAP);
+            Arrays.asList(OperationType.MAP, OperationType.SERVICE_ACCESS_AUTHORIZATION);
     private List<String> fhsOperatorUserIds;
     private List<String> otherServicesAdminIds;
     

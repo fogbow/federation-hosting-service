@@ -15,11 +15,11 @@ import org.xmpp.packet.IQ;
 import com.google.gson.reflect.TypeToken;
 
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.RemoteFacade;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.UpdateFederationRequest;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
-import cloud.fogbow.ras.constants.SystemConstants;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RemoteFacade.class })

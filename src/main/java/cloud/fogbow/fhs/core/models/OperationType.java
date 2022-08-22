@@ -34,7 +34,8 @@ public enum OperationType {
     GET_ATTRIBUTES("getAttributes"),
     GRANT_ATTRIBUTE("grantAttribute"),
     REVOKE_ATTRIBUTE("revokeAttribute"), 
-    DELETE_ATTRIBUTE("deleteAttribute");
+    DELETE_ATTRIBUTE("deleteAttribute"),
+    SERVICE_ACCESS_AUTHORIZATION("serviceAccessAuthorization");
 
     private String value;
     

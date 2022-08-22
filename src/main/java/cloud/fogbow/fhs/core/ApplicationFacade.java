@@ -36,6 +36,7 @@ import cloud.fogbow.fhs.api.http.response.RequestResponse;
 import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
 import cloud.fogbow.fhs.api.http.response.ServiceId;
 import cloud.fogbow.fhs.api.http.response.ServiceInfo;
+import cloud.fogbow.fhs.api.parameters.OperationToAuthorize;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
@@ -780,6 +781,21 @@ public class ApplicationFacade {
         
         try {
             return this.federationHost.map(federationId, serviceId, userId, cloudName);
+        } finally {
+            synchronizationManager.finishOperation();
+        }
+    }
+    
+    public boolean isAuthorized(String userToken, String federationId, String serviceId, String memberId, 
+            OperationToAuthorize operationToAuthorize) throws FogbowException {
+        SystemUser requestUser = authenticate(userToken);
+        this.authorizationPlugin.isAuthorized(requestUser, new FhsOperation(OperationType.SERVICE_ACCESS_AUTHORIZATION));
+        
+        synchronizationManager.startOperation();
+        
+        try {
+            return this.federationHost.isAuthorized(federationId, serviceId, memberId, 
+                    operationToAuthorize.getOperation());
         } finally {
             synchronizationManager.finishOperation();
         }
