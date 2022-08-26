@@ -15,14 +15,18 @@ import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.Authorized;
 import cloud.fogbow.fhs.api.parameters.OperationToAuthorize;
+import cloud.fogbow.fhs.constants.ApiDocumentation;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
-//TODO documentation
 @CrossOrigin
 @RestController
 @RequestMapping(value = Authorization.AUTHORIZATION_ENDPOINT)
+@Api(description = ApiDocumentation.Authorization.API)
 public class Authorization {
     public static final String AUTHORIZATION_SUFFIX_ENDPOINT = "Authorization";
     public static final String AUTHORIZATION_ENDPOINT = 
@@ -30,11 +34,16 @@ public class Authorization {
     
     private final Logger LOGGER = Logger.getLogger(Authorization.class);
     
+    @ApiOperation(value = ApiDocumentation.Authorization.GRANT_ATTRIBUTE)
     @RequestMapping(value = "/{federationId}/{memberId}/{attributeId}", method = RequestMethod.PUT)
     public ResponseEntity<Boolean> grantAttribute(
+            @ApiParam(value = ApiDocumentation.Federation.FEDERATION_ID)
             @PathVariable String federationId,
+            @ApiParam(value = ApiDocumentation.CommonParameters.MEMBER_ID)
             @PathVariable String memberId,
+            @ApiParam(value = ApiDocumentation.Attributes.ATTRIBUTE_ID)
             @PathVariable String attributeId,
+            @ApiParam(value = ApiDocumentation.Authentication.SYSTEM_USER_TOKEN)
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
         try {
             LOGGER.info(Messages.Log.GRANT_FEDERATION_ATTRIBUTE_RECEIVED);
@@ -46,11 +55,16 @@ public class Authorization {
         }
     }
     
+    @ApiOperation(value = ApiDocumentation.Authorization.REVOKE_ATTRIBUTE)
     @RequestMapping(value = "/{federationId}/{memberId}/{attributeId}", method = RequestMethod.DELETE)
     public ResponseEntity<Boolean> revokeAttribute(
+            @ApiParam(value = ApiDocumentation.Federation.FEDERATION_ID)
             @PathVariable String federationId,
+            @ApiParam(value = ApiDocumentation.CommonParameters.MEMBER_ID)
             @PathVariable String memberId,
+            @ApiParam(value = ApiDocumentation.Attributes.ATTRIBUTE_ID)
             @PathVariable String attributeId,
+            @ApiParam(value = ApiDocumentation.Authentication.SYSTEM_USER_TOKEN)
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
         try {
             LOGGER.info(Messages.Log.REVOKE_FEDERATION_ATTRIBUTE_RECEIVED);
@@ -62,12 +76,18 @@ public class Authorization {
         }
     }
     
+    @ApiOperation(value = ApiDocumentation.Authorization.IS_AUTHORIZED)
     @RequestMapping(value = "/Authorize/{federationId}/{serviceId}/{memberId}", method = RequestMethod.POST)
     public ResponseEntity<Authorized> isOperationAuthorized(
+            @ApiParam(value = ApiDocumentation.Federation.FEDERATION_ID)
             @PathVariable String federationId,
+            @ApiParam(value = ApiDocumentation.Services.SERVICE_ID)
             @PathVariable String serviceId,
+            @ApiParam(value = ApiDocumentation.CommonParameters.MEMBER_ID)
             @PathVariable String memberId,
+            @ApiParam(value = ApiDocumentation.Authentication.SYSTEM_USER_TOKEN)
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken, 
+            @ApiParam(value = ApiDocumentation.Authorization.OPERATION_DESCRIPTION)
             @RequestBody OperationToAuthorize operationToAuthorize) throws FogbowException {
         try {
             LOGGER.info(Messages.Log.IS_OPERATION_AUTHORIZED_RECEIVED);

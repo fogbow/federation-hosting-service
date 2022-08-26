@@ -10,14 +10,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import cloud.fogbow.common.exceptions.FogbowException;
+import cloud.fogbow.fhs.constants.ApiDocumentation;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
+import io.swagger.annotations.Api;
 
-//TODO documentation
 @CrossOrigin
 @RestController
 @RequestMapping(value = Logout.LOGOUT_ENDPOINT)
+@Api(description = ApiDocumentation.Logout.API)
 public class Logout {
     public static final String LOGOUT_SUFFIX_ENDPOINT = "MemberLogout";
     public static final String LOGOUT_ENDPOINT = SystemConstants.SERVICE_BASE_ENDPOINT + LOGOUT_SUFFIX_ENDPOINT;

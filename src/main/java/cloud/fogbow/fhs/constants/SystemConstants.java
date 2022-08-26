@@ -12,4 +12,5 @@ public class SystemConstants {
     public static final String XMPP_SERVER_NAME_PREFIX = "fns-";
     public static final String XMPP_IS_ENABLED = "true";
     public static final String ALLOWED_FHS_IDS_SEPARATOR = ",";
+    public static final String API_VERSION_NUMBER = "1.0.0";
 }

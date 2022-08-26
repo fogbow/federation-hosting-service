@@ -15,24 +15,32 @@ import org.springframework.web.bind.annotation.RestController;
 import cloud.fogbow.common.exceptions.FogbowException;
 import cloud.fogbow.fhs.api.http.CommonKeys;
 import cloud.fogbow.fhs.api.http.response.ServiceDiscovered;
+import cloud.fogbow.fhs.constants.ApiDocumentation;
 import cloud.fogbow.fhs.constants.Messages;
 import cloud.fogbow.fhs.constants.SystemConstants;
 import cloud.fogbow.fhs.core.ApplicationFacade;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
-// TODO documentation
 @CrossOrigin
 @RestController
 @RequestMapping(value = Discovery.DISCOVERY_ENDPOINT)
+@Api(description = ApiDocumentation.Discovery.API)
 public class Discovery {
     public static final String DISCOVERY_SUFFIX_ENDPOINT = "Discovery";
     public static final String DISCOVERY_ENDPOINT = SystemConstants.SERVICE_BASE_ENDPOINT + DISCOVERY_SUFFIX_ENDPOINT;
     
     private final Logger LOGGER = Logger.getLogger(Discovery.class);
     
+    @ApiOperation(value = ApiDocumentation.Discovery.DISCOVER_SERVICES)
     @RequestMapping(value = "/{federationId}/{memberId}", method = RequestMethod.GET)
     public ResponseEntity<List<ServiceDiscovered>> discoverServices(
+            @ApiParam(value = ApiDocumentation.Federation.FEDERATION_ID)
             @PathVariable String federationId,
+            @ApiParam(value = ApiDocumentation.CommonParameters.MEMBER_ID)
             @PathVariable String memberId,
+            @ApiParam(value = ApiDocumentation.Authentication.SYSTEM_USER_TOKEN)
             @RequestHeader(required = false, value = CommonKeys.SYSTEM_USER_TOKEN_HEADER_KEY) String systemUserToken) throws FogbowException {
         try {
             LOGGER.info(Messages.Log.DISCOVER_SERVICES_RECEIVED);
