@@ -181,4 +181,28 @@ public class ApiDocumentation {
     public static class CommonParameters {
         public static final String MEMBER_ID = "The ID of the specific target member.";
     }
+    
+    public static class Model {
+        public static final String ATTRIBUTE_NAME = "attribute.name";
+        public static final String FEDERATION_NAME = "federation.name";
+        public static final String FEDERATION_METADATA = "{\"property1\": \"value1\", \"property2\": \"value2\"}";
+        public static final String OWNER_ID = "owner.id";
+        public static final String OWNER_ID_NOTE = "(the ID of a service owner member)";
+        public static final String ENDPOINT = "https://service.endpoint";
+        public static final String ENDPOINT_NOTE = "(a valid URL used to access the service)";
+        public static final String SERVICE_METADATA = 
+                "{\"invokerClassName\": \"invoker.class.Name\", \"other.property\": \"other.value\"}";
+        public static final String SERVICE_METADATA_NOTE = 
+                "(a map containing properties used by the service. Must contain at least the invoker class name)";
+        public static final String DISCOVERY_POLICY = "discover.policy.class.Name";
+        public static final String DISCOVERY_POLICY_NOTE = "(the class name of the discovery policy to use)";
+        public static final String ACCESS_POLICY = "access.policy.class.Name";
+        public static final String ACCESS_POLICY_NOTE = "(the class name of the access policy to use)";
+        public static final String FEDERATION_USER_NAME = "user.name";
+        public static final String FEDERATION_USER_EMAIL = "user@mail.com";
+        public static final String FEDERATION_USER_DESCRIPTION = "user description";
+        public static final String FEDERATION_USER_ENABLED = "true";
+        public static final String FEDERATION_USER_AUTHENTICATION_PROPERTIES = 
+                "{\"authentication-service-url\": \"https://auth.service\", \"other.property\": \"other.value\"}";
+    }
 }
