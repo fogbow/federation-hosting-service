@@ -183,9 +183,17 @@ public class ApiDocumentation {
     }
     
     public static class Model {
+        public static final String ATTRIBUTE_ID = "attribute.id";
         public static final String ATTRIBUTE_NAME = "attribute.name";
         public static final String FEDERATION_NAME = "federation.name";
+        public static final String FEDERATION_NAME_NOTE = "(the name of a local federation)";
+        public static final String FEDERATION_DESCRIPTION = "federation.description";
         public static final String FEDERATION_METADATA = "{\"property1\": \"value1\", \"property2\": \"value2\"}";
+        public static final String FEDERATION_ENABLED = "true";
+        public static final String FEDERATION_NUMBER_OF_MEMBERS = "2";
+        public static final String FEDERATION_NUMBER_OF_MEMBERS_NOTE = "(the number of members in the specific federation)";
+        public static final String FEDERATION_NUMBER_OF_SERVICES = "3";
+        public static final String FEDERATION_NUMBER_OF_SERVICES_NOTE = "(the number of services in the specific federation)";
         public static final String OWNER_ID = "owner.id";
         public static final String OWNER_ID_NOTE = "(the ID of a service owner member)";
         public static final String ENDPOINT = "https://service.endpoint";
@@ -204,5 +212,47 @@ public class ApiDocumentation {
         public static final String FEDERATION_USER_ENABLED = "true";
         public static final String FEDERATION_USER_AUTHENTICATION_PROPERTIES = 
                 "{\"authentication-service-url\": \"https://auth.service\", \"other.property\": \"other.value\"}";
+        public static final String ADMIN_ID = "admin.id";
+        public static final String ADMIN_ID_NOTE = "(the ID of a federation admin from a remote FHS)";
+        public static final String ADMIN_NAME = "admin.name";
+        public static final String ADMIN_EMAIL = "admin.email";
+        public static final String ADMIN_DESCRIPTION = "admin.description";
+        public static final String ADMIN_ENABLED = "true";
+        public static final String CREDENTIALS = "{\"password\":\"pass\", \"other.credential\":\"other.value\"}";
+        public static final String FEDERATION_OWNER = "federation.owner.id";
+        public static final String FEDERATION_OWNER_NOTE = "(the ID of the federation admin who is the owner of a specific federation)";
+        public static final String FEDERATION_ID = "federation.id";
+        public static final String FEDERATION_ID_NOTE = "(the ID of a local federation)";
+        public static final String MEMBER_ID = "member.id";
+        public static final String MEMBER_NAME = "member.name";
+        public static final String MEMBER_EMAIL = "member@mail.com";
+        public static final String MEMBER_DESCRIPTION = "member.description";
+        public static final String MEMBER_ENABLED = "true";
+        public static final String MEMBER_ATTRIBUTES = "[\"attribute.id.0\", \"attribute.id.1\"]";
+        public static final String MEMBER_ATTRIBUTES_NOTE = "(a list containing the IDs of the attributes of a specific federation member)";
+        public static final String FEDERATIONS_OWNED_BY_ADMIN = "[\"federation.id.0\", \"federation.id.1\"]";
+        public static final String FEDERATIONS_OWNED_BY_ADMIN_NOTE = "(a list containing the IDs of the federations owned by a specific federation admin)";
+        public static final String OPERATION_STR = "get-compute";
+        public static final String OPERATION_STR_NOTE = "(a description of the operation to be authorized)";
+        public static final String OPERATOR_ID = "operator.id";
+        public static final String FHS_ID = "fhs.id";
+        public static final String FHS_ID_NOTE = "(the ID of a remote FHS)";
+        public static final String PATH = "[\"service.url.part0\", \"service.url.part1\"]";
+        public static final String PATH_NOTE = "(a complement of the service endpoint, concatenated to the service endpoint to produce the URL used in the invocation)";
+        public static final String HEADERS = "{\"header.key.0\":\"header.value.0\", \"header.key.1\":\"header.value.1\"}";
+        public static final String HEADERS_NOTE = "(the headers used in the service invocation)";
+        public static final String BODY = "{\"body.key.0\":\"body.value.0\", \"body.key.1\":\"body.value.1\"}";
+        public static final String BODY_NOTE = "(the body used in the service invocation)";
+        public static final String AUTHORIZED = "true";
+        public static final String AUTHORIZED_NOTE = "(a boolean value stating whether the operation is authorized or not)";
+        public static final String CLOUD_CREDENTIALS = "{\"credential.key.0\":\"credential.value.0\", \"credential.key.1\":\"credential.value.1\"}";
+        public static final String CLOUD_CREDENTIALS_NOTE = "(the credentials used to access a specific cloud provider services)";
+        public static final String REQUEST_RESPONSE_CODE = "201";
+        public static final String REQUEST_RESPONSE_CODE_NOTE = "(the response code returned by a request to a federation service)";
+        public static final String REQUEST_RESPONSE_DATA = "{\"data.key.0\":\"data.value.0\", \"data.key.1\":\"data.value.1\"}";
+        public static final String REQUEST_RESPONSE_DATA_NOTE = "(the content returned by a request to a federation service)";
+        public static final String SERVICE_ID = "service.id";
+        public static final String TOKEN = "token";
+        public static final String TOKEN_NOTE = "(the token that identifies a user in the FHS)";
     }
 }

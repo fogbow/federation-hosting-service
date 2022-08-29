@@ -2,11 +2,19 @@ package cloud.fogbow.fhs.api.http.response;
 
 import java.util.Objects;
 
+import cloud.fogbow.fhs.constants.ApiDocumentation;
+import io.swagger.annotations.ApiModelProperty;
+
 public class FederationInstance {
+    @ApiModelProperty(position = 0, example = ApiDocumentation.Model.FEDERATION_ID, notes = ApiDocumentation.Model.FEDERATION_ID_NOTE)
     private String fedId;
+    @ApiModelProperty(position = 1, example = ApiDocumentation.Model.FEDERATION_NAME, notes = ApiDocumentation.Model.FEDERATION_NAME_NOTE)
     private String fedName;
+    @ApiModelProperty(position = 2, example = ApiDocumentation.Model.FEDERATION_DESCRIPTION)
     private String description;
+    @ApiModelProperty(position = 3, example = ApiDocumentation.Model.FEDERATION_ENABLED)
     private boolean enabled;
+    @ApiModelProperty(position = 4, example = ApiDocumentation.Model.FEDERATION_OWNER, notes = ApiDocumentation.Model.FEDERATION_OWNER_NOTE)
     private String owningFedAdminId;
     
     public FederationInstance() {
