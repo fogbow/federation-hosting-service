@@ -33,8 +33,10 @@ public class FederationUser {
     private static final String IDENTITY_PLUGIN_PROPERTIES_COLUMN_NAME = "identity_plugin_properties";
     private static final String IS_OPERATOR_COLUMN_NAME = "is_operator";
     private static final String IS_ADMIN_COLUMN_NAME = "is_admin";
-
-    // TODO documentation
+    /**
+     * The key to use in the authentication properties map to indicate the class name of the
+     * identity plugin to use to authenticate this user.
+     */
     public static final String IDENTITY_PLUGIN_CLASS_NAME_KEY = "identityPluginClassName";
     
     @Column(name = MEMBER_ID_COLUMN_NAME)

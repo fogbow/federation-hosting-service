@@ -56,9 +56,14 @@ public class Federation {
     private static final String FEDERATION_ALLOWED_REMOTE_FED_ADMINS_COLUMN_NAME = "federation_allowed_remote_fed_admins";
     private static final String FEDERATION_METADATA_COLUMN_NAME_COLUMN_NAME = "federation_metadata";
     private static final String FEDERATION_REMOTE_ADMINS_COLUMN_NAME = "federation_remote_admins";
-
-    // TODO documentation
+    /**
+     * The ID and name of the attribute Member.
+     */
     public static final String MEMBER_ATTRIBUTE_NAME = "member";
+    /**
+     * The ID and name of the attribute ServiceOwner, to be used when granting the 
+     * ServiceOwner role to a member.
+     */
     public static final String SERVICE_OWNER_ATTRIBUTE_NAME = "serviceOwner";
     private static final FederationAttribute MEMBER_ATTRIBUTE = 
             new FederationAttribute(MEMBER_ATTRIBUTE_NAME, MEMBER_ATTRIBUTE_NAME);

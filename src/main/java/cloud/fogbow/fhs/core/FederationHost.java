@@ -711,10 +711,6 @@ public class FederationHost {
         }
     }
     
-    public void leaveRemoteFederation(String federationId) {
-        // TODO implement
-    }
-    
     private void checkIfRequesterIsFedAdmin(String requester) throws UnauthorizedRequestException {
         if (lookUpAdminByName(requester) == null) {
             throw new UnauthorizedRequestException(Messages.Exception.REQUESTER_IS_NOT_ADMIN);

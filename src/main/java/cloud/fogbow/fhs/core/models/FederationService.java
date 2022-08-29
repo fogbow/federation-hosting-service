@@ -34,8 +34,10 @@ import cloud.fogbow.fhs.core.utils.MapUtils;
 @Entity
 @Table(name = "federation_service_table")
 public class FederationService {
-    public static final String SERIALIZED_FIELDS_SEPARATOR = "!^!";
-    public static final String EMPTY_DISCOVERY_POLICY_CLASS_NAME = "null";
+    /**
+     * The key to use in the metadata map to indicate the class name of the invoker to use.
+     */
+    public static final String INVOKER_CLASS_NAME_METADATA_KEY = "invokerClassName";
     private static final String SERVICE_ID_COLUMN_NAME = "service_id";
     private static final String SERVICE_OWNER_ID_COLUMN_NAME = "service_owner_id";
     private static final String SERVICE_ENDPOINT_COLUMN_NAME = "service_endpoint";
@@ -44,10 +46,8 @@ public class FederationService {
     private static final String INVOKER_CLASS_NAME_COLUMN_NAME = "invoker_class_name";
     private static final String FEDERATION_ID_COLUMN_NAME = "federation_id";
     private static final String METADATA_COLUMN_NAME = "metadata";
-    
-    // TODO documentation
-    public static final String INVOKER_CLASS_NAME_METADATA_KEY = "invokerClassName";
-    public static final String CREDENTIALS_METADATA_KEY = "credentials";
+    static final String SERIALIZED_FIELDS_SEPARATOR = "!^!";
+    static final String EMPTY_DISCOVERY_POLICY_CLASS_NAME = "null";
     
     @Column(name = SERVICE_ID_COLUMN_NAME)
     @Id
