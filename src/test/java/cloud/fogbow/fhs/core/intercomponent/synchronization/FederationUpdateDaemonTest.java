@@ -21,7 +21,6 @@ import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 
-// TODO documentation
 public class FederationUpdateDaemonTest {
     private static final long SLEEP_TIME = 1L;
     private static final String FEDERATION_ID_1 = "federationId1";
@@ -172,6 +171,11 @@ public class FederationUpdateDaemonTest {
                 this.localUpdateHandler, this.remoteUpdateHandler);
     }
     
+    // test case: When calling the method doRun, it must set the remote federations list by calling
+    // the method setRemoteFederationList of the FederationHost. Then, it must handle the local updates 
+    // by calling the method handleLocalUpdate of the LocalUpdateHandler for each local update. Finally, 
+    // it must handle the remote updates by calling the method handleRemoteUpdate of the RemoteUpdateHandler.
+    // After that, it must remove all completed updates or save the ongoing updates using the DatabaseManager.
     @Test
     public void testSuccessfulDoRun() throws FogbowException {
         this.daemon.doRun();
@@ -191,6 +195,8 @@ public class FederationUpdateDaemonTest {
         Mockito.verify(this.databaseManager).saveFederationUpdate(remoteFederationUpdate1);
     }
     
+    // test case: When calling the method doRun and a local update handling fails, it must
+    // not remove the update from the local updates list.
     @Test
     public void testLocalUpdateSynchronizationFailed() throws InvalidParameterException {
         Mockito.doThrow(InvalidParameterException.class).when(this.localUpdateHandler).handleLocalUpdate(localFederationUpdate1);
@@ -210,6 +216,8 @@ public class FederationUpdateDaemonTest {
         assertTrue(this.remoteUpdates.contains(remoteFederationUpdate1));
     }
     
+    // test case: When calling the method doRun and a remote update handling fails, it must
+    // not remove the update from the remote updates list.
     @Test
     public void testRemoteUpdateSynchronizationFailed() throws InvalidParameterException {
         Mockito.doThrow(InvalidParameterException.class).when(this.remoteUpdateHandler).handleRemoteUpdate(remoteFederationUpdate1);
@@ -227,6 +235,9 @@ public class FederationUpdateDaemonTest {
         assertTrue(this.remoteUpdates.contains(remoteFederationUpdate1));
     }
     
+    // test case: When calling the method doRun and the call to the method syncFederations to acquire
+    // the remote federations list for a specific FHS throws an exception, it must acquire the remote federations
+    // list for the other FHSs and perform the updates normally.
     @Test
     public void testRemoteFederationSynchronizationFailed() throws FogbowException {
         Mockito.when(this.communicationMechanism.syncFederations(Mockito.eq(FHS_ID_1), 

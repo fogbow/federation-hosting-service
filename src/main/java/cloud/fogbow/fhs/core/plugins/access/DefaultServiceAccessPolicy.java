@@ -13,7 +13,6 @@ import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
 
-// TODO documentation
 public class DefaultServiceAccessPolicy implements ServiceAccessPolicy {
     public static final String ACCESS_LEVELS_SEPARATOR = ";";
     private static final String ACCESS_LEVELS_FIELDS_SEPARATOR = ":";

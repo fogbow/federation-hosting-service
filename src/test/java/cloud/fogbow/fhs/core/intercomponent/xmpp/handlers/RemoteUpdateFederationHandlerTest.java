@@ -21,6 +21,7 @@ import cloud.fogbow.fhs.core.intercomponent.RemoteFacade;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.UpdateFederationRequest;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
+// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RemoteFacade.class })
 public class RemoteUpdateFederationHandlerTest {

@@ -23,6 +23,7 @@ import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
+//TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ XmppErrorConditionToExceptionTranslator.class })
 public class RemoteJoinFederationRequestTest {

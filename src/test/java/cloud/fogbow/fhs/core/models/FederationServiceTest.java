@@ -16,7 +16,6 @@ import cloud.fogbow.fhs.core.plugins.discovery.DiscoveryPolicyInstantiator;
 import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvokerInstantiator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO documentation
 public class FederationServiceTest {
     private static final String SERVICE_ID = "serviceId";
     private static final String OWNER_ID = "ownerId";
@@ -60,6 +59,8 @@ public class FederationServiceTest {
         Mockito.when(jsonUtils.toJson(metadata)).thenReturn(metadataStr);
     }
     
+    // test case: When calling the constructor, it must instantiate the discovery and access policies
+    // and the invoker correctly.
     @Test
     public void testConstructorSetsUpLifeCyclePluginsCorrectly() throws ConfigurationErrorException, InvalidParameterException {
         new FederationService(SERVICE_ID, OWNER_ID, SERVICE_ENDPOINT,
@@ -71,6 +72,8 @@ public class FederationServiceTest {
         Mockito.verify(this.invokerInstantiator).getInvoker(INVOKER_CLASS_NAME, metadata, FEDERATION_ID);
     }
     
+    // test case: When calling the constructor which receives a String, it must load the 
+    // service data from the String correctly. 
     @Test
     public void testConstructorInstantiatesServiceFromStringCorrectly() {
         FederationService service = new FederationService(serviceString);
@@ -85,6 +88,8 @@ public class FederationServiceTest {
         assertEquals(this.metadata, service.getMetadata());
     }
     
+    // test case: When calling the update method, it must instantiate the discovery and access policies
+    // and the invoker using the new data passed as argument.
     @Test
     public void testUpdate() throws InvalidParameterException {
         this.service = new FederationService(SERVICE_ID, OWNER_ID, SERVICE_ENDPOINT,
@@ -98,6 +103,8 @@ public class FederationServiceTest {
         Mockito.verify(this.invokerInstantiator).getInvoker(NEW_INVOKER_CLASS_NAME, newMetadata, FEDERATION_ID);
     }
     
+    // test case: When calling the serialize method, it must return a String in specific format containing
+    // the FederationService data.
     @Test
     public void testSerialize() throws InvalidParameterException {
         this.service = new FederationService(SERVICE_ID, OWNER_ID, SERVICE_ENDPOINT,
@@ -113,6 +120,8 @@ public class FederationServiceTest {
         assertEquals(expectedString, serializedService);
     }
     
+    // test case: When calling the serialize method and the discoveryPolicyClassName is null, it must
+    // use a default value for the discoveryPolicyClassName field in the result String.
     @Test
     public void testSerializeWithNullDiscoveryPolicyClassName() throws InvalidParameterException {
         this.service = new FederationService(SERVICE_ID, OWNER_ID, SERVICE_ENDPOINT,
@@ -128,6 +137,8 @@ public class FederationServiceTest {
         assertEquals(expectedString, serializedService);
     }
     
+    // test case: When calling the serialize method and the discoveryPolicyClassName is empty, it must
+    // use a default value for the discoveryPolicyClassName field in the result String.
     @Test
     public void testSerializeWithEmptyDiscoveryPolicyClassName() throws InvalidParameterException {
         this.service = new FederationService(SERVICE_ID, OWNER_ID, SERVICE_ENDPOINT,

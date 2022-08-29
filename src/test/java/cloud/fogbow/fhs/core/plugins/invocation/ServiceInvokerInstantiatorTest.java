@@ -13,7 +13,6 @@ import org.mockito.Mockito;
 import cloud.fogbow.fhs.core.FhsClassFactory;
 import cloud.fogbow.fhs.core.utils.MapUtils;
 
-// TODO documentation
 public class ServiceInvokerInstantiatorTest {
     private static final String INVOKER_CLASS_NAME = "className";
     private static final String FEDERATION_ID = "federationId";

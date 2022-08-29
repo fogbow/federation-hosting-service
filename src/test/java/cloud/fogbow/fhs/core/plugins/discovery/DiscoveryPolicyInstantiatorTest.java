@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 
 import cloud.fogbow.fhs.core.FhsClassFactory;
 
-// TODO documentation
 public class DiscoveryPolicyInstantiatorTest {
     private static final String POLICY_CLASS_NAME = "className";
     private static final String ARG_0 = "arg0";

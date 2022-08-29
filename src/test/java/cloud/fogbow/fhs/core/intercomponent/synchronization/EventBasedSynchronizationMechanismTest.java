@@ -25,7 +25,6 @@ import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class EventBasedSynchronizationMechanismTest {

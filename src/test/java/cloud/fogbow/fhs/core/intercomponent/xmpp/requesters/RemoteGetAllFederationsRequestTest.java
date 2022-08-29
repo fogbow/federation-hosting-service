@@ -24,6 +24,7 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppComponentManager;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTranslator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
+// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ XmppErrorConditionToExceptionTranslator.class })
 public class RemoteGetAllFederationsRequestTest {

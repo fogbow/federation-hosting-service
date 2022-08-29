@@ -19,7 +19,6 @@ import cloud.fogbow.common.constants.HttpMethod;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.ServiceOperation;
 
-// TODO documentation
 public class DefaultServiceAccessPolicyTest {
     private static final String CREDENTIAL_NAME_1 = "credential_name_1";
     private static final String CREDENTIAL_NAME_2 = "credential_name_2";

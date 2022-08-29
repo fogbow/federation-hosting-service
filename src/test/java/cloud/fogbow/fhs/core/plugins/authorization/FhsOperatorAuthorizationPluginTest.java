@@ -26,7 +26,6 @@ import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.models.FhsOperation;
 import cloud.fogbow.fhs.core.models.OperationType;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class FhsOperatorAuthorizationPluginTest {
@@ -78,6 +77,9 @@ public class FhsOperatorAuthorizationPluginTest {
         this.plugin = new FhsOperatorAuthorizationPlugin(FHS_OPERATOR_USER_IDS, OTHER_SERVICES_ADMIN_IDS);
     }
     
+    // test case: When calling the isAuthorized method passing an FHS-Operator-only operation, if 
+    // the user passed as argument is FHS-Operator, then it must return true. Otherwise, it must throw
+    // an UnauthorizedRequestException.
     @Test
     public void testIsAuthorizedOperatorOnlyOperations() throws ConfigurationErrorException, UnauthorizedRequestException {
         for (OperationType operationType : FhsOperatorAuthorizationPlugin.OPERATOR_ONLY_OPERATIONS) {
@@ -90,6 +92,9 @@ public class FhsOperatorAuthorizationPluginTest {
         }
     }
     
+    // test case: When calling the isAuthorized method passing an operation allowed only to admins from other services, if
+    // the user passed as argument is FHS-Operator or admin from other service, then it must return true. Otherwise, it must throw
+    // an UnauthorizedRequestException. 
     @Test
     public void testIsAuthorizedOtherServicesAdminsOnlyOperations() throws UnauthorizedRequestException {
         for (OperationType operationType : FhsOperatorAuthorizationPlugin.OTHER_SERVICES_ADMIN_ONLY_OPERATIONS) {
@@ -102,6 +107,8 @@ public class FhsOperatorAuthorizationPluginTest {
         }
     }
     
+    // test case: When calling the isAuthorized method passing an operation that is not admin or operator only, 
+    // then it must return true.
     @Test
     public void testIsAuthorizedNonAdminOperations() throws UnauthorizedRequestException {
         for (OperationType operationType : OperationType.values()) {
@@ -116,6 +123,7 @@ public class FhsOperatorAuthorizationPluginTest {
         }
     }
     
+    // test case: When calling the constructor, it must read the required properties correctly from the configuration.
     @Test
     public void testConstructorReadsPropertiesCorrectly() throws ConfigurationErrorException {
         PowerMockito.mockStatic(PropertiesHolder.class);
@@ -139,6 +147,8 @@ public class FhsOperatorAuthorizationPluginTest {
         assertTrue(adminIds.contains(OTHER_SERVICE_ADMIN_ID_2));
     }
     
+    // test case: When calling the constructor, if the OPERATOR_IDS property is empty, then
+    // it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testInstantiationFailsIfOperatorIdsStringIsEmpty() throws ConfigurationErrorException {
         PowerMockito.mockStatic(PropertiesHolder.class);
@@ -150,6 +160,8 @@ public class FhsOperatorAuthorizationPluginTest {
         new FhsOperatorAuthorizationPlugin();
     }
     
+    // test case: When calling the constructor, if the OTHER_SERVICES_ADMIN_IDS property is empty, then
+    // it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testInstantiationFailsIfOtherServicesAdminIdsStringIsEmpty() throws ConfigurationErrorException {
         PowerMockito.mockStatic(PropertiesHolder.class);

@@ -13,7 +13,6 @@ import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 import cloud.fogbow.fhs.core.intercomponent.FhsCommunicationMechanism;
 import cloud.fogbow.fhs.core.models.Federation;
 
-// TODO documentation
 public class LocalUpdateHandlerTest {
     private static final String TARGET_FEDERATION_ID = "federationId";
     private static final String FHS_ID_1 = "fhsId1";
@@ -44,6 +43,10 @@ public class LocalUpdateHandlerTest {
         handler = new LocalUpdateHandler(this.federationHost, this.communicationMechanism, LOCAL_FHS_ID);
     }
     
+    // test case: When calling the method handleLocalUpdate, it must call the method updateFederation of 
+    // the FhsCommunicationMechanism for all supporting FHSs of the target federation, passing the update.
+    // The method must add the updated FHSs to the list of updatedFhss of the FederationUpdate and, finally,
+    // set the update as completed.
     @Test
     public void testHandleLocalUpdateOnLocalFederation() throws FogbowException {
         Mockito.when(this.federation.getFhsId()).thenReturn(LOCAL_FHS_ID);
@@ -65,6 +68,9 @@ public class LocalUpdateHandlerTest {
         Mockito.verify(this.update).setAsCompleted();
     }
     
+    // test case: When calling the method handleLocalUpdate and the call to updateFederation on a
+    // FHS throws an exception, the method must not add the FHS to the list of updated FHSs of the FederationUpdate
+    // and must perform the update on the other FHSs.
     @Test
     public void testHandleLocalUpdateOnLocalFederationUpdateFails() throws FogbowException {
         Mockito.when(this.federation.getFhsId()).thenReturn(LOCAL_FHS_ID);
@@ -87,6 +93,9 @@ public class LocalUpdateHandlerTest {
         Mockito.verify(this.update, Mockito.never()).setAsCompleted();
     }
     
+    // test case: When calling the method handleLocalUpdate passing an update which failed on an FHS, 
+    // it must retry the update only on the FHS that failed. If the update is successful, it must add the FHS 
+    // to the list of updated FHSs and set the update as completed.
     @Test
     public void testHandleLocalUpdateOnLocalFederationTryingUpdateAgainAfterFail() throws FogbowException {
         Mockito.when(this.federation.getFhsId()).thenReturn(LOCAL_FHS_ID);
@@ -104,6 +113,9 @@ public class LocalUpdateHandlerTest {
         Mockito.verify(this.update).setAsCompleted();
     }
     
+    // test case: When calling the method handleLocalUpdate and the target federation is not owned 
+    // by the local FHS, it must call the CommunicationMechanism to send the update to the federation owner
+    // FHS and set the update as completed.
     @Test
     public void testHandleLocalUpdateOnRemoteFederation() throws FogbowException {
         Mockito.when(this.federation.getFhsId()).thenReturn(REMOTE_FHS_ID);
@@ -114,6 +126,8 @@ public class LocalUpdateHandlerTest {
         Mockito.verify(this.update).setAsCompleted();
     }
     
+    // test case: When calling the method handleLocalUpdate on a target federation that is not owned
+    // by the local FHS and the update fails, the method must not set the update as completed.
     @Test
     public void testHandleLocalUpdateOnRemoteFederationUpdateFails() throws FogbowException {
         Mockito.when(this.federation.getFhsId()).thenReturn(REMOTE_FHS_ID);

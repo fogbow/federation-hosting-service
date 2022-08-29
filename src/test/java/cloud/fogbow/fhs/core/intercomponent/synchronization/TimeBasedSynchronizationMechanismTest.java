@@ -22,7 +22,6 @@ import cloud.fogbow.fhs.core.PropertiesHolder;
 import cloud.fogbow.fhs.core.datastore.DatabaseManager;
 import cloud.fogbow.fhs.core.intercomponent.FederationUpdate;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class TimeBasedSynchronizationMechanismTest {
@@ -75,6 +74,8 @@ public class TimeBasedSynchronizationMechanismTest {
         Mockito.when(this.databaseManager.getUpdates()).thenReturn(Arrays.asList(localUpdate1, localUpdate2, remoteUpdate1, remoteUpdate2));
     }
     
+    // test case: When calling the constructor, it must read the required properties
+    // properly from the configuration.
     @Test
     public void testConstructorReadsPropertiesCorrectly() throws ConfigurationErrorException {
         this.syncMechanism = new TimeBasedSynchronizationMechanism(this.databaseManager, this.federationHost);
@@ -94,6 +95,8 @@ public class TimeBasedSynchronizationMechanismTest {
         assertTrue(this.syncMechanism.getRemoteUpdates().contains(this.remoteUpdate2));
     }
     
+    // test case: When calling the constructor and the ALLOWED_FHS_IDS property is null, 
+    // then it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testConstructorInvalidAllowedFhsIdsProperty() throws ConfigurationErrorException {
         Mockito.when(this.propertiesHolder.getProperty(
@@ -102,6 +105,8 @@ public class TimeBasedSynchronizationMechanismTest {
         new TimeBasedSynchronizationMechanism(this.databaseManager, this.federationHost);
     }
     
+    // test case: When calling the constructor and the SYNCHRONIZATION_SLEEP_TIME property is null, 
+    // then it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testConstructorInvalidSleepTimeProperty() throws ConfigurationErrorException {
         Mockito.when(this.propertiesHolder.getProperty(
@@ -110,6 +115,8 @@ public class TimeBasedSynchronizationMechanismTest {
         new TimeBasedSynchronizationMechanism(this.databaseManager, this.federationHost);
     }
     
+    // test case: When calling the constructor and the PROVIDER_ID property is null, 
+    // then it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testConstructorInvalidLocalFhsIdProperty() throws ConfigurationErrorException {
         Mockito.when(this.propertiesHolder.getProperty(

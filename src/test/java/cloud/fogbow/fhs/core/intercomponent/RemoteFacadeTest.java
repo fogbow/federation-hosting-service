@@ -29,7 +29,6 @@ import cloud.fogbow.fhs.core.models.Federation;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.models.RemoteFederation;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class RemoteFacadeTest {
@@ -87,6 +86,8 @@ public class RemoteFacadeTest {
         remoteFacade.setSynchronizationMechanism(syncMechanism);
     }
     
+    // test case: When calling the method loadAllowedFhsIdsOrFail, it must load 
+    // the FHS IDs correctly from the configuration file.
     @Test
     public void testLoadAllowedFhsIds() throws ConfigurationErrorException {
         List<String> allowedFhsIds = RemoteFacade.loadAllowedFhsIdsOrFail();
@@ -97,6 +98,8 @@ public class RemoteFacadeTest {
         assertTrue(allowedFhsIds.contains(FHS_ID_3));
     }
     
+    // test case: When calling the method loadAllowedFhsIdsOrFail and the 
+    // ALLOWED_FHS_IDS_KEY property is null, it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testLoadAllowedFhsIdsNullFhsIdsProperty() throws ConfigurationErrorException {
         this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
@@ -108,6 +111,8 @@ public class RemoteFacadeTest {
         RemoteFacade.loadAllowedFhsIdsOrFail();
     }
     
+    // test case: When calling the method loadAllowedFhsIdsOrFail and the 
+    // ALLOWED_FHS_IDS_KEY property is empty, it must return an empty list.
     @Test
     public void testLoadAllowedFhsIdsEmptyFhsIdsProperty() throws ConfigurationErrorException {
         this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
@@ -121,6 +126,9 @@ public class RemoteFacadeTest {
         assertTrue(allowedFhsIds.isEmpty());
     }
     
+    // test case: When calling the method getFederationList, it must call the method
+    // getFederations of the FederationHost and create a FederationInstance object containing
+    // federation data for each returned Federation.
     @Test
     public void testGetFederationList() throws FogbowException {
         this.federation1 = Mockito.mock(Federation.class);
@@ -168,6 +176,8 @@ public class RemoteFacadeTest {
         assertEquals(FEDERATION_OWNER_3, federationInstances.get(2).getOwningFedAdminId());
     }
     
+    // test case: When calling the method getFederationList and the method getFederations from 
+    // FederationHost returns an empty list, the method must also return an empty list. 
     @Test
     public void testGetFederationListEmptyList() throws FogbowException {
         Mockito.when(this.federationHost.getFederations()).thenReturn(Arrays.asList());
@@ -177,11 +187,16 @@ public class RemoteFacadeTest {
         assertTrue(federationInstances.isEmpty());
     }
     
+    // test case: When calling the method getFederationList and the requesting FHS is not authorized, 
+    // the method must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testUnauthorizedFhsCannotGetFederationList() throws FogbowException {
         this.remoteFacade.getFederationList(NOT_AUTHORIZED_FHS_ID);
     }
     
+    // test case: When calling the method updateRemoteFederationList, the method must create a corresponding
+    // RemoteFederation object for each FederationInstance received and call the updateRemoteFederationList of
+    // the FederationHost passing a list containing all the RemoteFederation objects.
     @Test
     public void testUpdateRemoteFederationList() throws FogbowException {
         List<FederationInstance> remoteFederationList = new ArrayList<FederationInstance>();
@@ -201,6 +216,8 @@ public class RemoteFacadeTest {
         Mockito.verify(this.federationHost).updateRemoteFederationList(Mockito.eq(FHS_ID_1), Mockito.eq(expectedRemoteFederationList));
     }
     
+    // test case: When calling the method updateRemoteFederationList passing an empty list, it must call
+    // the method updateRemoteFederationList of the FederationHost passing an empty list.
     @Test
     public void testUpdateRemoteFederationListEmptyList() throws FogbowException {
         List<FederationInstance> remoteFederationList = new ArrayList<FederationInstance>();
@@ -211,6 +228,8 @@ public class RemoteFacadeTest {
         Mockito.verify(this.federationHost).updateRemoteFederationList(Mockito.eq(FHS_ID_1), Mockito.eq(expectedList));
     }
     
+    // test case: When calling the method updateRemoteFederationList and the requesting FHS is not authorized, 
+    // the method must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testUnauthorizedFhsCannotUpdateRemoteFederationList() throws FogbowException {
         List<FederationInstance> remoteFederationList = new ArrayList<FederationInstance>();
@@ -228,6 +247,9 @@ public class RemoteFacadeTest {
         this.remoteFacade.updateRemoteFederationList(NOT_AUTHORIZED_FHS_ID, remoteFederationList);
     }
     
+    // test case: When calling the method joinFederation, it must call the method joinRemoteFederation of the
+    // FederationHost passing the same arguments it received and return the same Federation object returned by
+    // the joinRemoteFederation method.
     @Test
     public void testJoinFederation() throws FogbowException {
         this.federationUser = Mockito.mock(FederationUser.class);
@@ -239,11 +261,15 @@ public class RemoteFacadeTest {
         Mockito.verify(this.federationHost).joinRemoteFederation(federationUser, FHS_ID_1, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method joinFederation and the requesting FHS is not authorized, 
+    // the method must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testUserFromUnauthorizedFhsCannotJoinFederation() throws FogbowException {
         this.remoteFacade.joinFederation(NOT_AUTHORIZED_FHS_ID, federationUser, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method updateFederation, it must call the method onRemoteUpdate of
+    // the SynchronizationMechanism passing the federationUpdate.
     @Test
     public void testUpdateFederation() throws FogbowException {
         this.remoteFacade.updateFederation(FHS_ID_1, federationUpdate);
@@ -251,6 +277,8 @@ public class RemoteFacadeTest {
         Mockito.verify(this.syncMechanism).onRemoteUpdate(federationUpdate);
     }
     
+    // test case: When calling the method updateFederation and the requesting FHS is not authorized, 
+    // the method must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testUnauthorizedFhsCannotUpdateFederation() throws FogbowException {
         this.remoteFacade.updateFederation(NOT_AUTHORIZED_FHS_ID, federationUpdate);
