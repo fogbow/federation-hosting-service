@@ -24,7 +24,6 @@ import cloud.fogbow.common.util.connectivity.HttpResponse;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.plugins.response.ServiceResponse;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ HttpRequestClient.class })
 public class DefaultServiceInvokerTest {
@@ -83,6 +82,9 @@ public class DefaultServiceInvokerTest {
         assertEquals("headerValue2", preparedHeaders.get("headerKey2"));
     }
     
+    // test case: When calling the method prepareResponse, it must create a new 
+    // ServiceResponse containing the original response code and content, using 
+    // a specific Map format.
     @Test
     public void testPrepareResponse() {
         this.serviceInvoker = new DefaultServiceInvoker();
@@ -99,6 +101,9 @@ public class DefaultServiceInvokerTest {
         assertEquals(RESPONSE_CONTENT, contentMap.get(DefaultServiceInvoker.RESPONSE_CONTENT_KEY));
     }
     
+    // test case: When calling the method invoke, it must call the doGenericRequestGenericBody method of
+    // the HttpRequestClient using the correct headers and body. Also, the returned response must follow
+    // the format used by the prepareResponse method.
     @Test
     public void testInvoke() throws FogbowException {
         this.serviceInvoker = new DefaultServiceInvoker();

@@ -26,7 +26,6 @@ import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppComponentManager;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.XmppErrorConditionToExceptionTranslator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-//TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ XmppErrorConditionToExceptionTranslator.class })
 public class RemoteSyncFederationsRequestTest {
@@ -95,6 +94,7 @@ public class RemoteSyncFederationsRequestTest {
         this.syncFederationsRequest = new RemoteSyncFederationsRequest(packetSender, FHS_ID, this.localFederations, this.jsonUtils);
     }
     
+    // test case: When calling the method send, it must call the packet sender passing an IQ with the correct format.
     @Test
     public void testSend() throws FogbowException {
         List<FederationInstance> federationInstances = this.syncFederationsRequest.send();

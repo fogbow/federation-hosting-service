@@ -23,7 +23,6 @@ import cloud.fogbow.fhs.core.models.FederationFactory;
 import cloud.fogbow.fhs.core.models.FederationUser;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-//TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ XmppErrorConditionToExceptionTranslator.class })
 public class RemoteJoinFederationRequestTest {
@@ -64,6 +63,7 @@ public class RemoteJoinFederationRequestTest {
                 FEDERATION_ID, FHS_ID, federationFactory, jsonUtils);
     }
     
+    // test case: When calling the method send, it must call the packet sender passing an IQ with the correct format.
     @Test
     public void testSend() throws FogbowException {
         Federation returnedFederation = this.remoteJoinFederationRequest.send();

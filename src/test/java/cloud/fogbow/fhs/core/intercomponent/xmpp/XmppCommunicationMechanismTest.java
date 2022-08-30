@@ -16,7 +16,6 @@ import cloud.fogbow.fhs.constants.ConfigurationPropertyDefaults;
 import cloud.fogbow.fhs.constants.ConfigurationPropertyKeys;
 import cloud.fogbow.fhs.core.PropertiesHolder;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class XmppCommunicationMechanismTest {
@@ -59,6 +58,9 @@ public class XmppCommunicationMechanismTest {
         BDDMockito.given(PropertiesHolder.getInstance()).willReturn(propertiesHolder);
     }
     
+    // test case: When calling the constructor, it must read from the configuration all the required properties
+    // correctly and start up the XmppComponentManager, the packet sender, by calling the method createAndConnectPacketSender 
+    // of the XmppPacketSenderInstantiator.
     @Test
     public void testConstructor() throws InternalServerErrorException, ConfigurationErrorException {
         new XmppCommunicationMechanism(packetSenderInstantiator);
@@ -67,6 +69,7 @@ public class XmppCommunicationMechanismTest {
                 XMPP_SERVER_IP, XMPP_C2C_PORT, PROVIDER_ID, XMPP_PASSWORD, XMPP_TIMEOUT);
     }
     
+    // test case: When calling the constructor and the packet sender start up fails, it must try again.
     @Test
     public void testConstructorPacketSenderCreationFails() throws ConfigurationErrorException, InternalServerErrorException {
         packetSender = Mockito.mock(XmppComponentManager.class);
@@ -82,6 +85,8 @@ public class XmppCommunicationMechanismTest {
                 XMPP_SERVER_IP, XMPP_C2C_PORT, PROVIDER_ID, XMPP_PASSWORD, XMPP_TIMEOUT);
     }
     
+    // test case: When calling the constructor and the packet sender start up fails more times than the limit, it must 
+    // throw an InternalServerErrorException.
     @Test
     public void testConstructorPacketSenderCreationFailsMoreThanLimit() throws ConfigurationErrorException, InternalServerErrorException {
         packetSender = Mockito.mock(XmppComponentManager.class);
@@ -102,6 +107,8 @@ public class XmppCommunicationMechanismTest {
                 XMPP_SERVER_IP, XMPP_C2C_PORT, PROVIDER_ID, XMPP_PASSWORD, XMPP_TIMEOUT);
     }
     
+    // test case: When calling the constructor and the XMPP_SERVER_IP property is null, 
+    // it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testConstructorFailsIfServerIpIsNull() throws ConfigurationErrorException, InternalServerErrorException {
         Mockito.when(this.propertiesHolder.getProperty(ConfigurationPropertyKeys.XMPP_SERVER_IP_KEY)).thenReturn(null);
@@ -109,6 +116,8 @@ public class XmppCommunicationMechanismTest {
         new XmppCommunicationMechanism(packetSenderInstantiator);
     }
     
+    // test case: When calling the constructor and the XMPP_SERVER_IP property is empty,
+    // it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testConstructorFailsIfServerIpIsEmpty() throws ConfigurationErrorException, InternalServerErrorException {
         Mockito.when(this.propertiesHolder.getProperty(ConfigurationPropertyKeys.XMPP_SERVER_IP_KEY)).thenReturn("");

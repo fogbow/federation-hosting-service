@@ -34,7 +34,6 @@ import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPlug
 import cloud.fogbow.fhs.core.plugins.authentication.FederationAuthenticationPluginInstantiator;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ FederationAttribute.class })
 public class FederationTest {
@@ -290,6 +289,8 @@ public class FederationTest {
                 this.federationServiceFactory, this.jsonUtils);
     }
     
+    // test case: When calling the method addUser, it must create a FederationUser
+    // and add it to the members list.
     @Test
     public void testAddUser() throws InvalidParameterException {
         this.federationMembers = new ArrayList<FederationUser>();
@@ -314,6 +315,8 @@ public class FederationTest {
         assertEquals(USER_ID_TO_ADD, user.getName());
     }
     
+    // test case: When calling the revokeMembership method, it must remove the 
+    // specific member from the members list.
     @Test
     public void testRevokeMembership() throws InvalidParameterException {
         assertEquals(3, this.federationMembers.size());
@@ -324,11 +327,15 @@ public class FederationTest {
         assertTrue(this.federationMembers.contains(federationUser2));
     }
     
+    // test case: When calling the revokeMembership method passing an invalid member ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRevokeMembershipOfNonMember() throws InvalidParameterException {
         this.federation.revokeMembership("unknownmemberid");
     }
     
+    // test case: When calling the getUserByMemberId method, it must return the specific member
+    // identified by the given ID.
     @Test
     public void testGetUser() throws InvalidParameterException {
         FederationUser returnedFederationUser1 = this.federation.getUserByMemberId(FEDERATION_USER_ID_1);
@@ -338,11 +345,16 @@ public class FederationTest {
         assertEquals(this.federationUser2, returnedFederationUser2);
     }
     
+    // test case: When calling the getUserByMemberId method and none of the members is identified by
+    // the given ID, it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGetUserUserDoesNotBelongToFederation() throws InvalidParameterException {
         this.federation.getUserByMemberId(NOT_REGISTERED_USER_ID);
     }
     
+    // test case: When calling the isFederationOwner method, it must return a boolean value
+    // stating whether or not the given username belongs to the federation owner or to 
+    // a remote admin.
     @Test
     public void testIsFederationOwner() {
         this.remoteAdmins = new ArrayList<FederationUser>();
@@ -359,6 +371,8 @@ public class FederationTest {
         assertFalse(this.federation.isFederationOwner(REMOTE_USER_NAME_1));
     }
     
+    // test case: When calling the isRemoteAdmin method, it must return a boolean value
+    // stating whether or not the given username belongs to a remote admin.
     @Test
     public void testIsRemoteAdmin() {
         this.remoteAdmins = new ArrayList<FederationUser>();
@@ -377,6 +391,8 @@ public class FederationTest {
         assertFalse(this.federation.isRemoteAdmin(REMOTE_USER_NAME_1));
     }
     
+    // test case: When calling the registerService method, it must create a new FederationService
+    // object and add the new service to the services list.
     @Test
     public void testRegisterAndGetServices() throws InvalidParameterException {
         this.federationServices = new ArrayList<FederationService>();
@@ -398,6 +414,8 @@ public class FederationTest {
         assertEquals(this.federationService1, servicesAfterRegister.get(0));
     }
     
+    // test case: When calling the getService method, it must return the specific service
+    // identified by the given ID.
     @Test
     public void testGetService() throws InvalidParameterException {
         FederationService returnedService1 = this.federation.getService(FEDERATION_SERVICE_ID_1);
@@ -407,6 +425,8 @@ public class FederationTest {
         assertEquals(this.federationService2, returnedService2);
     }
     
+    // test case: When calling the getService method and the given ID does not 
+    // identify any of the federation's services, it must throw an InvalidParameterException. 
     @Test(expected = InvalidParameterException.class)
     public void testGetNotRegisteredService() throws InvalidParameterException {
         this.federation = new Federation(FEDERATION_ID_1, FEDERATION_OWNER_1, 
@@ -418,6 +438,8 @@ public class FederationTest {
         this.federation.getService("unregisteredServiceId");
     }
     
+    // test case: When calling the deleteService method, it must remove the specific
+    // service from the services list.
     @Test
     public void testDeleteService() throws InvalidParameterException {
         assertEquals(2, this.federationServices.size());
@@ -428,11 +450,15 @@ public class FederationTest {
         assertTrue(this.federationServices.contains(federationService2));
     }
     
+    // test case: When calling the deleteService method passing an invalid service ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteNotRegisteredService() throws InvalidParameterException {
         this.federation.deleteService("unknownserviceid");
     }
     
+    // test case: When calling the getAuthorizedServices method, it must return a list containing 
+    // the FederationService instances available to the specific member.
     @Test
     public void testGetAuthorizedServices() throws InvalidParameterException {
         List<FederationService> authorizedServicesUser1 = this.federation.getAuthorizedServices(FEDERATION_USER_NAME_1);
@@ -445,11 +471,15 @@ public class FederationTest {
         assertEquals(this.federationService2, authorizedServicesUser2.get(0));
     }
     
+    // test case: When calling the getAuthorizedServices method passing an invalid user name, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGetAuthorizedServicesNotRegisteredUser() throws InvalidParameterException {
-        this.federation.getAuthorizedServices("unregisteredUserId");
+        this.federation.getAuthorizedServices("unregisteredUserName");
     }
     
+    // test case: When calling the createAttribute method, it must create a new FederationAttribute instance, 
+    // add the instance to the list of federation attributes and return the new attribute's ID.
     @Test
     public void testCreateAndGetAttributes() {
         this.federationAttributes = new ArrayList<FederationAttribute>();
@@ -483,6 +513,8 @@ public class FederationTest {
         assertEquals(returnedAttributeId, attributesAfterCreation.get(2).getId());
     }
     
+    // test case: When calling the deleteAttribute method, it must remove the specific attribute
+    // from the list of federation attributes.
     @Test
     public void testDeleteAttribute() throws InvalidParameterException {
         assertEquals(2, this.federationAttributes.size());
@@ -493,16 +525,22 @@ public class FederationTest {
         assertTrue(this.federationAttributes.contains(this.federationAttribute2));
     }
     
+    // test case: When calling the deleteAttribute method passing the id of the ServiceOwner attribute,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteServiceOwnerAttribute() throws InvalidParameterException {
         this.federation.deleteAttribute(Federation.SERVICE_OWNER_ATTRIBUTE_NAME);
     }
     
+    // test case: When calling the deleteAttribute method passing the id of the Member attribute,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteMemberAttribute() throws InvalidParameterException {
         this.federation.deleteAttribute(Federation.MEMBER_ATTRIBUTE_NAME);
     }
     
+    // test case: When calling the grantAttribute method, it must add the ID of the attribute
+    // to the member's list of attributes.
     @Test
     public void testGrantAttribute() throws InvalidParameterException {
         List<String> attributesBeforeGrant = this.federationUser1.getAttributes();
@@ -517,11 +555,15 @@ public class FederationTest {
         assertEquals(ATTRIBUTE_ID_1, attributesAfterGrant.get(0));
     }
     
+    // test case: When calling the grantAttribute method passing an invalid attribute ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGrantAttributeFailsIfAttributeDoesNotExist() throws InvalidParameterException {
         this.federation.grantAttribute(FEDERATION_USER_ID_1, "invalidattributeid");
     }
     
+    // test case: When calling the revokeAttribute method, it must remove the attribute ID
+    // from the member's list of attributes.
     @Test
     public void testRevokeAttribute() throws InvalidParameterException {
         List<String> federationUser1Attributes = new ArrayList<String>();
@@ -552,11 +594,15 @@ public class FederationTest {
         assertTrue(attributesAfterRevoke.isEmpty());
     }
     
+    // test case: When calling the revokeAttribute method passing an invalid attribute ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testRevokeAttributeFailsIfAttributeDoesNotExist() throws InvalidParameterException {
         this.federation.revokeAttribute(FEDERATION_USER_ID_1, "invalidattributeid");
     }
     
+    // test case: When calling the isServiceOwner method, it must return a boolean value 
+    // stating whether or not the given member has the attribute ServiceOwner.
     @Test
     public void testIsServiceOwner() throws InvalidParameterException {
         List<String> federationUser1Attributes = new ArrayList<String>();
@@ -581,6 +627,8 @@ public class FederationTest {
         assertFalse(this.federation.isServiceOwner(FEDERATION_USER_NAME_2));
     }
     
+    // test case: When calling the login method, it must generate an authentication token
+    // for the given member.
     @Test
     public void testLogin() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
@@ -591,12 +639,16 @@ public class FederationTest {
         assertEquals(FEDERATION_USER_TOKEN_2, returnedToken2);
     }
     
+    // test case: When calling the login method passing an invalid user ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testLoginUserNotFound() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
         this.federation.login("notfederateduser", this.federationUserCredentials1);
     }
     
+    // test case: When calling the map method, it must call the getCredentialsForAccess of the
+    // ServiceAccessPolicy instance of the specific service and return the obtained credentials map.
     @Test
     public void testMap() throws InvalidParameterException {
         Map<String, String> returnedCredentials = this.federation.map(FEDERATION_SERVICE_ID_1, 
@@ -607,16 +659,22 @@ public class FederationTest {
         Mockito.verify(this.accessPolicy).getCredentialsForAccess(federationUser1, CLOUD_NAME);
     }
     
+    // test case: When calling the map method passing an invalid service ID,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotMapCredentialsForInvalidService() throws InvalidParameterException {
         this.federation.map("invalidserviceid", FEDERATION_USER_NAME_1, CLOUD_NAME);
     }
     
+    // test case: When calling the map method passing an invalid member ID,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotMapCredentialsForInvalidMember() throws InvalidParameterException {
         this.federation.map(FEDERATION_SERVICE_ID_1, "invaliduserid", CLOUD_NAME);
     }
     
+    // test case: When calling the method isAuthorized, it must call the method isAllowedToPerform
+    // of the ServiceAccessPolicy instance of the specific service and return the obtained boolean value.
     @Test
     public void testIsAuthorized() throws InvalidParameterException {
         // GET
@@ -656,21 +714,29 @@ public class FederationTest {
                 Mockito.eq(new ServiceOperation(HttpMethod.PUT)));
     }
     
+    // test case: When calling the method isAuthorized passing an invalid service ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotVerifyAuthorizationForInvalidService() throws InvalidParameterException {
         this.federation.isAuthorized("invalidserviceid", FEDERATION_USER_NAME_1, OPERATION_GET);
     }
     
+    // test case: When calling the method isAuthorized passing an invalid member ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotVerifyAuthorizationForInvalidMember() throws InvalidParameterException {
         this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, "invaliduserid", OPERATION_GET);
     }
     
+    // test case: When calling the method isAuthorized passing an invalid operation as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotVerifyAuthorizationForInvalidOperation() throws InvalidParameterException {
         this.federation.isAuthorized(FEDERATION_SERVICE_ID_1, FEDERATION_USER_NAME_1, "invalidoperation");
     }
     
+    // test case: When calling the method invoke, it must call the method invoke of the specific 
+    // federation service.
     @Test
     public void testInvoke() throws FogbowException {
         List<String> path = Arrays.asList(PATH_COMPONENT_1, PATH_COMPONENT_2);
@@ -687,6 +753,8 @@ public class FederationTest {
         Mockito.verify(this.federationService1).invoke(federationUser1, HttpMethod.GET, path, headers, body);
     }
     
+    // test case: When calling the method invoke and the requester user is not allowed to perform the operation, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testInvokeUserIsNotAuthorized() throws FogbowException {
         List<String> path = Arrays.asList(PATH_COMPONENT_1, PATH_COMPONENT_2);
@@ -704,6 +772,8 @@ public class FederationTest {
         this.federation.invoke(FEDERATION_USER_NAME_1, FEDERATION_SERVICE_ID_1, HttpMethod.GET, path, headers, body);
     }
     
+    // test case: When calling the method addRemoteUserAsAllowedFedAdmin, it must
+    // add the given user to the list of allowed remote federation admins.
     @Test
     public void testAddRemoteUserAsAllowedFedAdmin() throws InvalidParameterException {
         assertTrue(this.federation.getAllowedRemoteJoins().isEmpty());
@@ -715,6 +785,8 @@ public class FederationTest {
         assertEquals(FHS_ID_2, this.federation.getAllowedRemoteJoins().get(0).getFhsId());
     }
     
+    // test case: When calling the method addRemoteUserAsAllowedFedAdmin passing an
+    // already allowed remote federation admin, it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddAlreadyRegisteredAllowedFedAdmin() throws InvalidParameterException {
         this.allowedAdmins = new ArrayList<RemoteFederationUser>();
@@ -729,26 +801,36 @@ public class FederationTest {
         this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, FHS_ID_2);
     }
     
+    // test case: When calling the addRemoteUserAsAllowedFedAdmin method passing a null admin ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddAllowedFedAdminWithNullId() throws InvalidParameterException {
         this.federation.addRemoteUserAsAllowedFedAdmin(null, FHS_ID_2);
     }
     
+    // test case: When calling the addRemoteUserAsAllowedFedAdmin method passing an empty admin ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddAllowedFedAdminWithEmptyId() throws InvalidParameterException {
         this.federation.addRemoteUserAsAllowedFedAdmin("", FHS_ID_2);
     }
     
+    // test case: When calling the addRemoteUserAsAllowedFedAdmin method passing a null FHS ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddAllowedFedAdminWithNullFhsId() throws InvalidParameterException {
         this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, null);
     }
     
+    // test case: When calling the addRemoteUserAsAllowedFedAdmin method passing an empty FHS ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddAllowedFedAdminWithEmptyFhsId() throws InvalidParameterException {
         this.federation.addRemoteUserAsAllowedFedAdmin(REMOTE_FED_ADMIN_ID_1, "");
     }
     
+    // test case: When calling the removeRemoteUserFromAllowedAdmins method, it must remove the 
+    // given user from the list of allowed remote federation admins.
     @Test
     public void testRemoveRemoteUserAsAllowedFedAdmin() throws InvalidParameterException {
         this.allowedAdmins = new ArrayList<RemoteFederationUser>();
@@ -765,11 +847,15 @@ public class FederationTest {
         assertTrue(this.federation.getAllowedRemoteJoins().isEmpty());
     }
     
+    // test case: When calling the method removeRemoteUserFromAllowedAdmins passing a not registered
+    // remote federation admin, it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRemoveNotRegisteredAllowedFedAdmin() throws InvalidParameterException {
         this.federation.removeRemoteUserFromAllowedAdmins(REMOTE_FED_ADMIN_ID_1, FHS_ID_2);
     }
     
+    // test case: When calling the method addRemoteAdmin, it must add the given remote federation admin
+    // to the list of remote federation admins.
     @Test
     public void testAddRemoteAdmin() throws InvalidParameterException {
         this.allowedAdmins = new ArrayList<RemoteFederationUser>();
@@ -790,6 +876,8 @@ public class FederationTest {
         assertEquals(remoteFedAdmin1, this.federation.getRemoteAdmins().get(0));
     }
     
+    // test case: When calling the method addRemoteAdmin passing as argument a remote federation admin
+    // not allowed to join the federation, it must throw an InvalidParameterException.
     @Test
     public void testCannotAddNotAuthorizedRemoteAdmin() {
         this.allowedAdmins = new ArrayList<RemoteFederationUser>();
@@ -814,12 +902,17 @@ public class FederationTest {
         assertTrue(this.federation.getRemoteAdmins().isEmpty());
     }
     
+    // test case: When calling the method getSupportingFhss and the federation has
+    // no remote federation admins, it must return an empty list.
     @Test
     public void testGetSupportingFhssNoRemoteAdmin() {
         List<String> supportingFhss = this.federation.getSupportingFhss();
         assertTrue(supportingFhss.isEmpty());
     }
     
+    // test case: When calling the method getSupportingFhss and the federation has
+    // remote federation admins, it must return a list containing the IDs of the FHSs of 
+    // the federation admins.
     @Test
     public void testGetSupportingFhss() {
         this.remoteAdmins.add(remoteAdmin1);
@@ -832,6 +925,9 @@ public class FederationTest {
         assertTrue(supportingFhss.contains(FHS_ID_3));
     }
     
+    // test case: When calling the method update, based on the data from the FederationUpdate object,  
+    // it must create new members, services and attributes, update the federation metadata, 
+    // members, services and attributes which changed and remove the necessary members, services and attributes.
     @Test
     public void testUpdate() throws InvalidParameterException {
         List<String> newMembers = new ArrayList<String>();
@@ -893,6 +989,8 @@ public class FederationTest {
         assertEquals(FEDERATION_METADATA_VALUE_2, this.federation.getMetadata().get(FEDERATION_METADATA_KEY_2));
     }
     
+    // test case: When calling the toJson method, it must generate a serialized representation
+    // of the Federation object.
     @Test
     public void testToJson() {
         this.allowedAdmins.add(Mockito.mock(RemoteFederationUser.class));

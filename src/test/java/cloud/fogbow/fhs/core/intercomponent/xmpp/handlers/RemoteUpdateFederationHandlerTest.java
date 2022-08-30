@@ -21,7 +21,6 @@ import cloud.fogbow.fhs.core.intercomponent.RemoteFacade;
 import cloud.fogbow.fhs.core.intercomponent.xmpp.requesters.UpdateFederationRequest;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RemoteFacade.class })
 public class RemoteUpdateFederationHandlerTest {
@@ -58,6 +57,8 @@ public class RemoteUpdateFederationHandlerTest {
         this.handler = new RemoteUpdateFederationHandler(this.jsonUtils);
     }
     
+    // test case: When calling the method handle, it must extract the FederationUpdate from the
+    // IQ passed as argument and call the method updateFederation of the RemoteFacade.
     @Test
     public void testHandle() throws FogbowException {
         IQ iq = UpdateFederationRequest.marshal(PROVIDER_ID, FEDERATION_UPDATE_STR);
@@ -74,6 +75,8 @@ public class RemoteUpdateFederationHandlerTest {
         assertEquals(expected, result.toString());
     }
     
+    // test case: When calling the method handle and the updateFederation method of the RemoteFacade throws an exception, 
+    // the handle method must create an error response IQ.
     @Test
     public void testHandleWhenThrowsException() throws Exception {
         Mockito.doThrow(new FogbowException("")).
