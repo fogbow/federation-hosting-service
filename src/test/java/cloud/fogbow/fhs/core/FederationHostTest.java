@@ -45,7 +45,6 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.utils.JsonUtils;
 import cloud.fogbow.fhs.core.utils.TestUtils;
 
-// TODO documentation
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PropertiesHolder.class })
 public class FederationHostTest {
@@ -385,6 +384,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method addFederationAdmin, it must create a new FederationUser
+    // and add the user to the list of federation admins.
     @Test
     public void testFederationAdminCreation() throws InvalidParameterException {
         String adminId1 = this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
@@ -403,6 +404,8 @@ public class FederationHostTest {
         assertEquals(ADMIN_ENABLED_2, returnedUser2.isEnabled());
     }
     
+    // test case: When calling the method addFederationAdmin passing a null username as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationAdminWithNullUsername() throws FogbowException {
         setUpFederationData();
@@ -410,6 +413,8 @@ public class FederationHostTest {
         this.federationHost.addFederationAdmin(null, ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method addFederationAdmin passing an empty username as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationAdminWithEmptyUsername() throws FogbowException {
         setUpFederationData();
@@ -417,6 +422,8 @@ public class FederationHostTest {
         this.federationHost.addFederationAdmin("", ADMIN_EMAIL_1, ADMIN_DESCRIPTION_1, ADMIN_ENABLED_1, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method addFederationAdmin passing an already in use username as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationAdminWithAlreadyUsedUsername() throws InvalidParameterException {
         try {
@@ -428,6 +435,8 @@ public class FederationHostTest {
         this.federationHost.addFederationAdmin(ADMIN_NAME_1, ADMIN_EMAIL_2, ADMIN_DESCRIPTION_2, ADMIN_ENABLED_2, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method getFederationAdmin passing an invalid admin name, it must throw 
+    // an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGetUnknownFederationAdmin() throws FogbowException {
         setUpFederationData();
@@ -435,6 +444,8 @@ public class FederationHostTest {
         this.federationHost.getFederationAdmin(ADMIN_NAME_1);
     }
     
+    // test case: When calling the method getFederationAdmins, it must return a list containing 
+    // all federation admins.
     @Test
     public void testGetFederationAdmins() throws FogbowException {
         setUpFederationData();
@@ -446,6 +457,8 @@ public class FederationHostTest {
         assertEquals(this.admin2, admins.get(1));
     }
     
+    // test case: When calling the method updateFederationAdmin, it must update the data
+    // of the specific federation admin correctly.
     @Test
     public void testUpdateFederationAdmin() throws FogbowException {
         setUpFederationData();
@@ -459,6 +472,8 @@ public class FederationHostTest {
         assertEquals(UPDATED_ADMIN_ENABLED_1, this.admin1.isEnabled());
     }
     
+    // test case: When calling the method updateFederationAdmin passing an invalid admin ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotUpdateInvalidFederationAdmin() throws FogbowException {
         setUpFederationData();
@@ -467,6 +482,8 @@ public class FederationHostTest {
                 UPDATED_ADMIN_DESCRIPTION_1, UPDATED_ADMIN_ENABLED_1);
     }
     
+    // test case: When calling the method deleteFederationAdmin, it must remove the specific
+    // admin from the list of federation admins.
     @Test
     public void testDeleteFederationAdmin() throws FogbowException {
         setUpFederationData();
@@ -476,6 +493,8 @@ public class FederationHostTest {
         Mockito.verify(this.adminList).remove(admin1);
     }
     
+    // test case: When calling the method deleteFederationAdmin passing an invalid admin ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteInvalidFederationAdmin() throws FogbowException {
         setUpFederationData();
@@ -483,6 +502,8 @@ public class FederationHostTest {
         this.federationHost.deleteFederationAdmin("invalidadminid");
     }
     
+    // test case: When calling the method getFederations, it must return a list containing all the
+    // federations.
     @Test
     public void testGetFederations() throws FogbowException {
         setUpFederationData();
@@ -497,6 +518,8 @@ public class FederationHostTest {
         assertEquals(federation5, federations.get(4));
     }
     
+    // test case: When calling the method getFederationsInstancesOwnedByAnotherMember, it must
+    // return a list containing all the federations owned by the given admin.
     @Test
     public void testGetFederationsInstancesOwnedByAnotherMember() throws FogbowException {
         setUpFederationData();
@@ -508,6 +531,8 @@ public class FederationHostTest {
         assertEquals(FEDERATION_ID_3, returnedFederationList.get(1).getId());
     }
     
+    // test case: When calling the method updateFederation, it must update the given 
+    // federation data correctly.
     @Test
     public void testUpdateFederation() throws FogbowException {
         setUpFederationData();
@@ -517,6 +542,8 @@ public class FederationHostTest {
         assertFalse(this.federation1.enabled());
     }
     
+    // test case: When calling the method updateFederation passing an invalid federation ID as
+    // argument, it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotUpdateInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -524,6 +551,8 @@ public class FederationHostTest {
         this.federationHost.updateFederation("invalidfederationid", UPDATED_FEDERATION_ENABLED_1);
     }
     
+    // test case: When calling the method deleteFederationInstance, it must remove the specific
+    // federation from the list of federations.
     @Test
     public void testDeleteFederationInstance() throws FogbowException {
         setUpFederationData();
@@ -533,6 +562,8 @@ public class FederationHostTest {
         Mockito.verify(this.federationList).remove(federation1);
     }
     
+    // test case: When calling the method deleteFederationInstance passing an invalid federation ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -546,6 +577,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method createFederation, it must create a new Federation object, 
+    // add the object to the federations list and return the new federation.
     @Test
     public void testCreateFederation() throws FogbowException {
         setUpFederationData();
@@ -558,6 +591,8 @@ public class FederationHostTest {
         Mockito.verify(federationList, Mockito.times(1)).add(federation1);
     }
     
+    // test case: When calling the method createFederation and the requester user is not federation admin,
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotCreateFederation() throws FogbowException {
         setUpFederationData();
@@ -566,6 +601,8 @@ public class FederationHostTest {
                 FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
+    // test case: When calling the method createFederation and the federation name passed as argument is null,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationWithNullName() throws FogbowException {
         setUpFederationData();
@@ -574,6 +611,8 @@ public class FederationHostTest {
                 FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
+    // test case: When calling the method createFederation and the federation name passed as argument is empty,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateFederationWithEmptyName() throws FogbowException {
         setUpFederationData();
@@ -582,6 +621,8 @@ public class FederationHostTest {
                 FEDERATION_DESCRIPTION_1, FEDERATION_ENABLED_1);
     }
     
+    // test case: When calling the getOwnedFederations method, it must return a list containing only the 
+    // federations owned by the user.
     @Test
     public void testGetOwnedFederations() throws FogbowException {
         setUpFederationData();
@@ -598,6 +639,8 @@ public class FederationHostTest {
         assertTrue(federationsAdmin2.contains(federation2));
     }
     
+    // test case: When calling the method getOwnedFederations and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetOwnedFederations() throws FogbowException {
         setUpFederationData();
@@ -605,6 +648,8 @@ public class FederationHostTest {
         this.federationHost.getFederationsOwnedByUser(REGULAR_USER_NAME_1);
     }
     
+    // test case: When calling the getAdminRemoteFederations, it must return a list containing all remote federations
+    // that have the given admin as remote admin.
     @Test
     public void testGetAdminRemoteFederations() throws FogbowException {
         setUpFederationData();
@@ -620,6 +665,7 @@ public class FederationHostTest {
         assertTrue(remoteFederationsAdmin2.contains(this.federation5));
     }
     
+    // test case: When calling the method getFederation, it must return the federation identified by the given ID.
     @Test
     public void testGetFederation() throws FogbowException {
         setUpFederationData();
@@ -629,6 +675,8 @@ public class FederationHostTest {
         assertEquals(this.federation1, returnedFederation1);
     }
     
+    // test case: When calling the method getFederation and the given federation ID is invalid, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGetNonExistentFederation() throws FogbowException {
         setUpFederationData();
@@ -636,6 +684,8 @@ public class FederationHostTest {
         this.federationHost.getFederation(ADMIN_NAME_1, "nonexistentid");
     }
     
+    // test case: When calling the method getFederation and the requester user is not a federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetFederation() throws FogbowException {
         setUpFederationData();
@@ -643,6 +693,7 @@ public class FederationHostTest {
         this.federationHost.getFederation(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method getFederation, it must return the federation identified by the given ID.
     @Test
     public void testGetFederationWithoutAuthorizationCheck() throws FogbowException {
         setUpFederationData();
@@ -652,6 +703,8 @@ public class FederationHostTest {
         assertEquals(this.federation1, returnedFederation1);
     }
     
+    // test case: When calling the method getFederation and the given federation ID is invalid, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGetNonExistentFederationWithoutAuthorizationCheck() throws FogbowException {
         setUpFederationData();
@@ -659,6 +712,8 @@ public class FederationHostTest {
         this.federationHost.getFederation("nonexistentid");
     }
     
+    // test case: When calling the method deleteFederation, it must remove the specific federation
+    // from the list of federations.
     @Test
     public void testDeleteFederation() throws FogbowException {
         setUpFederationData();
@@ -668,6 +723,8 @@ public class FederationHostTest {
         Mockito.verify(this.federationList).remove(federation1);
     }
     
+    // test case: When calling the method deleteFederation and the given federation ID is invalid, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testDeleteNonExistentFederation() throws FogbowException {
         setUpFederationData();
@@ -675,6 +732,8 @@ public class FederationHostTest {
         this.federationHost.deleteFederation(ADMIN_NAME_1, "nonexistentid");
     }
     
+    // test case: When calling the method deleteFederation and the requester user is not federation admin,
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotDeleteFederation() throws FogbowException {
         setUpFederationData();
@@ -682,6 +741,8 @@ public class FederationHostTest {
         this.federationHost.deleteFederation(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method deleteFederation and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonOwnerAdminCannotDeleteFederation() throws FogbowException {
         setUpFederationData();
@@ -689,6 +750,8 @@ public class FederationHostTest {
         this.federationHost.deleteFederation(ADMIN_NAME_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method getRemoteFederationList, it must return a list containing
+    // the reference data for all known remote federations.
     @Test
     public void testGetRemoteFederationList() throws FogbowException {
         setUpFederationData();
@@ -698,6 +761,8 @@ public class FederationHostTest {
         assertEquals(this.remoteFederations, returnedRemoteFederations);
     }
     
+    // test case: When calling the method getRemoteFederationList and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetRemoteFederationList() throws FogbowException {
         setUpFederationData();
@@ -705,6 +770,8 @@ public class FederationHostTest {
         this.federationHost.getRemoteFederationList(REGULAR_USER_NAME_1);
     }
     
+    // test case: When calling the method addUserToAllowedAdmins, it must call the correct federation to 
+    // add the allowed remote admin.
     @Test
     public void testAddUserToAllowedAdmins() throws FogbowException {
         setUpFederationData();
@@ -715,6 +782,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).addRemoteUserAsAllowedFedAdmin(REMOTE_FEDERATION_ADMIN_ID_1, FHS_ID_2);
     }
     
+    // test case: When calling the method addUserToAllowedAdmins and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotAddUserToAllowedAdmins() throws FogbowException {
         setUpFederationData();
@@ -723,6 +792,8 @@ public class FederationHostTest {
                 FHS_ID_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method addUserToAllowedAdmins and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonFederationOwnerAdminCannotAddUserToAllowedAdmins() throws FogbowException {
         setUpFederationData();
@@ -731,6 +802,8 @@ public class FederationHostTest {
                 FHS_ID_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method addUserToAllowedAdmins passing an invalid federation ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotAddUserToAllowedAdminsPassingInvalidFederationId() throws FogbowException {
         setUpFederationData();
@@ -739,6 +812,8 @@ public class FederationHostTest {
                 FHS_ID_2, "invalidfederationid");
     }
     
+    // test case: When calling the method removeUserFromAllowedAdmins, it must call the correct federation
+    // to remove the remote admin from the allowed admins list.
     @Test
     public void testRemoveUserFromAllowedAdmins() throws FogbowException {
         setUpFederationData();
@@ -748,6 +823,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).removeRemoteUserFromAllowedAdmins(REMOTE_FEDERATION_ADMIN_ID_1, FHS_ID_2);
     }
     
+    // test case: When calling the method removeUserFromAllowedAdmins and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotRemoveUserFromAllowedAdmins() throws FogbowException {
         setUpFederationData();
@@ -756,6 +833,8 @@ public class FederationHostTest {
                 FHS_ID_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method removeUserFromAllowedAdmins and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonFederationOwnerAdminCannotRemoveUserFromAllowedAdmins() throws FogbowException {
         setUpFederationData();
@@ -764,6 +843,8 @@ public class FederationHostTest {
                 FHS_ID_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method removeUserFromAllowedAdmins passing an invalid federation ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRemoveUserFromAllowedAdminsPassingInvalidFederationId() throws FogbowException {
         setUpFederationData();
@@ -772,6 +853,9 @@ public class FederationHostTest {
                 FHS_ID_2, "invalidfederationid");
     }
     
+    // test case: When calling the method requestToJoinRemoteFederation, it must call the method joinRemoteFederation 
+    // of the FhsCommunicationMechanism to request to join the remote federation and, if the request
+    // is successful, it must add the returned federation to the list of federations.
     @Test
     public void testRequestToJoinRemoteFederation() throws FogbowException {
         setUpFederationData();
@@ -782,6 +866,8 @@ public class FederationHostTest {
         Mockito.verify(this.federationList).add(remoteFederation1);
     }
     
+    // test case: When calling the method requestToJoinRemoteFederation and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotRequestToJoinRemoteFederation() throws FogbowException {
         setUpFederationData();
@@ -789,6 +875,8 @@ public class FederationHostTest {
         this.federationHost.requestToJoinRemoteFederation(REGULAR_USER_NAME_1, REMOTE_FEDERATION_ID_1);
     }
     
+    // test case: When calling the method requestToJoinRemoteFederation passing an invalid remote federation ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRequestToJoinUnknownRemoteFederation() throws FogbowException {
         setUpFederationData();
@@ -802,6 +890,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method grantMembership, it must call the correct federation to add the given
+    // user.
     @Test
     public void testGrantMembership() throws FogbowException {
         setUpFederationData();
@@ -813,6 +903,8 @@ public class FederationHostTest {
                 USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method grantMembership passing an invalid federation ID, it must
+    // throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGrantMembershipOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -821,14 +913,18 @@ public class FederationHostTest {
                 USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method grantMembership and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGrantMembership() throws FogbowException {
         setUpFederationData();
 
-        this.federationHost.grantMembership(ADMIN_NAME_2, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
+        this.federationHost.grantMembership(REGULAR_USER_NAME_1, FEDERATION_ID_1, USER_ID_TO_GRANT_MEMBERSHIP, 
                 USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method grantMembership and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonOwnerUserCannotGrantMembership() throws FogbowException {
         setUpFederationData();
@@ -837,6 +933,8 @@ public class FederationHostTest {
                 USER_EMAIL_TO_GRANT_MEMBERSHIP, USER_DESCRIPTION_TO_GRANT_MEMBERSHIP, USER_AUTHORIZATION_PROPERTIES);
     }
     
+    // test case: When calling the method getFederationMembers, it must return a list containing all the 
+    // members of the specific federation.
     @Test
     public void testGetFederationMembers() throws FogbowException {
         setUpFederationData();
@@ -848,6 +946,8 @@ public class FederationHostTest {
         assertEquals(REGULAR_USER_NAME_2, members.get(1).getName());
     }
     
+    // test case: When calling the method getFederationMembers passing an invalid federation ID as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGetMembersFromInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -855,6 +955,8 @@ public class FederationHostTest {
         this.federationHost.getFederationMembers(ADMIN_NAME_1, "invalidfederationid");
     }
     
+    // test case: When calling the method getFederationMembers and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetFederationMembers() throws FogbowException {
         setUpFederationData();
@@ -862,6 +964,8 @@ public class FederationHostTest {
         this.federationHost.getFederationMembers(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method getFederationMembers and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonOwnerUserCannotGetFederationMembers() throws FogbowException {
         setUpFederationData();
@@ -869,6 +973,8 @@ public class FederationHostTest {
         this.federationHost.getFederationMembers(ADMIN_NAME_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method getFederationMemberInfo, it must return the specific member
+    // of the specific federation.
     @Test
     public void testGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
@@ -878,6 +984,8 @@ public class FederationHostTest {
         assertEquals(REGULAR_USER_NAME_1, user.getName());
     }
     
+    // test case: When calling the method getFederationMemberInfo passing an invalid federation ID as argument
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGetFederationMemberInfoFromInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -885,6 +993,8 @@ public class FederationHostTest {
         this.federationHost.getFederationMemberInfo(ADMIN_NAME_1, "invalidfederationid", user1.getMemberId());
     }
     
+    // test case: When calling the method getFederationMemberInfo and the requester user is not federation admin, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
@@ -892,6 +1002,8 @@ public class FederationHostTest {
         this.federationHost.getFederationMemberInfo(REGULAR_USER_NAME_1, FEDERATION_ID_1, user1.getMemberId());
     }
     
+    // test case: When calling the method getFederationMemberInfo and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonOwnerUserCannotGetFederationMemberInfo() throws FogbowException {
         setUpFederationData();
@@ -899,6 +1011,8 @@ public class FederationHostTest {
         this.federationHost.getFederationMemberInfo(ADMIN_NAME_2, FEDERATION_ID_1, user1.getMemberId());
     }
     
+    // test case: When calling the method revokeMembership, it must call the correct federation 
+    // to remove the specific user from the member list.
     @Test
     public void testRevokeMembership() throws FogbowException {
         setUpFederationData();
@@ -908,6 +1022,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).revokeMembership(REGULAR_USER_ID_1);
     }
     
+    // test case: When calling the method revokeMembership passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRevokeMembershipFromInvalidFederation() throws FogbowException  {
         setUpFederationData();
@@ -915,6 +1031,8 @@ public class FederationHostTest {
         this.federationHost.revokeMembership(ADMIN_NAME_1, "invalidfederationid", REGULAR_USER_ID_1);
     }
     
+    // test case: When calling the method revokeMembership and the requester is not federation admin,
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotRevokeMembership() throws FogbowException {
         setUpFederationData();
@@ -922,6 +1040,8 @@ public class FederationHostTest {
         this.federationHost.revokeMembership(REGULAR_USER_NAME_1, FEDERATION_ID_1, user1.getMemberId());
     }
     
+    // test case: When calling the method revokeMembership and the requester is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonOwnerUserCannotRevokeMembership() throws FogbowException {
         setUpFederationData();
@@ -936,6 +1056,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method createAttribute, it must call the correct federation to 
+    // create the attribute. The method must return attribute ID returned by the federation.
     @Test
     public void testCreateAttribute() throws FogbowException {
         setUpFederationData();
@@ -946,6 +1068,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).createAttribute(ATTRIBUTE_NAME_1);
     }
     
+    // test case: When calling the method createAttribute passing an invalid federation ID, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotCreateAttributeOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -953,6 +1077,8 @@ public class FederationHostTest {
         this.federationHost.createAttribute(ADMIN_NAME_1, "invalidfederationid", ATTRIBUTE_NAME_1);
     }
     
+    // test case: When calling the method createAttribute and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestExeption.
     @Test(expected = UnauthorizedRequestException.class)
     public void testCannotCreateAttributeIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
@@ -960,6 +1086,8 @@ public class FederationHostTest {
         this.federationHost.createAttribute(ADMIN_NAME_2, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
     }
     
+    // test case: When calling the method getFederationAttributes, it must return a list containing
+    // all the attributes of the specific federation.
     @Test
     public void testGetFederationAttributes() throws FogbowException {
         setUpFederationData();
@@ -971,6 +1099,8 @@ public class FederationHostTest {
         assertTrue(federationAttributes.contains(this.federationAttribute2));
     }
     
+    // test case: When calling the method getFederationAttributes passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGetFederationAttributesFromInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -978,6 +1108,8 @@ public class FederationHostTest {
         this.federationHost.getFederationAttributes(ADMIN_NAME_1, "invalidfederationid");
     }
     
+    // test case: When calling the method getFederationAttributes and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testCannotGetFederationAttributesIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
@@ -985,6 +1117,8 @@ public class FederationHostTest {
         this.federationHost.getFederationAttributes(ADMIN_NAME_2, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method deleteAttribute, it must call the correct federation to 
+    // remove the specific attribute.
     @Test
     public void testDeleteAttribute() throws FogbowException {
         setUpFederationData();
@@ -994,6 +1128,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).deleteAttribute(ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the method deleteAttribute passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteAttributeFromInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1001,6 +1137,8 @@ public class FederationHostTest {
         this.federationHost.deleteAttribute(ADMIN_NAME_1, "invalidfederationid", ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the method deleteAttribute and the requester user is not federation admin,
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminUserCannotDeleteAttribute() throws FogbowException {
         setUpFederationData();
@@ -1008,6 +1146,8 @@ public class FederationHostTest {
         this.federationHost.deleteAttribute(REGULAR_USER_NAME_1, FEDERATION_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the method deleteAttribute and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonAdminOwnerCannotDeleteAttribute() throws FogbowException {
         setUpFederationData();
@@ -1015,6 +1155,8 @@ public class FederationHostTest {
         this.federationHost.deleteAttribute(ADMIN_NAME_2, FEDERATION_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the method grantAttribute, it must call the correct federation
+    // to grant the attribute to the specific user.
     @Test
     public void testGrantAttribute() throws FogbowException {
         setUpFederationData();
@@ -1024,6 +1166,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).grantAttribute(REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the method grantAttribute passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGrantAttributeOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1031,6 +1175,8 @@ public class FederationHostTest {
         this.federationHost.grantAttribute(ADMIN_NAME_1, "invalidfederationid", REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the method grantAttribute and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testCannotGrantAttributeIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
@@ -1038,6 +1184,8 @@ public class FederationHostTest {
         this.federationHost.grantAttribute(ADMIN_NAME_2, FEDERATION_ID_1, REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the revokeAttribute method, it must call the correct federation to 
+    // revoke the attribute from the specific user.
     @Test
     public void testRevokeAttribute() throws FogbowException {
         setUpFederationData();
@@ -1047,6 +1195,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).revokeAttribute(REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the revokeAttribute method passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRevokeAttributeOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1054,6 +1204,8 @@ public class FederationHostTest {
         this.federationHost.revokeAttribute(ADMIN_NAME_1, "invalidfederationid", REGULAR_USER_ID_1, ATTRIBUTE_ID_1);
     }
     
+    // test case: When calling the revokeAttribute method and the requester user is federation admin
+    // but not the federation owner, it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testCannotRevokeAttributeIfUserDoesNotOwnFederation() throws FogbowException {
         setUpFederationData();
@@ -1068,6 +1220,8 @@ public class FederationHostTest {
      */
     
     // TODO improve this test
+    // test case: When calling the method registerService, it must call the correct federation to 
+    // register the service.
     @Test
     public void testRegisterService() throws FogbowException {
         setUpFederationData();
@@ -1079,6 +1233,8 @@ public class FederationHostTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1, SERVICE_METADATA_1);
     }
     
+    // test case: When calling the method registerService passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotRegisterServiceOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1087,6 +1243,8 @@ public class FederationHostTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
+    // test case: When calling the method registerService and the requester is not service owner, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotRegisterService() throws FogbowException {
         setUpFederationData();
@@ -1095,6 +1253,8 @@ public class FederationHostTest {
                 SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, SERVICE_INVOKER_CLASS_NAME_1);
     }
     
+    // test case: When calling the method getOwnedServices, it must return a list containing the IDs of the services
+    // owned by the specific service owner.
     @Test
     public void testGetOwnedServices() throws FogbowException {
         setUpFederationData();
@@ -1111,6 +1271,8 @@ public class FederationHostTest {
         assertTrue(servicesOwnedByAdmin2.contains(SERVICE_ID_2));
     }
     
+    // test case: When calling the method getOwnedServices passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGetOwnedServicesOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1118,6 +1280,8 @@ public class FederationHostTest {
         this.federationHost.getOwnedServices(SERVICE_OWNER_NAME_1, "invalidfederationid");
     }
     
+    // test case: When calling the method getOwnedServices and the requester user is not service owner,
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotGetOwnedServices() throws FogbowException {
         setUpFederationData();
@@ -1125,6 +1289,7 @@ public class FederationHostTest {
         this.federationHost.getOwnedServices(REGULAR_USER_NAME_1, FEDERATION_ID_1);
     }
     
+    // test case: When calling the method getOwnedService, it must return the specific service.
     @Test
     public void testGetOwnedService() throws FogbowException {
         setUpFederationData();
@@ -1138,6 +1303,8 @@ public class FederationHostTest {
         assertEquals(SERVICE_METADATA_1, federationService.getMetadata());
     }
     
+    // test case: When calling the method getOwnedService passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotGetOwnedServiceOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1145,6 +1312,8 @@ public class FederationHostTest {
         this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, "invalidfederationid", SERVICE_ID_1);
     }
     
+    // test case: When calling the method getOwnedService and the requester is not service owner, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotGetOwnedService() throws FogbowException {
         setUpFederationData();
@@ -1152,6 +1321,8 @@ public class FederationHostTest {
         this.federationHost.getOwnedService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_ID_1);
     }
     
+    // test case: When calling the method getOwnedService passing an invalid service ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testGetOwnedServiceFailsIfServiceIdIsInvalid() throws FogbowException {
         setUpFederationData();
@@ -1159,6 +1330,8 @@ public class FederationHostTest {
         this.federationHost.getOwnedService(SERVICE_OWNER_NAME_1, FEDERATION_ID_1, "invalidserviceid");
     }
     
+    // test case: When calling the method updateService, it must call the update method on the correct 
+    // service object.
     @Test
     public void testUpdateService() throws FogbowException {
         setUpFederationData();
@@ -1170,6 +1343,8 @@ public class FederationHostTest {
         Mockito.verify(this.service1).update(updatedServiceMetadata, SERVICE_DISCOVERY_POLICY_CLASS_NAME_1, ACCESS_POLICY_CLASS_NAME);
     }
     
+    // test case: When calling the method updateService passing an invalid federation ID as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotUpdateServiceOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1179,6 +1354,8 @@ public class FederationHostTest {
                 ACCESS_POLICY_CLASS_NAME);
     }
     
+    // test case: When calling the method updateService and the requester user is not service owner, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotUpdateService() throws FogbowException {
         setUpFederationData();
@@ -1188,6 +1365,8 @@ public class FederationHostTest {
                 ACCESS_POLICY_CLASS_NAME);
     }
     
+    // test case: When calling the method deleteService, it must call the correct federation to delete the
+    // specific service.
     @Test
     public void testDeleteService() throws FogbowException {
         setUpFederationData();
@@ -1197,6 +1376,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).deleteService(SERVICE_ID_1);
     }
     
+    // test case: When calling the method deleteService passing an invalid federation ID as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotDeleteServiceOnInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1204,6 +1385,8 @@ public class FederationHostTest {
         this.federationHost.deleteService(SERVICE_OWNER_NAME_1, "invalidfederationid", SERVICE_OWNER_NAME_1, SERVICE_ID_1);
     }
     
+    // test case: When calling the method deleteService and the requester user is not service owner, 
+    // it must throw an UnauthorizedRequestException.
     @Test(expected = UnauthorizedRequestException.class)
     public void testNonServiceOwnerUserCannotDeleteService() throws FogbowException {
         setUpFederationData();
@@ -1211,6 +1394,8 @@ public class FederationHostTest {
         this.federationHost.deleteService(REGULAR_USER_NAME_1, FEDERATION_ID_1, SERVICE_OWNER_NAME_1, SERVICE_ID_1);
     }
     
+    // test case: When calling the method getAuthorizedServices, it must return a list containing all the 
+    // services the specific user is authorized to discover.
     @Test
     public void testGetAuthorizedServices() throws FogbowException {
         setUpFederationData();
@@ -1222,6 +1407,7 @@ public class FederationHostTest {
         assertEquals(service2, services.get(1));
     }
 
+    // test case: When calling the method invokeService, it must call the invoke method of the correct federation.
     @Test
     public void testInvokeService() throws FogbowException {
         setUpFederationData();
@@ -1240,6 +1426,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method federationAdminLogin, it must generate and return an authentication
+    // token for the specific federation admin.
     @Test
     public void testFederationAdminLogin() throws FogbowException {
         setUpFederationData();
@@ -1249,15 +1437,19 @@ public class FederationHostTest {
         assertEquals(ADMIN_TOKEN_1, returnedToken);
     }
     
+    // test case: When calling the method federationAdminLogin passing an invalid admin ID as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testFederationAdminLoginInvalidAdmin() throws FogbowException {
         setUpFederationData();
         
-        String returnedToken = this.federationHost.login(null, "invalidAdminId", adminCredentials1);
+        String returnedToken = this.federationHost.federationAdminLogin("invalidAdminId", adminCredentials1);
         
         assertEquals(ADMIN_TOKEN_1, returnedToken);
     }
     
+    // test case: When calling the method login, it must call the correct federation to generate and return
+    // an authentication token for the specific member.
     @Test
     public void testNonFederationAdminLogin() throws FogbowException {
         setUpFederationData();
@@ -1269,6 +1461,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).login(REGULAR_USER_ID_1, regularUserCredentials1);
     }
     
+    // test case: When calling the method login passing an invalid federation ID as argument, 
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testNonFederationAdminLoginInvalidFederationId() throws FogbowException {
         setUpFederationData();
@@ -1282,6 +1476,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method map, it must return the correct credentials for the specific
+    // user to access the given cloud on the given service.
     @Test
     public void testMap() throws FogbowException {
         setUpFederationData();
@@ -1291,6 +1487,8 @@ public class FederationHostTest {
         assertEquals(credentialsMapCloud1, responseCredentials);
     }
     
+    // test case: When calling the method isAuthorized, it must call the correct federation to 
+    // verify if the specific user is authorized to perform the given operation on the given service. 
     @Test
     public void testIsAuthorized() throws FogbowException {
         setUpFederationData();
@@ -1308,6 +1506,8 @@ public class FederationHostTest {
      * 
      */
     
+    // test case: When calling the method updateRemoteFederationList, it must update the list
+    // of remote federation references using the list passed as argument.
     @Test
     public void testUpdateRemoteFederationList() throws FogbowException {
         setUpFederationData();
@@ -1333,6 +1533,8 @@ public class FederationHostTest {
         assertTrue(updatedRemoteFederationList.contains(updatedRemoteFederation2));
     }
     
+    // test case: When calling the method joinRemoteFederation, it must call the correct federation
+    // to add the remote admin and then return the federation.
     @Test
     public void testJoinRemoteFederation() throws FogbowException {
         setUpFederationData();
@@ -1345,6 +1547,8 @@ public class FederationHostTest {
         assertEquals(this.federation1, returnedFederation);
     }
     
+    // test case: When calling the method joinRemoteFederation passing an invalid federation ID as argument,
+    // it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotJoinInvalidFederation() throws FogbowException {
         setUpFederationData();
@@ -1354,6 +1558,8 @@ public class FederationHostTest {
         this.federationHost.joinRemoteFederation(remoteFederationUser, FHS_ID_2, "invalidfederationid");
     }
     
+    // test case: When calling the method updateFederationUsingRemoteData, it must call the update method
+    // of the correct federation, passing the federation update as argument.
     @Test
     public void testUpdateFederationUsingRemoteData() throws FogbowException {
         setUpFederationData();
@@ -1363,6 +1569,8 @@ public class FederationHostTest {
         Mockito.verify(this.federation1).update(federationUpdate);
     }
     
+    // test case: When calling the method updateFederationUsingRemoteData, passing as argument
+    // an update targeting an invalid federation ID, it must throw an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testCannotUpdateUsingRemoteDataInvalidFederation() throws FogbowException {
         setUpFederationData();
