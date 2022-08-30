@@ -64,7 +64,6 @@ import cloud.fogbow.fhs.core.plugins.invocation.ServiceInvoker;
 import cloud.fogbow.fhs.core.plugins.response.DefaultServiceResponse;
 import cloud.fogbow.fhs.core.utils.SynchronizationManager;
 
-// TODO refactor
 // TODO add checks to authorization
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ FhsPublicKeysHolder.class , AuthenticationUtil.class, 
@@ -496,6 +495,8 @@ public class ApplicationFacadeTest {
         applicationFacade.setSynchronizationManager(synchronizationManager);
     }
 
+    // test case: When calling the method loadFhsOperatorsOrFail, it must load the 
+    // FHS-Operators data from the configuration correctly.
     @Test
     public void testLoadFhsOperators() throws ConfigurationErrorException {
         List<FederationUser> fhsOperators = ApplicationFacade.loadFhsOperatorsOrFail();
@@ -524,6 +525,8 @@ public class ApplicationFacadeTest {
         assertEquals(OPERATOR_3_PROPERTY_3_VALUE, operator3Properties.get(PROPERTY_3));
     }
     
+    // test case: When calling the method loadFhsOperatorsOrFail and the OPERATOR_IDS property
+    // is empty, it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testLoadFhsOperatorsEmptyOperatorsIdsProperty() throws ConfigurationErrorException {
         this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
@@ -535,6 +538,8 @@ public class ApplicationFacadeTest {
         ApplicationFacade.loadFhsOperatorsOrFail();
     }
     
+    // test case: When calling the method loadFhsOperatorsOrFail and the OPERATOR_IDS property
+    // is null, it must throw a ConfigurationErrorException.
     @Test(expected = ConfigurationErrorException.class)
     public void testLoadFhsOperatorsNullOperatorsIdsProperty() throws ConfigurationErrorException {
         this.propertiesHolder = Mockito.mock(PropertiesHolder.class);
@@ -546,6 +551,8 @@ public class ApplicationFacadeTest {
         ApplicationFacade.loadFhsOperatorsOrFail();
     }
     
+    // test case: When calling the method addFederationAdmin, it must authenticate the requester user and 
+    // call the addFederationAdmin method of the FederationHost.
     @Test
     public void testAddFederationAdmin() throws FogbowException {
         String returnedAdminId = this.applicationFacade.addFederationAdmin(FHS_OPERATOR_TOKEN_1, ADMIN_NAME_1, ADMIN_EMAIL_1, 
@@ -559,6 +566,9 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the method getFederationAdmins, it must authenticate the requester user
+    // and call the FederationHost to get the federation admins. The method must return a list containing
+    // FedAdminInfo objects representing each of the federation admins. 
     @Test
     public void testGetFederationAdmins() throws FogbowException {
         List<FedAdminInfo> adminsInfo = this.applicationFacade.getFederationAdmins(FHS_OPERATOR_TOKEN_1);
@@ -589,6 +599,8 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the method updateFederationAdmin, it must authenticate the requester user
+    // and call the method updateFederationAdmin of the FederationHost.
     @Test
     public void testUpdateFederationAdmin() throws FogbowException {
         this.applicationFacade.updateFederationAdmin(FHS_OPERATOR_TOKEN_1, ADMIN_ID_1, ADMIN_NAME_1, 
@@ -601,6 +613,8 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the method deleteFederationAdmin, it must authenticate the requester user
+    // and call the method deleteFederationAdmin of the FederationHost.
     @Test
     public void testDeleteFederationAdmin() throws FogbowException {
         this.applicationFacade.deleteFederationAdmin(FHS_OPERATOR_TOKEN_1, ADMIN_ID_1);
@@ -611,6 +625,9 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the method listFederationInstances, it must authenticate the requester user and
+    // call the FederationHost to get the federations list. The method must return a list containing 
+    // FederationInstance objects representing each of the federations.
     @Test
     public void testListFederationInstances() throws FogbowException {
         List<FederationInstance> instances = this.applicationFacade.listFederationInstances(FHS_OPERATOR_TOKEN_1);
@@ -629,6 +646,8 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the updateFederation method, it must authenticate the requester user and
+    // call the method updateFederation of the FederationHost. 
     @Test
     public void testUpdateFederation() throws FogbowException {
         this.applicationFacade.updateFederation(FHS_OPERATOR_TOKEN_1, FEDERATION_ID_1, FEDERATION_ENABLED_1);
@@ -639,6 +658,8 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the deleteFederationInstance method, it must authenticate the requester user
+    // and call the method deleteFederationInstance of the FederationHost.
     @Test
     public void testDeleteFederationInstance() throws FogbowException {
         this.applicationFacade.deleteFederationInstance(FHS_OPERATOR_TOKEN_1, FEDERATION_ID_1);
@@ -649,6 +670,9 @@ public class ApplicationFacadeTest {
         AuthenticationUtil.authenticate(asPublicKey, FHS_OPERATOR_TOKEN_1);
     }
     
+    // test case: When calling the method reload, it must authenticate the requester user.
+    // Then it must reset the PropertiesHolder, the keys holders, the FederationHost and
+    // the authorization plugin.
     @Test
     public void testReload() throws FogbowException {
         this.newAuthorizationPlugin = Mockito.mock(AuthorizationPlugin.class);
@@ -684,6 +708,9 @@ public class ApplicationFacadeTest {
         assertEquals(newAuthorizationPlugin, this.applicationFacade.getAuthorizationPlugin());
     }
     
+    // test case: When calling the method createFederation, it must authenticate the requester user, then
+    // call the createFederation method of the FederationHost. The method must return a FederationId object
+    // containing the data of the created federation.
     @Test
     public void testCreateFederation() throws FogbowException {
         FederationId federationId = this.applicationFacade.createFederation(TOKEN_1, FEDERATION_NAME_1, 
@@ -698,6 +725,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method listFederations, it must call the method getFederationsOwnedByUser
+    // of the FederationHost to get the federations owned by the specific user. Then, it must return a list
+    // containing FederationDescription objects describing each of the federations.
     @Test
     public void testListFederations() throws FogbowException {
         List<FederationDescription> federationsDescriptions = this.applicationFacade.listFederations(TOKEN_1, ADMIN_NAME_1);
@@ -720,6 +750,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method listFederations and the user does not own any federation, 
+    // then the method must return an empty list.
     @Test
     public void testListFederationsNoFederation() throws FogbowException {
         List<FederationDescription> federationsDescriptions = this.applicationFacade.listFederations(TOKEN_2, ADMIN_NAME_2);
@@ -730,6 +762,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_2));
     }
     
+    // test case: When calling the getFederationInfo method, it must authenticate the requester user and 
+    // call the method getFederation of the FederationHost to get the specific federation's data.
+    // Then, it must create a FederationInfo object containing the required federation data.
     @Test
     public void testGetFederationInfo() throws FogbowException {
         FederationInfo federationInfo = this.applicationFacade.getFederationInfo(TOKEN_1, FEDERATION_ID_1);
@@ -743,6 +778,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method deleteFederation, it must authenticate the requester user 
+    // and call the method deleteFederation of the FederationHost.
     @Test
     public void testDeleteFederation() throws FogbowException {
         this.applicationFacade.deleteFederation(TOKEN_1, FEDERATION_ID_1);
@@ -751,6 +788,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method getRemoteFederationList, it must authenticate the requester user and 
+    // call the method getRemoteFederationList of the FederationHost. Then, it must return a list containing
+    // FederationDescription objects describing each of the remote federations.
     @Test
     public void testGetRemoteFederationList() throws FogbowException {
         List<FederationDescription> remoteFederationList = this.applicationFacade.getRemoteFederationList(TOKEN_1);
@@ -767,6 +807,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method getRemoteFederationList and the FederationHost does not
+    // hold any remote federation reference, the method must return an empty list.
     @Test
     public void testGetEmptyRemoteFederationList() throws FogbowException {
         Mockito.when(this.federationHost.getRemoteFederationList(ADMIN_NAME_1)).thenReturn(
@@ -779,6 +821,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method joinRemoteFederation, it must authenticate the requester user 
+    // and call the requestToJoinRemoteFederation method of the FederationHost.
     @Test
     public void testJoinRemoteFederation() throws FogbowException {
         this.applicationFacade.joinRemoteFederation(TOKEN_1, REMOTE_FEDERATION_ID_1);
@@ -787,6 +831,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method getRemoteUsersAllowedAdmins, it must authenticate the requester user
+    // and call the FederationHost to get the list of remote admins allowed to join local federations. Then, 
+    // it must return a list containing AllowedRemoteJoin objects describing each of the remote admins.
     @Test
     public void testGetRemoteUsersAllowedAdmins() throws FogbowException {
         List<AllowedRemoteJoin> allowedAdminsJoins = this.applicationFacade.getRemoteUsersAllowedAdmins(TOKEN_1);
@@ -810,6 +857,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method addRemoteUserToAllowedAdmins, it must authenticate the requester user
+    // and call the method addUserToAllowedAdmins of the FederationHost.
     @Test
     public void testAddRemoteUserToAllowedAdmins() throws FogbowException {
         this.applicationFacade.addRemoteUserToAllowedAdmins(TOKEN_1, REMOTE_FEDERATION_ADMIN_ID_1, 
@@ -820,6 +869,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method removeRemoteUserFromAllowedAdmins, it must authenticate the requester user
+    // and call the method removeUserFromAllowedAdmins of the FederationHost.
     @Test
     public void testRemoveRemoteUserFromAllowedAdmins() throws FogbowException {
         this.applicationFacade.removeRemoteUserFromAllowedAdmins(TOKEN_1, REMOTE_FEDERATION_ADMIN_ID_1, 
@@ -830,6 +881,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method grantMembership, it must authenticate the requester user
+    // and call the method grantMembership of the FederationHost. It must return a MemberId object containing
+    // the ID of the created member.
     @Test
     public void testGrantMembership() throws FogbowException {
         MemberId memberId = this.applicationFacade.grantMembership(TOKEN_1, FEDERATION_ID_1, USER_ID_TO_ADD, USER_EMAIL_TO_ADD, 
@@ -842,6 +896,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method listMembers, it must authenticate the requester user
+    // and call the method getFederationMembers of the FederationHost to get the members list.
+    // Then, it must return a list containing FederationMember objects describing each of the members.
     @Test
     public void testListMembers() throws FogbowException {
         List<FederationMember> members = this.applicationFacade.listMembers(TOKEN_1, FEDERATION_ID_1);
@@ -862,6 +919,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method getMemberInfo, it must authenticate the requester user
+    // and call the FederationHost to get the specific member data. Then, it must return a 
+    // FederationMember object which describes the specific member.
     @Test
     public void testGetMemberInfo() throws FogbowException {
         FederationMember federationMember = this.applicationFacade.getMemberInfo(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1);
@@ -876,6 +936,8 @@ public class ApplicationFacadeTest {
         assertTrue(federationMember.getAttributes().contains(ATTRIBUTE_NAME_2));
     }
     
+    // test case: When calling the method revokeMembership, it must authenticate the requester user
+    // and call the method revokeMembership of the FederationHost.
     @Test
     public void testRevokeMembership() throws FogbowException {
         this.applicationFacade.revokeMembership(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1);
@@ -884,6 +946,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method createAttribute, it must authenticate the requester user
+    // and call the method createAttribute of the FederationHost. It must return an AttributeDescription
+    // object describing the created attribute.
     @Test
     public void testCreateAttribute() throws FogbowException {
         AttributeDescription returnedDescription = this.applicationFacade.createAttribute(TOKEN_1, FEDERATION_ID_1, ATTRIBUTE_NAME_1);
@@ -895,6 +960,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method getFederationAttributes, it must authenticate the requester user
+    // and call the method getFederationAttributes of the FederationHost, to get the list of attributes.
+    // Then, it must return a list containing AttributeDescription objects describing each of the attributes.
     @Test
     public void testGetFederationAttributes() throws FogbowException {
         List<AttributeDescription> returnedDescriptions = this.applicationFacade.getFederationAttributes(TOKEN_1, FEDERATION_ID_1);
@@ -909,6 +977,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method deleteAttribute, it must authenticate the requester user
+    // and call the method deleteAttribute of the FederationHost.
     @Test
     public void testDeleteFederationAttribute() throws FogbowException {
         this.applicationFacade.deleteFederationAttribute(TOKEN_1, FEDERATION_ID_1, ATTRIBUTE_ID_1);
@@ -917,6 +987,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method grantAttribute, it must authenticate the requester user
+    // and call the method grantAttribute of the FederationHost.
     @Test
     public void testGrantAttribute() throws FogbowException {
         this.applicationFacade.grantAttribute(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1, ATTRIBUTE_ID_1);
@@ -925,6 +997,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method revokeAttribute, it must authenticate the requester user
+    // and call the method revokeAttribute of the FederationHost.
     @Test
     public void testRevokeAttribute() throws FogbowException {
         this.applicationFacade.revokeAttribute(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1, ATTRIBUTE_ID_1);
@@ -933,6 +1007,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method registerService, it must authenticate the requester user
+    // and call the method registerService of the FederationHost. Then, it must return a ServiceId
+    // object containing the ID of the created service.
     @Test
     public void testRegisterService() throws FogbowException {
         ServiceId serviceId = this.applicationFacade.registerService(TOKEN_1, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ENDPOINT_1, 
@@ -945,6 +1022,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method getServices, it must authenticate the requester user
+    // and call the method getOwnedServices of the FederationHost, to get the list of services owned by the specific user.
+    // Then, it must return a list containing ServiceId objects, one for each owned service.
     @Test
     public void testGetServices() throws FogbowException {
         List<ServiceId> serviceIds = this.applicationFacade.getServices(TOKEN_1, FEDERATION_ID_1, ADMIN_NAME_1);
@@ -957,6 +1037,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the getService method, it must authenticate the requester user
+    // and call the method getOwnedService of the FederationHost to get the specific service's data.
+    // Then, it must return a ServiceInfo object containing the required service data.
     @Test
     public void testGetService() throws FogbowException {
         ServiceInfo serviceInfo = this.applicationFacade.getService(TOKEN_1, FEDERATION_ID_1, ADMIN_NAME_1, SERVICE_ID_1);
@@ -971,6 +1054,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method updateService, it must authenticate the requester user
+    // and call the method updateService of the FederationHost.
     @Test
     public void testUpdateService() throws FogbowException {
         this.applicationFacade.updateService(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1, SERVICE_ID_1, SERVICE_METADATA_1,
@@ -981,6 +1066,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method deleteService, it must authenticate the requester user
+    // and call the method deleteService of the FederationHost.
     @Test
     public void testDeleteService() throws FogbowException {
         this.applicationFacade.deleteService(TOKEN_1, FEDERATION_ID_1, MEMBER_ID_1, SERVICE_ID_1);
@@ -989,6 +1076,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the method discoverServices, it must authenticate the requester user
+    // and call the method getAuthorizedServices of the FederationHost, to get the available services data.
+    // Then, it must return a list containing ServiceDiscovered objects describing each of the available services.
     @Test
     public void testDiscoverServices() throws FogbowException {
         List<ServiceDiscovered> discoveredService = this.applicationFacade.discoverServices(TOKEN_1, FEDERATION_ID_1, ADMIN_NAME_1);
@@ -1005,6 +1095,9 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the invocation method, it must authenticate the requester user and
+    // call the method invokeService of the FederationHost. Then, it must return a RequestResponse
+    // object containing the response code and the response data returned by the call to invokeService.
     @Test
     public void testInvocation() throws FogbowException {
         RequestResponse response = this.applicationFacade.invocation(TOKEN_1, FEDERATION_ID_1, 
@@ -1018,6 +1111,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the operatorLogin method, it must generate an authentication token
+    // for the specific FHS-Operator.
     @Test
     public void testFhsOperatorLogin() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
@@ -1030,12 +1125,16 @@ public class ApplicationFacadeTest {
         Mockito.verify(this.federationHost, Mockito.never()).login(Mockito.any(), Mockito.any(), Mockito.any());
     }
     
+    // test case: When calling the operatorLogin method passing an invalid operator ID, it must throw
+    // an InvalidParameterException.
     @Test(expected = InvalidParameterException.class)
     public void testFhsOperatorLoginOperatorNotFound() throws UnauthenticatedUserException, ConfigurationErrorException, 
     InternalServerErrorException, InvalidParameterException {
         this.applicationFacade.operatorLogin("invalidoperatorid", fhsOperatorCredentials1);
     }
     
+    // test case: When calling the login method, it must call the login method of the FederationHost
+    // passing the received user ID and credentials.
     @Test
     public void testNotFhsOperatorLogin() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
@@ -1046,6 +1145,8 @@ public class ApplicationFacadeTest {
         Mockito.verify(this.federationHost).login("", USER_ID_1, userCredentials1);
     }
     
+    // test case: When calling the federationAdminLogin method, it must call the federationAdminLogin
+    // method of the FederationHost passing the received user ID and credentials.
     @Test
     public void testFederationAdminLogin() throws InvalidParameterException, UnauthenticatedUserException, 
     ConfigurationErrorException, InternalServerErrorException {
@@ -1056,6 +1157,8 @@ public class ApplicationFacadeTest {
         Mockito.verify(this.federationHost).federationAdminLogin(ADMIN_ID_1, adminCredentials);
     }
     
+    // test case: When calling the map method, it must authenticate the requester user and call the method
+    // map of the FederationHost to get the credentials.
     @Test
     public void testMap() throws FogbowException {
         Map<String, String> response = this.applicationFacade.map(TOKEN_1, FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, CLOUD_NAME);
@@ -1066,6 +1169,8 @@ public class ApplicationFacadeTest {
         BDDMockito.verify(AuthenticationUtil.authenticate(asPublicKey, TOKEN_1));
     }
     
+    // test case: When calling the isAuthorized method, it must authenticate the requester user and call the
+    // method isAuthorized of the FederationHost.
     @Test
     public void testIsAuthorized() throws FogbowException {
         boolean authorized = this.applicationFacade.isAuthorized(TOKEN_1, FEDERATION_ID_1, SERVICE_ID_1, USER_ID_1, this.operationToAuthorize);
